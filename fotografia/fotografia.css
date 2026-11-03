@@ -114,6 +114,10 @@ main:focus { outline: none; }
 /* ---------- Trabalhos ---------- */
 .trabalho + .trabalho { margin-top: clamp(56px, 8vw, 96px); }
 .faixa { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+/* as fotos da faixa aparecem uma depois da outra */
+.faixa > :nth-child(2) { --atraso: 80ms; }
+.faixa > :nth-child(3) { --atraso: 160ms; }
+.faixa > :nth-child(4) { --atraso: 240ms; }
 .quadro { display: block; width: 100%; padding: 0; border: 0; background: none; overflow: hidden; cursor: zoom-in; }
 .quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 1s var(--suave), opacity 0.4s; }
 @media (hover: hover) and (pointer: fine) { .quadro:hover img { transform: scale(1.03); } }
@@ -156,11 +160,15 @@ main:focus { outline: none; }
 /* ---------- Como funciona ---------- */
 .condicoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 44px; max-width: 820px; margin-inline: auto; padding-top: 30px; border-top: 1px solid var(--linha); }
 .condicao { display: flex; flex-direction: column; gap: 4px; }
+/* a coluna da direita aparece logo depois da da esquerda */
+.condicao:nth-child(even) { --atraso: 60ms; }
 .condicao h3 { font-size: 19px; line-height: 1.2; }
 .condicao p:last-child { margin-top: 2px; font-size: 15px; line-height: 1.5; }
 
 /* ---------- Consultar data ---------- */
 .formulario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; max-width: 620px; margin-inline: auto; }
+.formulario[hidden], .sem-js[hidden] { display: none; }
+.sem-js { max-width: 620px; margin-inline: auto; font-size: 18px; text-align: center; }
 .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .campo label { color: var(--cinza); font-size: 11px; line-height: 1.2; letter-spacing: 0.12em; text-transform: uppercase; }
 .campo input, .campo select { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 0; background: var(--papel); font-size: 17px; -webkit-appearance: none; appearance: none; transition: border-color 0.25s; }
@@ -172,6 +180,21 @@ main:focus { outline: none; }
 .formulario .botao { grid-column: 1 / -1; width: 100%; margin-top: 4px; }
 .aviso-form { grid-column: 1 / -1; color: var(--cinza); font-size: 14px; font-style: italic; text-align: center; }
 .aviso-form:empty { display: none; }
+.nota-form { grid-column: 1 / -1; color: var(--cinza); font-size: 13px; line-height: 1.45; text-align: center; }
+.nota-form a { text-decoration: underline; text-decoration-color: var(--linha); text-underline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .nota-form a:hover { color: var(--tinta); text-decoration-color: currentColor; } }
+
+/* ---------- Privacidade ---------- */
+.texto { max-width: 680px; margin-inline: auto; font-size: 17px; line-height: 1.6; text-wrap: pretty; }
+.texto h2 { margin: 52px 0 12px; font-size: 25px; line-height: 1.2; }
+.texto > :first-child { margin-top: 0; }
+.texto p + p, .texto p + ul, .texto ul + p { margin-top: 14px; }
+.texto ul { display: flex; flex-direction: column; gap: 10px; }
+.texto li { position: relative; padding-left: 20px; }
+.texto li::before { content: "–"; position: absolute; left: 0; color: var(--cinza); }
+.texto .lei { color: var(--cinza); font-size: 14px; font-style: italic; white-space: nowrap; }
+.texto a { text-decoration: underline; text-decoration-color: var(--linha); text-underline-offset: 3px; transition: text-decoration-color 0.3s; }
+@media (hover: hover) and (pointer: fine) { .texto a:hover { text-decoration-color: currentColor; } }
 
 /* ---------- Rodapé ---------- */
 .base { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 22px; margin-top: clamp(96px, 12vw, 144px); padding-block: 0 calc(28px + env(safe-area-inset-bottom, 0px)); color: var(--cinza); font-size: 13px; line-height: 40px; }
