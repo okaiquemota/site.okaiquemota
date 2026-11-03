@@ -186,13 +186,16 @@ main:focus { outline: none; }
 
 /* ---------- Privacidade ---------- */
 .texto { max-width: 680px; margin-inline: auto; font-size: 17px; line-height: 1.6; text-wrap: pretty; }
-.texto h2 { margin: 52px 0 12px; font-size: 25px; line-height: 1.2; }
+.texto h2 { margin: 44px 0 12px; font-size: 22px; line-height: 1.25; }
 .texto > :first-child { margin-top: 0; }
-.texto p + p, .texto p + ul, .texto ul + p { margin-top: 14px; }
-.texto ul { display: flex; flex-direction: column; gap: 10px; }
-.texto li { position: relative; padding-left: 20px; }
-.texto li::before { content: "–"; position: absolute; left: 0; color: var(--cinza); }
-.texto .lei { color: var(--cinza); font-size: 14px; font-style: italic; white-space: nowrap; }
+.texto p + p, .texto p + ol, .texto ol + p { margin-top: 14px; }
+/* alíneas "a)" e incisos "I –", como num texto de lei */
+.texto ol { display: flex; flex-direction: column; gap: 10px; counter-reset: item; }
+.texto ol > li { position: relative; padding-left: 30px; counter-increment: item; }
+.texto ol > li::before { position: absolute; left: 0; color: var(--cinza); }
+.texto .alineas > li::before { content: counter(item, lower-alpha) ")"; }
+.texto .incisos > li { padding-left: 52px; }
+.texto .incisos > li::before { content: counter(item, upper-roman) " –"; }
 .texto a { text-decoration: underline; text-decoration-color: var(--linha); text-underline-offset: 3px; transition: text-decoration-color 0.3s; }
 @media (hover: hover) and (pointer: fine) { .texto a:hover { text-decoration-color: currentColor; } }
 
