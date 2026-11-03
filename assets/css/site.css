@@ -5,6 +5,10 @@
    A assinatura vem do traço do lápis (assets/img/assinatura.png); o vetor
    fica em assets/img/assinatura.svg para outros usos.
 ------------------------------------------------------------------------- */
+/* Tinos servida pelo próprio site (a mesma da /fotografia): sem Google Fonts,
+   o IP de quem visita não vai pra ninguém. Só baixa onde não tem Times. */
+@font-face { font-family: "Tinos"; src: url("../../fotografia/fontes/tinos-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+
 :root {
     --papel: #ffffff;
     --tinta: #111111;
@@ -41,6 +45,7 @@ a { color: inherit; text-decoration: none; }
 ul { list-style: none; margin: 0; padding: 0; }
 :focus-visible { outline: 1.5px solid var(--tinta); outline-offset: 3px; }
 ::selection { background: var(--tinta); color: var(--papel); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 /* ---------- Nome e descrição ---------- */
 .topo { display: flex; flex-direction: column; align-items: center; padding-top: clamp(14px, 2.2vw, 24px); text-align: center; }
@@ -111,3 +116,4 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 
 .base { padding-block: 0 clamp(14px, 2.2vw, 24px); color: var(--cinza); font-size: 13px; text-align: center; }
+@media (hover: hover) and (pointer: fine) { .base a:hover { color: var(--tinta); } }

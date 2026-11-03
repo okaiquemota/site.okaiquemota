@@ -60,7 +60,9 @@
         if (marcaEndereco) history.replaceState(null, '', '#' + paineis[k].id);
     }
     function peloEndereco() {
-        var id = decodeURIComponent(location.hash.slice(1));
+        // um endereço quebrado (#%E0, por exemplo) não pode derrubar o resto do script
+        var id;
+        try { id = decodeURIComponent(location.hash.slice(1)); } catch (erro) { return false; }
         for (var j = 0; j < paineis.length; j++) {
             if (paineis[j].id === id) {
                 escolhe(j, false);
@@ -106,6 +108,11 @@
     // ---------- Formulário: vira uma mensagem pronta no WhatsApp ----------
     var form = document.getElementById('consulta');
     if (form) {
+        // sem este script o formulário fica escondido e aparece o link direto do WhatsApp:
+        // assim o nome e o local nunca vão parar no endereço da página
+        form.hidden = false;
+        var semJs = document.getElementById('consulta-sem-js');
+        if (semJs) semJs.hidden = true;
         var campo = form.elements;
         var erroNome = document.getElementById('erro-nome');
         var aviso = document.getElementById('aviso-form');
@@ -159,15 +166,19 @@
         var foto = document.getElementById('visor-foto');
         var conta = document.getElementById('visor-conta');
         var atual = 0;
+        var pedido = 0;
         var quemAbriu = null;
 
         var mostra = function (k) {
             atual = (k + quadros.length) % quadros.length;
             var q = quadros[atual];
             var miniatura = q.querySelector('img');
+            var este = ++pedido;
             foto.classList.add('trocando');
             var nova = new Image();
             nova.onload = nova.onerror = function () {
+                // passando rápido, uma foto que demorou não entra no lugar da que está no contador
+                if (este !== pedido) return;
                 foto.src = nova.src;
                 foto.alt = miniatura.alt;
                 requestAnimationFrame(function () { foto.classList.remove('trocando'); });
