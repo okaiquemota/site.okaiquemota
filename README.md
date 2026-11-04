@@ -4,7 +4,7 @@ Página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade po
 
 Em `/fotografia` fica o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos", os pacotes em abas (sem preços: os valores vão pelo WhatsApp), "Como funciona" e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/fotografia/privacidade.html`, linkado no rodapé da `/fotografia` e embaixo do formulário (a página inicial é o perfil pessoal e não leva o link). Fica em https://okaiquemota.com.br/fotografia/ — e `/fotografia/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` já abrem a aba do tipo de foto.
 
-Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagamentos, contratos, documentos e agenda), atrás de senha. Ele não vai pro GitHub Pages: roda na Cloudflare, em https://painel-okaiquemota.okaiquemota.workers.dev. Como publicar, trocar a senha e rodar no computador está em [`painel/README.md`](painel/README.md).
+Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagamentos, contratos, documentos e agenda), atrás de senha. Ele não vai pro GitHub Pages: roda na Cloudflare, em https://painel.okaiquemota.com.br. Como publicar, trocar a senha e rodar no computador está em [`painel/README.md`](painel/README.md).
 
 ```
 .
@@ -51,6 +51,12 @@ Os links ficam no `<nav class="links">` do `index.html`. Cada grupo é uma `<ul>
 - Cada página tem uma Content-Security-Policy na `<meta>` do topo: o navegador só aceita arquivos do próprio site, então um script injetado não roda. Ela também barra `<script>` e `style="…"` escritos direto no HTML: script vai num `.js` e estilo, no `.css`. Se for colocar algo de fora, libere o endereço nessa linha.
 - O formulário "Consultar data" não envia nada pra servidor nenhum: ele só monta a mensagem e abre o WhatsApp. Sem JavaScript, ele fica escondido e aparece o link direto, pra o nome e o local nunca irem parar no endereço da página.
 - Mudou o texto do `fotografia/privacidade.html`? Atualize a data da "Última atualização", logo abaixo do título. O texto é formal, em cláusulas numeradas: mantenha esse tom.
+
+## Domínio e DNS
+
+O domínio é registrado no Registro.br, mas o DNS fica na Cloudflare (nameservers `ali.ns.cloudflare.com` e `elijah.ns.cloudflare.com`). Lá estão os quatro registros A do GitHub Pages (185.199.108.153 a 185.199.111.153) e o `www` apontando para `okaiquemota.github.io`, todos como *DNS only* (nuvem cinza): quem cuida do site e do HTTPS dele continua sendo o GitHub. O `painel.okaiquemota.com.br` é ligado direto ao Worker do painel (`routes` no `painel/wrangler.jsonc`); esse registro a Cloudflare cria sozinha.
+
+Antes de mexer em registros (e-mail no domínio, por exemplo), mexa na Cloudflare, não no Registro.br.
 
 ## Publicar
 

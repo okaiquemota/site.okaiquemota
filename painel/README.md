@@ -2,7 +2,7 @@
 
 O painel de gestão dos clientes da fotografia: cadastro, trabalhos, pagamentos, contratos e documentos, compromissos e agenda. Fica só pra você, atrás de senha, e não aparece no site nem no Google.
 
-Fica em **https://painel-okaiquemota.okaiquemota.workers.dev**.
+Fica em **https://painel.okaiquemota.com.br**. O endereço da Cloudflare, https://painel-okaiquemota.okaiquemota.workers.dev, também abre o mesmo painel (o login vale para cada endereço separado).
 
 Roda na Cloudflare, na sua conta: um Worker (o site e a API), um banco D1 (os dados) e um R2 (os arquivos). Tudo no plano gratuito, que não pausa por falta de uso. O GitHub Pages não publica esta pasta (veja o `_config.yml` na raiz).
 
