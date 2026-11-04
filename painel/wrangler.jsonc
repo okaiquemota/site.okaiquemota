@@ -1,0 +1,34 @@
+// Configuração do painel na Cloudflare (Worker + D1 + R2).
+// O banco (D1) e o lugar dos arquivos (R2) ficam na conta da Cloudflare do Kaique.
+// Pra rodar no computador, o wrangler dev simula os dois localmente (pasta .wrangler/).
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "painel-okaiquemota",
+    "main": "src/worker.js",
+    "compatibility_date": "2026-09-01",
+    "workers_dev": true,
+    "preview_urls": false,
+    // as páginas de public/ vão dentro do código: antes de rodar ou publicar, o wrangler
+    // junta tudo em src/arquivos.gerado.js (e refaz quando algo em public/ muda)
+    "build": {
+        "command": "node scripts/empacotar.mjs",
+        "watch_dir": "public"
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "painel-okaiquemota",
+            "database_id": "31347bca-c1a8-4742-b628-7d20533f2740",
+            "migrations_dir": "migrations"
+        }
+    ],
+    "r2_buckets": [
+        {
+            "binding": "ARQUIVOS",
+            "bucket_name": "painel-okaiquemota"
+        }
+    ],
+    "observability": {
+        "enabled": true
+    }
+}

@@ -4,6 +4,8 @@ Página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade po
 
 Em `/fotografia` fica o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos", os pacotes em abas (sem preços: os valores vão pelo WhatsApp), "Como funciona" e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/fotografia/privacidade.html`, linkado no rodapé das duas páginas e embaixo do formulário. Fica em https://okaiquemota.com.br/fotografia/ — e `/fotografia/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` já abrem a aba do tipo de foto.
 
+Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagamentos, contratos, documentos e agenda), atrás de senha. Ele não vai pro GitHub Pages: roda na Cloudflare, em https://painel-okaiquemota.okaiquemota.workers.dev. Como publicar, trocar a senha e rodar no computador está em [`painel/README.md`](painel/README.md).
+
 ```
 .
 ├── index.html
@@ -14,6 +16,7 @@ Em `/fotografia` fica o site de fotografia (o do [@okaiquemota](https://www.inst
 │   ├── fotografia.js      abas dos pacotes, visor de fotos, formulário e o aparecer ao rolar
 │   ├── fontes/            Tinos (woff2, licença SIL OFL 1.1), usada também pela página inicial
 │   └── img/               fotos dos trabalhos (NOME-1080.jpg e NOME-720.jpg, 4:5) e o retrato da capa, kaique-*.jpg
+├── painel/                o painel de clientes (Cloudflare, veja painel/README.md)
 └── assets/
     ├── css/site.css
     ├── js/site.js         ano do rodapé e altura da página inicial
@@ -23,7 +26,7 @@ Em `/fotografia` fica o site de fotografia (o do [@okaiquemota](https://www.inst
         └── assinatura.svg     a mesma assinatura em vetor (também é o ícone da aba)
 ```
 
-Não tem build nem dependência. Pra rodar no computador: `python3 -m http.server 8000`.
+O site não tem build nem dependência. Pra rodar no computador: `python3 -m http.server 8000`.
 
 ## Trocar a foto
 

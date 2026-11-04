@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <title>Painel · Kaique Mota</title>
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="assinatura.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icone-180.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="preload" href="fontes/tinos-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="painel.css">
+</head>
+<body>
+    <header class="topo" id="topo" hidden>
+        <a class="marca" href="#/">Kaique Mota <span class="rotulo">Painel</span></a>
+        <nav class="menu" aria-label="Menu">
+            <a href="#/" data-menu="inicio">Início</a>
+            <a href="#/clientes" data-menu="clientes">Clientes</a>
+            <a href="#/agenda" data-menu="agenda">Agenda</a>
+        </nav>
+        <button class="menu-sair" type="button" id="sair">Sair</button>
+    </header>
+
+    <main id="app" tabindex="-1">
+        <p class="carregando pagina">Carregando…</p>
+    </main>
+
+    <dialog id="janela" aria-labelledby="janela-titulo"></dialog>
+    <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+    <script src="painel.js"></script>
+</body>
+</html>

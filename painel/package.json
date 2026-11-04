@@ -1,0 +1,12 @@
+{
+  "name": "painel-okaiquemota",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler d1 migrations apply DB --local && wrangler dev",
+    "publicar": "node scripts/publicar.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.157.0"
+  }
+}
