@@ -284,6 +284,17 @@ main:focus { outline: none; }
 .js .painel:not([hidden]) { animation: sobe 0.6s var(--suave) both; }
 @media (max-width: 640px) { .pacote { padding: 22px 18px 20px; } }
 
+/* depoimentos (seção #depoimentos, entre Trabalhos e Pacotes; o passo a passo está no README) */
+.depoimentos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(36px, 5vw, 56px); max-width: 1020px; margin-inline: auto; }
+.depoimento { display: flex; flex-direction: column; gap: 18px; padding-top: 22px; border-top: 1px solid var(--linha); }
+.depoimento:nth-child(2) { --atraso: 90ms; }
+.depoimento:nth-child(3) { --atraso: 180ms; }
+.depoimento blockquote { margin: 0; font-size: clamp(18px, 1.6vw, 20px); font-style: italic; line-height: 1.5; text-wrap: pretty; }
+.depoimento blockquote p::before { content: "“"; }
+.depoimento blockquote p::after { content: "”"; }
+.depoimento figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: auto; }
+.depoimento-nome { font-size: 16px; }
+
 @keyframes revela-foto { from { clip-path: inset(100% 0 0 0); transform: scale(1.06); } to { clip-path: inset(0 0 0 0); transform: none; } }
 
 /* ---------- Menos movimento ---------- */

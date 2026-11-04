@@ -49,6 +49,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 /* ---------- Nome e descrição ---------- */
 .topo { display: flex; flex-direction: column; align-items: center; padding-top: clamp(14px, 2.2vw, 24px); text-align: center; }
+/* o nome é o título da página (h1) sem mudar o visual */
+.titulo-pagina { margin: 0; font-size: inherit; font-weight: inherit; line-height: inherit; }
 .nome { display: inline-flex; align-items: center; min-height: 40px; }
 .sobre { margin: -8px 0 0; color: var(--cinza); font-size: 12px; }
 
@@ -120,3 +122,17 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 .base { padding-block: 0 clamp(14px, 2.2vw, 24px); color: var(--cinza); font-size: 13px; text-align: center; }
 @media (hover: hover) and (pointer: fine) { .base a:hover { color: var(--tinta); } }
+
+/* ---------- Página não encontrada (404.html) ---------- */
+.perdido { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding-block: 32px; text-align: center; }
+/* a assinatura em tamanho menor, como um carimbo */
+.perdido-assinatura {
+    display: block; width: min(150px, 40vw); aspect-ratio: 1091 / 1162; margin-bottom: 6px;
+    background-color: var(--tinta); transform: rotate(-4deg);
+    -webkit-mask: url("../img/assinatura.png") center / contain no-repeat; mask: url("../img/assinatura.png") center / contain no-repeat;
+}
+.perdido h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); font-weight: 400; line-height: 1.1; }
+.perdido-sub { max-width: 30em; margin: 0; color: var(--cinza); font-size: 15px; font-style: italic; }
+.perdido-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 28px; margin-top: 14px; }
+.perdido-links a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-decoration-color: var(--cinza); text-underline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) { .perdido-links a:hover { text-decoration-color: var(--tinta); } }
