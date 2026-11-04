@@ -29,6 +29,15 @@
         secoes.forEach(function (s) { if (s) vigiaSecao.observe(s); });
     }
 
+    // ---------- Fotos: aparecem suaves quando terminam de carregar (não "pipocam") ----------
+    document.querySelectorAll('.quadro img, .capa-quadro img').forEach(function (img) {
+        if (img.complete && img.naturalWidth) return;
+        img.classList.add('carregando');
+        function pronto() { img.classList.remove('carregando'); }
+        img.addEventListener('load', pronto, { once: true });
+        img.addEventListener('error', pronto, { once: true });
+    });
+
     // ---------- Aparecer ao rolar ----------
     var revelaveis = document.querySelectorAll('[data-revela]');
     if ('IntersectionObserver' in window && !poucoMovimento.matches) {

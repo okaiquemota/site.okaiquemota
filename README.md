@@ -56,7 +56,9 @@ Os links ficam no `<nav class="links">` do `index.html`. Cada grupo é uma `<ul>
 
 O domínio é registrado no Registro.br, mas o DNS fica na Cloudflare (nameservers `ali.ns.cloudflare.com` e `elijah.ns.cloudflare.com`). Lá estão os quatro registros A do GitHub Pages (185.199.108.153 a 185.199.111.153) e o `www` apontando para `okaiquemota.github.io`, todos como *DNS only* (nuvem cinza): quem cuida do site e do HTTPS dele continua sendo o GitHub. O `painel.okaiquemota.com.br` é ligado direto ao Worker do painel (`routes` no `painel/wrangler.jsonc`); esse registro a Cloudflare cria sozinha.
 
-Antes de mexer em registros (e-mail no domínio, por exemplo), mexa na Cloudflare, não no Registro.br.
+O e-mail contato@okaiquemota.com.br chega no Gmail pelo Email Routing da Cloudflare (*Email → Email Routing* no okaiquemota.com.br): os registros MX (`route1`, `route2` e `route3.mx.cloudflare.net`) e o SPF foram criados por ele. Ele só recebe; as respostas saem do Gmail. A regra "catch-all" fica desligada, então e-mail pra qualquer outro nome no domínio é recusado.
+
+Qualquer mudança de DNS se faz na Cloudflare, não no Registro.br.
 
 ## Publicar
 

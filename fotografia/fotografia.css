@@ -89,7 +89,7 @@ main:focus { outline: none; }
 /* ---------- Capa: cabe sempre na altura da tela ---------- */
 .capa {
     /* largura da foto: a menor entre 360px, 58% da largura e o que sobra da altura */
-    --w: clamp(140px, min(360px, 58vw, (var(--alto) - var(--topo) - 270px) / 1.6), 360px);
+    --w: clamp(140px, min(360px, 58vw, (var(--alto) - var(--topo) - 300px) / 1.6), 360px);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: calc(var(--alto) - var(--topo));
     padding: 16px var(--margem) 28px;
@@ -97,12 +97,20 @@ main:focus { outline: none; }
 }
 /* a assinatura passa da foto em cima (12,5% da largura) e embaixo (20%) */
 .capa-quadro { position: relative; width: var(--w); margin: calc(var(--w) * 0.125 + 4px) 0 calc(var(--w) * 0.2 + 22px); }
-.capa-quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; animation: aparece 1s ease both; }
-.capa-quadro .assinatura { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1.55); transform: translate(-50%, -50%) rotate(-4deg); pointer-events: none; animation: escreve 1.6s ease-in-out 0.35s both; }
-.capa-texto { display: flex; flex-direction: column; align-items: center; gap: 10px; animation: sobe 0.9s var(--suave) 0.2s both; }
-.capa h1 { font-size: clamp(38px, 4.4vw, 46px); line-height: 1; letter-spacing: -0.01em; }
-.capa .sub { max-width: 34em; }
-.capa-acoes { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 26px; margin-top: 14px; }
+/* a foto se revela de baixo pra cima e assenta devagar; depois a assinatura se escreve e o texto sobe, uma linha de cada vez */
+.capa-quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; animation: revela-foto 1.5s var(--suave) both; }
+.capa-quadro .assinatura { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1.55); transform: translate(-50%, -50%) rotate(-4deg); pointer-events: none; animation: escreve 1.6s ease-in-out 0.7s both; }
+.capa-texto { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.capa-texto > * { animation: sobe 1s var(--suave) both; }
+.capa-texto > :nth-child(1) { animation-delay: 0.45s; }
+.capa-texto > :nth-child(2) { animation-delay: 0.6s; }
+.capa-texto > :nth-child(3) { animation-delay: 0.72s; }
+.capa-texto > :nth-child(4) { animation-delay: 0.86s; }
+.capa h1 { font-size: clamp(44px, 5vw, 60px); line-height: 1; letter-spacing: -0.015em; }
+/* a frase da marca: em itálico, com a tinta, maior que um subtítulo */
+.capa-frase { max-width: 30em; font-size: clamp(19px, 1.8vw, 23px); font-style: italic; line-height: 1.35; text-wrap: balance; }
+.capa-lugar { margin-top: -2px; }
+.capa-acoes { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 28px; margin-top: 22px; }
 
 /* ---------- Sobre ---------- */
 .sobre-texto { display: flex; flex-direction: column; align-items: center; gap: 22px; max-width: 660px; margin-inline: auto; font-size: clamp(18px, 1.7vw, 21px); line-height: 1.65; text-align: center; text-wrap: pretty; }
@@ -231,8 +239,8 @@ main:focus { outline: none; }
     body { font-size: 16px; }
     .menu { gap: 20px; }
     .menu-extra { display: none !important; }
-    .capa h1 { font-size: 38px; }
-    .capa .sub { font-size: 14px; }
+    .capa h1 { font-size: 42px; }
+    .capa-frase { font-size: 18px; }
     .faixa { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .abas { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--margem)); padding-inline: var(--margem); gap: 0 22px; }
     .abas::-webkit-scrollbar { display: none; }
@@ -245,9 +253,42 @@ main:focus { outline: none; }
     .visor-prox { right: 8px; }
 }
 
+/* ---------- Acabamento: respiro, ritmo e movimento ---------- */
+/* mais ar entre as seções e embaixo dos títulos */
+.secao { padding-top: clamp(104px, 13vw, 176px); }
+.cabeca { margin-bottom: clamp(36px, 5.5vw, 64px); }
+/* títulos das seções sobem de trás de uma linha, como numa revista */
+.js .cabeca[data-revela] .titulo { clip-path: inset(-20% -10% 100% -10%); transform: translateY(0.4em); transition: clip-path 1.1s var(--suave), transform 1.1s var(--suave); }
+.js .cabeca[data-revela].visivel .titulo { clip-path: inset(-20% -10% -25% -10%); transform: none; }
+
+/* fotos dos trabalhos: uma cortina abre de baixo pra cima e a foto assenta; até carregar, fica um cinza claro */
+.quadro { background: #f1f0ee; }
+.capa-quadro img { transition: opacity 0.6s ease; }
+.js .quadro[data-revela] { opacity: 1; transform: none; clip-path: inset(100% 0 0 0); transition: clip-path 1.25s var(--suave) var(--atraso, 0ms); }
+.js .quadro[data-revela].visivel { clip-path: inset(0 0 0 0); }
+.js .quadro[data-revela] img { transform: scale(1.12); transition: transform 1.8s var(--suave), opacity 0.6s ease; }
+.js .quadro[data-revela].visivel img { transform: none; }
+.js .quadro img.carregando, .js .capa-quadro img.carregando { opacity: 0; }
+@media (hover: hover) and (pointer: fine) {
+    .quadro img { transition: transform 1.2s var(--suave), opacity 0.6s ease; }
+    .js .quadro[data-revela].visivel:hover img { transform: scale(1.035); transition-duration: 1.2s, 0.6s; }
+    .pacote:hover .link .ic { transform: translateX(3px); }
+}
+
+/* pacotes: mais folga dentro do cartão e entre um e outro */
+.painel { gap: 26px; }
+.pacote { padding: 26px 30px 24px; transition: border-color 0.4s var(--suave); }
+.itens { margin-top: 16px; font-size: 15.5px; line-height: 1.5; }
+.itens li { padding-bottom: 5px; }
+.painel-nota { color: var(--cinza); font-style: italic; }
+.js .painel:not([hidden]) { animation: sobe 0.6s var(--suave) both; }
+@media (max-width: 640px) { .pacote { padding: 22px 18px 20px; } }
+
+@keyframes revela-foto { from { clip-path: inset(100% 0 0 0); transform: scale(1.06); } to { clip-path: inset(0 0 0 0); transform: none; } }
+
 /* ---------- Menos movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
-    .js [data-revela] { opacity: 1; transform: none; }
+    .js [data-revela], .js [data-revela] img, .js .cabeca[data-revela] .titulo, .capa-quadro img { opacity: 1 !important; transform: none !important; clip-path: none !important; }
 }
