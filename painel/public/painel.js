@@ -1399,6 +1399,16 @@
     ];
     let vezRota = 0;
 
+    // onde cada página estava rolada: o "voltar" do navegador devolve você ao mesmo ponto.
+    // Cada passo do histórico ganha um número; voltar ou avançar cai num passo que já tem número.
+    const rolagens = new Map();
+    function passoDoHistorico() {
+        if (history.state?.painel) return { passo: history.state.painel, novo: false };
+        const passo = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        history.replaceState({ ...(history.state || {}), painel: passo }, "");
+        return { passo, novo: true };
+    }
+
     async function rotear({ manterRolagem = false } = {}) {
         const caminho = location.hash.replace(/^#\/?/, "").replace(/\/$/, "");
         const rota = ROTAS.find(([re]) => re.test(caminho));
@@ -1411,7 +1421,14 @@
         const app = $("#app");
         const minha = ++vezRota;
         const rolagem = window.scrollY;
-        const lento = setTimeout(() => !manterRolagem && app.replaceChildren(h("p", { class: "carregando pagina", role: "status" }, "Carregando…")), 250);
+        const { passo, novo } = passoDoHistorico();
+        // demorou: na primeira abertura aparece "Carregando…"; depois, a página atual fica (meio apagada)
+        // até a nova chegar, em vez de sumir e fazer tudo pular
+        const lento = setTimeout(() => {
+            if (!app.querySelector(".pagina:not(.carregando)")) app.replaceChildren(h("p", { class: "carregando pagina", role: "status" }, "Carregando…"));
+            else document.documentElement.classList.add("carregando");
+            app.setAttribute("aria-busy", "true");
+        }, 250);
         try {
             const conteudo = await abrir(caminho.match(re));
             if (minha !== vezRota) return;
@@ -1421,7 +1438,7 @@
             const secaoAtiva = manterRolagem && ativo?.closest?.("[data-secao]")?.dataset.secao;
             const focoEstavaAqui = ativo === document.body || app.contains(ativo);
             app.replaceChildren(conteudo);
-            window.scrollTo(0, manterRolagem ? rolagem : 0);
+            window.scrollTo(0, manterRolagem ? rolagem : (!novo && rolagens.get(passo)) || 0);
             if (!manterRolagem) {
                 // página nova: o foco vai pro título, e o leitor de tela anuncia onde você está
                 app.querySelector("h1")?.focus({ preventScroll: true });
@@ -1444,7 +1461,11 @@
                 ),
             );
         } finally {
-            clearTimeout(lento);
+            if (minha === vezRota) {
+                clearTimeout(lento);
+                document.documentElement.classList.remove("carregando");
+                app.removeAttribute("aria-busy");
+            }
         }
     }
 
@@ -1507,6 +1528,13 @@
 
     async function iniciar() {
         $("#sair").addEventListener("click", sair);
+        window.addEventListener(
+            "scroll",
+            () => {
+                if (history.state?.painel) rolagens.set(history.state.painel, window.scrollY);
+            },
+            { passive: true },
+        );
         window.addEventListener("hashchange", () => {
             // voltar/avançar do navegador com uma janela aberta: a janela fecha junto com a página
             if ($("#janela").open) $("#janela").close();
