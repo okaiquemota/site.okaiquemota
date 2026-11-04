@@ -56,7 +56,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .palco {
     /* a foto se ajusta à largura e à altura da tela (sobrando lugar pros links);
        a assinatura passa das bordas dela */
-    --w: min(max(230px, 34vw), 480px, calc((var(--alto) - 228px) * 0.63));
+    /* os 268px são o nome, as duas linhas de links (/fotografia e os @) e o rodapé */
+    --w: min(max(230px, 34vw), 480px, calc((var(--alto) - 268px) * 0.63));
     /* até 90vw: girada, a assinatura ainda cabe na largura da tela sem vazar pros lados */
     --assin: min(var(--w) * 1.55, 90vw);
     flex: 1;
@@ -99,6 +100,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .links a { display: inline-flex; align-items: center; min-height: 40px; }
 /* Instagram, GitHub e Behance vão como logo */
 .links .redes { gap: 0 6px; }
+/* o /fotografia vai numa linha só dele, em cima dos @ */
+.links .site { flex-basis: 100%; }
 .redes a { justify-content: center; min-width: 28px; }
 .logo { display: block; width: 17px; height: 17px; fill: currentColor; }
 @media (hover: hover) and (pointer: fine) {
@@ -109,7 +112,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 @media (max-width: 640px) {
     .cidade { display: block; }
     /* foto menor no celular: a assinatura fica uma vez e meia maior que ela, como no computador */
-    .palco { --w: min(58vw, calc((var(--alto) - 330px) * 0.8)); }
+    .palco { --w: min(58vw, calc((var(--alto) - 366px) * 0.8)); }
     .links { flex-direction: column; align-items: center; gap: 0; }
     .links ul { gap: 0 14px; }
     .links a { min-height: 36px; }

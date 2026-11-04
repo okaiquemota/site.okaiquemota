@@ -297,6 +297,7 @@ async function criarSessao(env) {
     return `${base}.${b64url(await hmac(env.SESSAO_SEGREDO, base))}`;
 }
 
+// devolve quando a sessão expira (em segundos) ou false
 async function sessaoValida(request, env) {
     if (!configurado(env)) return false;
     const cookies = request.headers.get("Cookie") || "";
@@ -308,7 +309,7 @@ async function sessaoValida(request, env) {
     if (!/^\d+$/.test(expira) || Number(expira) < Date.now() / 1000) return false;
     if (versao !== (await versaoSenha(env))) return false;
     const esperado = b64url(await hmac(env.SESSAO_SEGREDO, `${expira}.${versao}`));
-    return iguais(codificador.encode(assinatura), codificador.encode(esperado));
+    return iguais(codificador.encode(assinatura), codificador.encode(esperado)) ? Number(expira) : false;
 }
 
 function cookieSessao(valor, segundos) {
@@ -456,13 +457,13 @@ async function resumo(env, url) {
             `SELECT t.id, t.tipo, t.titulo, t.data, t.hora, t.local, t.status, c.id AS cliente_id, c.nome AS cliente
              FROM trabalhos t JOIN clientes c ON c.id = t.cliente_id
              WHERE t.data >= ?1 AND t.status IN ('orcamento', 'confirmado')
-             ORDER BY t.data, t.hora LIMIT 8`,
+             ORDER BY t.data, t.hora LIMIT 60`,
         ).bind(hoje),
         env.DB.prepare(
             `SELECT p.id, p.descricao, p.valor, p.vencimento, t.id AS trabalho_id, t.tipo, t.titulo, t.data, c.nome AS cliente
              FROM pagamentos p JOIN trabalhos t ON t.id = p.trabalho_id JOIN clientes c ON c.id = t.cliente_id
              WHERE p.pago_em IS NULL AND t.status != 'cancelado'
-             ORDER BY p.vencimento IS NULL, p.vencimento LIMIT 8`,
+             ORDER BY p.vencimento IS NULL, p.vencimento LIMIT 60`,
         ),
         env.DB.prepare(
             `SELECT COALESCE(SUM(p.valor), 0) AS aberto,
@@ -475,20 +476,20 @@ async function resumo(env, url) {
             `SELECT t.id, t.tipo, t.titulo, t.data, t.prazo_entrega, t.status, c.nome AS cliente
              FROM trabalhos t JOIN clientes c ON c.id = t.cliente_id
              WHERE t.entregue_em IS NULL AND (t.status = 'edicao' OR (t.status = 'confirmado' AND t.data < ?1))
-             ORDER BY t.prazo_entrega IS NULL, t.prazo_entrega, t.data LIMIT 8`,
+             ORDER BY t.prazo_entrega IS NULL, t.prazo_entrega, t.data LIMIT 60`,
         ).bind(hoje),
         env.DB.prepare(
             `SELECT t.id, t.tipo, t.titulo, t.data, t.contrato, t.autorizacao, c.nome AS cliente
              FROM trabalhos t JOIN clientes c ON c.id = t.cliente_id
              WHERE t.status IN ('confirmado', 'edicao', 'entregue')
                AND (t.contrato IN ('a_enviar', 'enviado') OR t.autorizacao = 'pendente')
-             ORDER BY t.data IS NULL, t.data LIMIT 8`,
+             ORDER BY t.data IS NULL, t.data LIMIT 60`,
         ),
         env.DB.prepare(
             `SELECT k.id, k.titulo, k.data, k.hora, k.feito, k.observacoes, k.cliente_id, k.trabalho_id, c.nome AS cliente
              FROM compromissos k LEFT JOIN clientes c ON c.id = k.cliente_id
              WHERE k.feito = 0 AND k.data <= date(?1, '+14 days')
-             ORDER BY k.data, k.hora LIMIT 8`,
+             ORDER BY k.data, k.hora LIMIT 60`,
         ).bind(hoje),
         env.DB.prepare(
             `SELECT (SELECT COUNT(*) FROM clientes) AS clientes,
@@ -542,7 +543,8 @@ async function agenda(env, url) {
     const fim = new Date(ate + "T00:00:00Z");
     for (const c of nascimentos.results) {
         for (let ano = inicio.getUTCFullYear(); ano <= fim.getUTCFullYear(); ano++) {
-            const dia = `${ano}${c.nascimento.slice(4)}`;
+            let dia = `${ano}${c.nascimento.slice(4)}`;
+            if (!dataValida(dia) && c.nascimento.slice(5) === "02-29") dia = `${ano}-02-28`;
             if (dataValida(dia) && dia >= de && dia <= ate) {
                 aniversarios.push({ id: c.id, dia, cliente_id: c.id, cliente: c.nome, idade: ano - Number(c.nascimento.slice(0, 4)) });
             }
@@ -707,10 +709,17 @@ async function api(request, env, url) {
     if (caminho === "/api/entrar" && metodo === "POST") return entrar(request, env);
     if (caminho === "/api/sair" && metodo === "POST") return json({ ok: true }, 200, { "Set-Cookie": cookieSessao("", 0) });
 
-    if (!(await sessaoValida(request, env))) {
+    const expira = await sessaoValida(request, env);
+    if (!expira) {
         throw new Erro(401, configurado(env) ? "Entre com a senha." : "O painel ainda não tem senha. Veja o README do painel.");
     }
+    const resposta = await rotasComSessao(request, env, url, metodo, caminho);
+    // quem usa o painel não é desconectado no meio do trabalho: faltando menos de 15 dias, a sessão ganha mais 30
+    if (expira - Date.now() / 1000 < 15 * 86400) resposta.headers.append("Set-Cookie", cookieSessao(await criarSessao(env), SESSAO_DIAS * 86400));
+    return resposta;
+}
 
+async function rotasComSessao(request, env, url, metodo, caminho) {
     if (caminho === "/api/sessao") return json({ ok: true });
     if (caminho === "/api/resumo" && metodo === "GET") return resumo(env, url);
     if (caminho === "/api/agenda" && metodo === "GET") return agenda(env, url);

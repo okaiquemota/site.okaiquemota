@@ -12,6 +12,7 @@
     const STATUS = { orcamento: "Orçamento", confirmado: "Confirmado", edicao: "Em edição", entregue: "Entregue", cancelado: "Cancelado" };
     const CLASSE_STATUS = { orcamento: "", confirmado: "cheio", edicao: "", entregue: "apagado", cancelado: "apagado" };
     const CONTRATO = { a_enviar: "A enviar", enviado: "Enviado, falta assinar", assinado: "Assinado", dispensado: "Sem contrato" };
+    const CONTRATO_CURTO = { a_enviar: "A enviar", enviado: "Enviado", assinado: "Assinado", dispensado: "Sem contrato" };
     const AUTORIZACAO = { pendente: "Pendente", sim: "Autorizou", nao: "Não autorizou" };
     const CATEGORIAS = {
         contrato: "Contrato",
@@ -96,6 +97,11 @@
     const dataCurta = (d) => (d ? `${paraData(d).getUTCDate()} ${MESES[paraData(d).getUTCMonth()]}` : "");
     const dataMedia = (d) => (d ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : "");
     const primeiraMaiuscula = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    // o banco guarda a hora em UTC ("2026-11-04T01:30:00Z"); na tela vale o dia daqui (ainda 3/11 às 22h30)
+    function diaDoInstante(instante) {
+        const d = new Date(instante);
+        return Number.isNaN(d.getTime()) ? String(instante).slice(0, 10) : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
 
     function relativo(dia) {
         const n = diasEntre(hoje(), dia);
@@ -202,13 +208,28 @@
     // ---------- Aviso rápido ----------
 
     let avisoTempo;
-    function aviso(mensagem, erro = false) {
+    // desfazer: função que volta atrás (aparece um botão "Desfazer" por alguns segundos)
+    function aviso(mensagem, erro = false, desfazer = null) {
         const el = $("#aviso");
-        el.textContent = mensagem;
+        const botaoDesfazer = desfazer
+            ? h("button", {
+                  type: "button",
+                  class: "aviso-desfazer",
+                  onclick: async () => {
+                      el.classList.remove("mostra");
+                      try {
+                          await desfazer();
+                      } catch (e) {
+                          if (e.status !== 401) aviso(e.message, true);
+                      }
+                  },
+              }, "Desfazer")
+            : null;
+        el.replaceChildren(h("span", null, mensagem), botaoDesfazer);
         el.classList.toggle("erro", erro);
         el.classList.add("mostra");
         clearTimeout(avisoTempo);
-        avisoTempo = setTimeout(() => el.classList.remove("mostra"), erro ? 5000 : 2400);
+        avisoTempo = setTimeout(() => el.classList.remove("mostra"), desfazer ? 8000 : erro ? 6000 : 2600);
     }
 
     // ---------- Janelas ----------
@@ -219,6 +240,16 @@
         const dlg = $("#janela");
         const erro = h("p", { class: "erro-form", role: "alert" });
         const botao = h("button", { type: "submit", class: perigo ? "botao perigo" : "botao" }, enviar);
+        // o que estava preenchido ao abrir: fechar sem salvar só pergunta se algo mudou
+        let inicial = "";
+        let terminou = false;
+        const estado = () => [...form.elements].filter((el) => el.name).map((el) => (el.type === "checkbox" ? el.checked : el.value)).join("\u0001");
+        const fechar = () => {
+            if (terminou || estado() === inicial || window.confirm("Fechar sem salvar? O que você preencheu nesta janela vai se perder.")) {
+                terminou = true;
+                dlg.close();
+            }
+        };
         const form = h(
             "form",
             { class: "janela", novalidate: true },
@@ -226,10 +257,10 @@
                 "div",
                 { class: "janela-topo" },
                 h("h2", { id: "janela-titulo", text: titulo }),
-                h("button", { type: "button", class: "fechar", "aria-label": "Fechar", onclick: () => dlg.close() }, "×"),
+                h("button", { type: "button", class: "fechar", "aria-label": "Fechar", onclick: fechar }, h("span", { "aria-hidden": "true" }, "×")),
             ),
             h("div", { class: "janela-corpo" }, corpo),
-            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: () => dlg.close() }, "Cancelar"), botao),
+            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: fechar }, "Cancelar"), botao),
         );
         form.addEventListener("input", (e) => e.target.removeAttribute?.("aria-invalid"));
         form.addEventListener("submit", async (e) => {
@@ -237,25 +268,45 @@
             const invalidos = [...form.elements].filter((el) => el.willValidate && !el.checkValidity());
             if (invalidos.length) {
                 invalidos.forEach((el) => el.setAttribute("aria-invalid", "true"));
-                erro.textContent = invalidos.some((el) => el.validity.valueMissing) ? "Preencha os campos marcados." : "Confira os campos marcados.";
-                invalidos[0].focus();
+                const primeiro = invalidos[0];
+                const rotulo = (form.querySelector(`label[for="${primeiro.id}"]`)?.textContent || "").replace(/\s*\*\s*$/, "");
+                erro.textContent = primeiro.validity.valueMissing ? `Preencha: ${rotulo}.` : `${rotulo}: ${primeiro.validationMessage}`;
+                primeiro.focus();
                 return;
             }
             botao.disabled = true;
             erro.textContent = "";
             try {
                 const resultado = await aoEnviar(form);
-                if (resultado !== false) dlg.close();
+                if (resultado !== false) {
+                    terminou = true;
+                    dlg.close();
+                }
             } catch (err) {
                 if (err.status !== 401) erro.textContent = err.message;
-                else dlg.close();
+                else {
+                    terminou = true;
+                    dlg.close();
+                }
             } finally {
                 botao.disabled = false;
             }
         });
         dlg.replaceChildren(form);
         if (dlg.open) dlg.close();
+        // Esc (e o "voltar" do Android): mesma regra do Cancelar
+        dlg.onkeydown = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                fechar();
+            }
+        };
+        dlg.oncancel = (e) => {
+            e.preventDefault();
+            fechar();
+        };
         dlg.showModal();
+        inicial = estado();
         const primeiro = form.querySelector(".janela-corpo input:not([type=checkbox]), .janela-corpo select, .janela-corpo textarea");
         if (primeiro && !celular()) primeiro.focus();
         return { dlg, form, erro };
@@ -291,7 +342,10 @@
             return h("div", { class: "campo caixa" + (c.inteira ? " inteira" : "") }, caixa, h("label", { for: id }, c.rotulo));
         }
         let entrada;
-        if (c.tipo === "select") entrada = h("select", comum, c.opcoes.map(([v, r]) => h("option", { value: v }, r)));
+        if (c.tipo === "select") {
+            const opcoes = valor && !c.opcoes.some(([v]) => v === valor) ? [...c.opcoes, [valor, valor]] : c.opcoes;
+            entrada = h("select", comum, opcoes.map(([v, r]) => h("option", { value: v }, r)));
+        }
         else if (c.tipo === "textarea") entrada = h("textarea", { rows: 3, ...comum });
         else if (c.tipo === "dinheiro") entrada = h("input", { ...comum, type: "text", inputmode: "decimal", placeholder: "0,00", autocomplete: "off", dataset: { dinheiro: "1" } });
         else entrada = h("input", { autocomplete: "off", ...comum, type: c.tipo || "text" });
@@ -300,6 +354,7 @@
         else if (c.tipo === "select") entrada.value = valor ?? c.opcoes[0][0];
         else entrada.value = valor ?? "";
 
+        if (c.ajuda) entrada.setAttribute("aria-describedby", id + "-ajuda");
         let lista = null;
         if (c.lista) {
             const idLista = id + "-lista";
@@ -309,10 +364,10 @@
         return h(
             "div",
             { class: "campo" + (c.inteira ? " inteira" : "") },
-            h("label", { for: id }, c.rotulo + (c.obrigatorio ? " *" : "")),
+            h("label", { for: id }, c.rotulo, c.obrigatorio ? h("span", { "aria-hidden": "true" }, " *") : null),
             entrada,
             lista,
-            c.ajuda ? h("span", { class: "ajuda", text: c.ajuda }) : null,
+            c.ajuda ? h("span", { class: "ajuda", id: id + "-ajuda", text: c.ajuda }) : null,
         );
     }
 
@@ -348,9 +403,9 @@
             h(
                 "div",
                 null,
-                voltar ? h("a", { class: "voltar", href: voltar[0] }, "← ", voltar[1]) : null,
+                voltar ? h("a", { class: "voltar", href: voltar[0] }, h("span", { "aria-hidden": "true" }, "← "), voltar[1]) : null,
                 rotulo ? h("p", { class: "rotulo", text: rotulo }) : null,
-                h("h1", { class: "titulo", text: titulo }),
+                h("h1", { class: "titulo", tabindex: "-1", text: titulo }),
                 meta ? h("p", { class: "meta" }, meta) : null,
             ),
             acoes ? h("div", { class: "acoes" }, acoes) : null,
@@ -360,14 +415,18 @@
     function secao(titulo, { acoes, nota, id } = {}, ...conteudo) {
         return h(
             "section",
-            { class: "secao", id },
-            h("div", { class: "secao-topo" }, h("h2", null, titulo, nota ? h("span", { class: "rotulo", text: nota }) : null), acoes ? h("div", { class: "acoes" }, acoes) : null),
+            { class: "secao", id, "data-secao": titulo },
+            h("div", { class: "secao-topo" }, h("h2", { tabindex: "-1" }, titulo, nota ? h("span", { class: "rotulo", text: nota }) : null), acoes ? h("div", { class: "acoes" }, acoes) : null),
             conteudo,
         );
     }
 
     const vazio = (texto) => h("p", { class: "vazio", text: texto });
-    const botao = (texto, onclick, classe = "botao leve pequeno") => h("button", { type: "button", class: classe, onclick }, texto);
+    // contexto: diz pra quem usa leitor de tela do que é o botão ("Editar" → "Editar pagamento Sinal")
+    // data-foco: depois de salvar, o foco volta pro mesmo botão na página redesenhada
+    const botao = (texto, onclick, classe = "botao leve pequeno", contexto = "") =>
+        h("button", { type: "button", class: classe, onclick, "data-foco": `${texto}|${contexto}` }, texto, contexto ? h("span", { class: "visualmente-escondido" }, " " + contexto) : null);
+    const escondido = (texto) => h("span", { class: "visualmente-escondido" }, texto);
     const selo = (texto, classe = "") => h("span", { class: "selo " + classe, text: texto });
     const seloStatus = (s) => selo(STATUS[s] || s, CLASSE_STATUS[s]);
     const externo = (href, texto) => h("a", { class: "link", href, target: "_blank", rel: "noopener noreferrer" }, texto);
@@ -390,6 +449,20 @@
         const partes = [semDia ? null : blocoDia(dia), corpo, lado ? h("div", { class: "item-lado" }, lado) : null];
         const linha = href && !temBotoes ? h("a", { class: "item" + (semDia ? " sem-data" : ""), href }, partes) : h("div", { class: "item" + (semDia ? " sem-data" : "") }, partes);
         return h("li", { class: classe }, linha);
+    }
+
+    // mostra as primeiras linhas e um botão pra ver o resto ali mesmo
+    function listaLimitada(itens, desenhar, limite = 6) {
+        const ul = h("ul", { class: "lista" }, itens.slice(0, limite).map(desenhar));
+        if (itens.length <= limite) return ul;
+        const mais = h("button", { type: "button", class: "botao leve pequeno ver-todos" }, `Ver todos (${itens.length})`);
+        mais.addEventListener("click", () => {
+            const novos = itens.slice(limite).map(desenhar);
+            ul.append(...novos);
+            mais.remove();
+            novos[0].querySelector("a, button, input")?.focus();
+        });
+        return h("div", null, ul, mais);
     }
 
     function ficha(pares) {
@@ -467,10 +540,12 @@
         );
         const el = (n) => corpo.querySelector(`[name="${n}"]`);
         const listaPacotes = corpo.querySelector("datalist");
-        let prazoAutomatico = null;
+        const pacoteDe = (nome) => TODOS_PACOTES.find(([p]) => p.toLowerCase() === String(nome || "").trim().toLowerCase());
+        // se o prazo salvo é o que o pacote daria, ele continua acompanhando a data ao editar
+        let prazoAutomatico = t.data && pacoteDe(t.pacote) && t.prazo_entrega === somarDias(t.data, pacoteDe(t.pacote)[1]) ? t.prazo_entrega : null;
         const atualizarPacotes = () => listaPacotes.replaceChildren(...(PACOTES[el("tipo").value] || TODOS_PACOTES).map(([nome]) => h("option", { value: nome })));
         const calcularPrazo = () => {
-            const pacote = TODOS_PACOTES.find(([nome]) => nome.toLowerCase() === el("pacote").value.trim().toLowerCase());
+            const pacote = pacoteDe(el("pacote").value);
             const data = el("data").value;
             if (!pacote || !data) return;
             if (el("prazo_entrega").value && el("prazo_entrega").value !== prazoAutomatico) return; // você mudou à mão: fica o seu
@@ -479,10 +554,16 @@
         };
         atualizarPacotes();
         el("tipo").addEventListener("change", atualizarPacotes);
+        el("pacote").addEventListener("input", calcularPrazo);
         el("pacote").addEventListener("change", calcularPrazo);
         el("data").addEventListener("change", calcularPrazo);
         el("status").addEventListener("change", () => {
             if (el("status").value === "entregue" && !el("entregue_em").value) el("entregue_em").value = hoje();
+            // saiu de "Entregue": sem isso o trabalho some de "Para entregar"
+            if (el("status").value !== "entregue" && el("entregue_em").value) el("entregue_em").value = "";
+        });
+        el("entregue_em").addEventListener("change", () => {
+            if (el("entregue_em").value && ["confirmado", "edicao"].includes(el("status").value)) el("status").value = "entregue";
         });
 
         abrirJanela({
@@ -601,7 +682,11 @@
     async function marcarPago(p) {
         try {
             await api("pagamentos/" + p.id, { metodo: "PUT", corpo: { pago_em: hoje() } });
-            aviso(`${dinheiro(p.valor)} recebido.`);
+            aviso(`${dinheiro(p.valor)} recebido.`, false, async () => {
+                await api("pagamentos/" + p.id, { metodo: "PUT", corpo: { pago_em: "" } });
+                aviso("Voltou pra a receber.");
+                recarregar();
+            });
             recarregar();
         } catch (e) {
             if (e.status !== 401) aviso(e.message, true);
@@ -630,10 +715,13 @@
 
         const lista = [{ nome: "categoria", rotulo: "O que é", tipo: "select", opcoes: opcoesDe(CATEGORIAS), inteira: !trabalhos }];
         if (trabalhos?.length) lista.push({ nome: "trabalho_id", rotulo: "Trabalho", tipo: "select", opcoes: [["", "Nenhum (só do cliente)"], ...trabalhos.map((t) => [t.id, juntar(nomeTrabalho(t), dataMedia(t.data))])] });
+        const listaArquivos = h("ul", { class: "lista arquivos-novos" });
+        const mostrarArquivos = () => listaArquivos.replaceChildren(...arquivos.map((a) => h("li", { class: "linha-acao" }, h("span", { class: "item-titulo", text: a.name }), h("span", { class: "cinza numero", text: tamanho(a.size) }))));
+        mostrarArquivos();
         const corpo = h(
             "div",
             null,
-            h("ul", { class: "lista arquivos-novos" }, arquivos.map((a) => h("li", { class: "linha-acao" }, h("span", { class: "item-titulo", text: a.name }), h("span", { class: "cinza numero", text: tamanho(a.size) })))),
+            listaArquivos,
             campos(lista, { categoria: categoriaPeloNome(arquivos[0].name), trabalho_id: trabalhoId || "" }),
         );
         abrirJanela({
@@ -643,11 +731,23 @@
             aoEnviar: async (form) => {
                 const { categoria, trabalho_id } = lerCampos(form);
                 const base = form.querySelector('[type="submit"]');
-                for (const [i, a] of arquivos.entries()) {
-                    base.textContent = arquivos.length > 1 ? `Enviando ${i + 1} de ${arquivos.length}…` : "Enviando…";
-                    await api("documentos", { metodo: "POST", params: { cliente_id: clienteId, trabalho_id: trabalho_id || trabalhoId, categoria, nome: a.name }, arquivo: a });
+                const total = arquivos.length;
+                let enviados = 0;
+                try {
+                    while (arquivos.length) {
+                        const a = arquivos[0];
+                        base.textContent = total > 1 ? `Enviando ${enviados + 1} de ${total}…` : "Enviando…";
+                        await api("documentos", { metodo: "POST", params: { cliente_id: clienteId, trabalho_id: trabalho_id || trabalhoId, categoria, nome: a.name }, arquivo: a });
+                        arquivos.shift();
+                        enviados++;
+                    }
+                } catch (e) {
+                    base.textContent = "Enviar";
+                    mostrarArquivos();
+                    if (enviados) recarregar();
+                    throw new Error(`${enviados ? `${enviados} ${enviados === 1 ? "arquivo foi guardado" : "arquivos foram guardados"}. ` : ""}Não deu pra enviar “${arquivos[0].name}”: ${e.message}`);
                 }
-                aviso(arquivos.length > 1 ? "Arquivos guardados." : "Arquivo guardado.");
+                aviso(total > 1 ? "Arquivos guardados." : "Arquivo guardado.");
                 recarregar();
             },
         });
@@ -713,13 +813,13 @@
                                   "div",
                                   { class: "item-corpo" },
                                   h("a", { class: "item-titulo link", href: "/api/documentos/" + d.id, target: "_blank", rel: "noopener" }, d.nome),
-                                  h("span", { class: "item-info" }, juntar(CATEGORIAS[d.categoria], !trabalhoId ? nomeDoTrabalho(d.trabalho_id) : null, tamanho(d.tamanho), "enviado em " + dataMedia(d.criado_em.slice(0, 10)))),
+                                  h("span", { class: "item-info" }, juntar(CATEGORIAS[d.categoria], !trabalhoId ? nomeDoTrabalho(d.trabalho_id) : null, tamanho(d.tamanho), "enviado em " + dataMedia(diaDoInstante(d.criado_em)))),
                               ),
                               h(
                                   "div",
                                   { class: "acoes" },
-                                  h("a", { class: "botao leve pequeno", href: `/api/documentos/${d.id}?baixar=1` }, "Baixar"),
-                                  botao("Editar", () => formDocumento(d, trabalhos)),
+                                  h("a", { class: "botao leve pequeno", href: `/api/documentos/${d.id}?baixar=1` }, "Baixar", escondido(" " + d.nome)),
+                                  botao("Editar", () => formDocumento(d, trabalhos), undefined, d.nome),
                                   botao("Apagar", async () => {
                                       if (await confirmar("Apagar arquivo", `Apagar “${d.nome}”? O arquivo sai do armazenamento e não dá pra recuperar.`)) {
                                           try {
@@ -730,7 +830,7 @@
                                               if (e.status !== 401) aviso(e.message, true);
                                           }
                                       }
-                                  }),
+                                  }, undefined, d.nome),
                               ),
                           ),
                       ),
@@ -753,23 +853,23 @@
 
     function linhaCompromisso(k, h0, comCliente = false) {
         const atrasado = !k.feito && k.data < h0;
-        const caixa = h("input", { type: "checkbox", "aria-label": "Feito", onchange: (e) => alternarCompromisso(k, e.target.checked) });
+        const caixa = h("input", { type: "checkbox", class: "caixa-feito", "aria-label": `Feito: ${k.titulo}`, "data-foco": "feito|" + k.id, onchange: (e) => alternarCompromisso(k, e.target.checked) });
         caixa.checked = Boolean(k.feito);
         return h(
             "li",
             { class: "linha-acao" + (k.feito ? " feito" : "") },
             h(
-                "label",
+                "div",
                 { class: "marcar" },
                 caixa,
                 h(
                     "span",
                     { class: "item-corpo" },
                     h("span", { class: "item-titulo", text: k.titulo }),
-                    h("span", { class: "item-info" + (atrasado ? " atrasado" : "") }, juntar(dataCurta(k.data), k.hora, k.feito ? "feito" : relativo(k.data), comCliente ? k.cliente : null)),
+                    h("span", { class: "item-info" + (atrasado ? " atrasado" : "") }, juntar(dataCurta(k.data), k.hora, k.feito ? "feito" : atrasado ? `atrasado, era ${relativo(k.data)}` : relativo(k.data), comCliente ? k.cliente : null)),
                 ),
             ),
-            h("div", { class: "acoes" }, botao("Editar", () => formCompromisso(k))),
+            h("div", { class: "acoes" }, botao("Editar", () => formCompromisso(k), undefined, k.titulo)),
         );
     }
 
@@ -777,6 +877,7 @@
 
     async function paginaInicio() {
         const r = await api("resumo", { params: { hoje: hoje() } });
+        document.title = "Início · Painel";
         const h0 = r.hoje;
         const horaAgora = new Date().getHours();
         const saudacao = horaAgora < 5 ? "Boa noite" : horaAgora < 12 ? "Bom dia" : horaAgora < 18 ? "Boa tarde" : "Boa noite";
@@ -802,40 +903,32 @@
             "Próximos trabalhos",
             {},
             r.proximos.length
-                ? h(
-                      "ul",
-                      { class: "lista" },
-                      r.proximos.map((t) =>
-                          item({
-                              href: "#/trabalhos/" + t.id,
-                              dia: t.data,
-                              titulo: nomeTrabalho(t),
-                              info: juntar(t.cliente, t.hora, t.local),
-                              lado: [seloStatus(t.status), h("span", { class: "item-info", text: relativo(t.data) })],
-                          }),
-                      ),
+                ? listaLimitada(r.proximos, (t) =>
+                      item({
+                          href: "#/trabalhos/" + t.id,
+                          dia: t.data,
+                          titulo: nomeTrabalho(t),
+                          info: juntar(t.cliente, t.hora, t.local),
+                          lado: [seloStatus(t.status), h("span", { class: "item-info", text: relativo(t.data) })],
+                      }),
                   )
                 : vazio("Nenhum trabalho marcado daqui pra frente."),
         );
 
         const receber = secao(
             "A receber",
-            { nota: r.totais.quantos > r.receber.length ? `${r.receber.length} de ${r.totais.quantos}` : null },
+            {},
             r.receber.length
-                ? h(
-                      "ul",
-                      { class: "lista" },
-                      r.receber.map((p) => {
-                          const vencido = p.vencimento && p.vencimento < h0;
-                          return item({
-                              href: "#/trabalhos/" + p.trabalho_id,
-                              dia: p.vencimento,
-                              titulo: `${p.descricao} · ${p.cliente}`,
-                              info: h("span", { class: vencido ? "atrasado" : null }, juntar(nomeTrabalho(p), p.vencimento ? (vencido ? `venceu ${relativo(p.vencimento)}` : `vence ${relativo(p.vencimento)}`) : "sem vencimento")),
-                              lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p))],
-                          });
-                      }),
-                  )
+                ? listaLimitada(r.receber, (p) => {
+                      const vencido = p.vencimento && p.vencimento < h0;
+                      return item({
+                          href: "#/trabalhos/" + p.trabalho_id,
+                          dia: p.vencimento,
+                          titulo: `${p.descricao} · ${p.cliente}`,
+                          info: h("span", { class: vencido ? "atrasado" : null }, juntar(nomeTrabalho(p), p.vencimento ? (vencido ? `venceu ${relativo(p.vencimento)}` : `vence ${relativo(p.vencimento)}`) : "sem vencimento")),
+                          lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p), undefined, `${p.descricao} de ${p.cliente}, ${dinheiro(p.valor)}`)],
+                      });
+                  })
                 : vazio("Nada em aberto."),
         );
 
@@ -843,24 +936,17 @@
             "Para entregar",
             {},
             r.entregas.length
-                ? h(
-                      "ul",
-                      { class: "lista" },
-                      r.entregas.map((t) => {
-                          const atrasado = t.prazo_entrega && t.prazo_entrega < h0;
-                          return item({
-                              href: "#/trabalhos/" + t.id,
-                              dia: t.prazo_entrega,
-                              titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
-                              info: h(
-                                  "span",
-                                  { class: atrasado ? "atrasado" : null },
-                                  juntar(t.prazo_entrega ? (atrasado ? `atrasado, o prazo era ${relativo(t.prazo_entrega)}` : `entregar ${relativo(t.prazo_entrega)}`) : "sem prazo", t.data ? `fotografado em ${dataMedia(t.data)}` : null),
-                              ),
-                              lado: seloStatus(t.status),
-                          });
-                      }),
-                  )
+                ? listaLimitada(r.entregas, (t) => {
+                      const atrasado = t.prazo_entrega && t.prazo_entrega < h0;
+                      const prazo = !t.prazo_entrega ? "sem prazo" : atrasado ? `atrasado, o prazo era ${relativo(t.prazo_entrega) === "ontem" ? "ontem" : dataMedia(t.prazo_entrega)}` : `entregar ${relativo(t.prazo_entrega)}`;
+                      return item({
+                          href: "#/trabalhos/" + t.id,
+                          dia: t.prazo_entrega,
+                          titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
+                          info: h("span", { class: atrasado ? "atrasado" : null }, juntar(prazo, t.data ? `fotografado em ${dataMedia(t.data)}` : null)),
+                          lado: seloStatus(t.status),
+                      });
+                  })
                 : vazio("Nenhuma entrega pendente."),
         );
 
@@ -868,21 +954,17 @@
             "Pendências",
             {},
             r.pendencias.length
-                ? h(
-                      "ul",
-                      { class: "lista" },
-                      r.pendencias.map((t) =>
-                          item({
-                              href: "#/trabalhos/" + t.id,
-                              semDia: true,
-                              titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
-                              info: juntar(
-                                  t.contrato === "a_enviar" ? "contrato a enviar" : t.contrato === "enviado" ? "contrato enviado, falta assinar" : null,
-                                  t.autorizacao === "pendente" ? "autorização de imagem pendente" : null,
-                              ),
-                              lado: t.data ? h("span", { class: "item-info", text: dataCurta(t.data) }) : null,
-                          }),
-                      ),
+                ? listaLimitada(r.pendencias, (t) =>
+                      item({
+                          href: "#/trabalhos/" + t.id,
+                          semDia: true,
+                          titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
+                          info: juntar(
+                              t.contrato === "a_enviar" ? "contrato a enviar" : t.contrato === "enviado" ? "contrato enviado, falta assinar" : null,
+                              t.autorizacao === "pendente" ? "autorização de imagem pendente" : null,
+                          ),
+                          lado: t.data ? h("span", { class: "item-info", text: dataCurta(t.data) }) : null,
+                      }),
                   )
                 : vazio("Contratos e autorizações em dia."),
         );
@@ -890,14 +972,14 @@
         const compromissos = secao(
             "Compromissos",
             { nota: "próximos 14 dias", acoes: [botao("Novo compromisso", () => formCompromisso(null))] },
-            r.compromissos.length ? h("ul", { class: "lista" }, r.compromissos.map((k) => linhaCompromisso(k, h0, true))) : vazio("Nada marcado pros próximos dias."),
+            r.compromissos.length ? listaLimitada(r.compromissos, (k) => linhaCompromisso(k, h0, true)) : vazio("Nada marcado pros próximos dias."),
         );
 
         return pagina(
             cabeca({
                 rotulo: primeiraMaiuscula(fSemana.format(paraData(h0))),
                 titulo: `${saudacao}, Kaique.`,
-                acoes: [h("button", { type: "button", class: "botao", onclick: () => formCliente(null) }, "Novo cliente")],
+                acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")],
             }),
             numeros,
             h("div", { class: "duas" }, proximos, receber, entregas, pendencias),
@@ -921,7 +1003,8 @@
 
     async function paginaClientes() {
         const lista = h("ul", { class: "lista" });
-        const contagem = h("p", { class: "rotulo contagem" });
+        document.title = "Clientes · Painel";
+        const contagem = h("p", { class: "rotulo contagem", role: "status" });
         const busca = h("input", { type: "search", placeholder: "Buscar por nome, telefone, e-mail, CPF ou Instagram", "aria-label": "Buscar clientes", value: ultimaBusca, autocomplete: "off" });
         let vez = 0;
 
@@ -954,7 +1037,7 @@
         await carregar();
 
         return pagina(
-            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao", onclick: () => formCliente(null) }, "Novo cliente")] }),
+            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")] }),
             h("div", { class: "busca" }, busca),
             contagem,
             lista,
@@ -1011,14 +1094,14 @@
                 voltar: ["#/clientes", "Clientes"],
                 titulo: c.nome,
                 meta: contatos.length ? h("span", { class: "contatos" }, contatos) : null,
-                acoes: [botao("Editar", () => formCliente(c), "botao leve"), h("button", { type: "button", class: "botao", onclick: () => formTrabalho(null, c.id) }, "Novo trabalho")],
+                acoes: [botao("Editar", () => formCliente(c), "botao leve", "cliente"), h("button", { type: "button", class: "botao", "data-foco": "novo-trabalho", onclick: () => formTrabalho(null, c.id) }, "Novo trabalho")],
             }),
             secao("Trabalhos", { nota: trabalhos.length ? String(trabalhos.length) : null }, listaTrabalhos),
             secaoCompromissos(compromissos, { clienteId: c.id }),
             secaoDocumentos(documentos, { clienteId: c.id, trabalhos }),
             secao(
                 "Dados",
-                { acoes: [botao("Editar", () => formCliente(c))] },
+                { acoes: [botao("Editar", () => formCliente(c), undefined, "dados do cliente")] },
                 ficha([
                     ["WhatsApp", telefoneBonito(c.telefone)],
                     ["E-mail", c.email],
@@ -1028,7 +1111,7 @@
                     ["Nascimento", c.nascimento ? `${dataMedia(c.nascimento)}${anos !== null ? ` (${anos} anos)` : ""}` : null],
                     ["Cidade", c.cidade],
                     ["Como conheceu", c.origem],
-                    ["Cliente desde", dataMedia(c.criado_em.slice(0, 10))],
+                    ["Cliente desde", dataMedia(diaDoInstante(c.criado_em))],
                     ["Endereço", c.endereco, true],
                     c.observacoes ? ["Observações", c.observacoes, true] : null,
                 ]),
@@ -1050,6 +1133,8 @@
         async function mudar(campo, valor) {
             const corpo = { [campo]: valor };
             if (campo === "status" && valor === "entregue" && !t.entregue_em) corpo.entregue_em = h0;
+            // voltou de "Entregue": sem isso o trabalho some de "Para entregar"
+            if (campo === "status" && valor !== "entregue" && t.entregue_em) corpo.entregue_em = "";
             try {
                 await api("trabalhos/" + t.id, { metodo: "PUT", corpo });
                 aviso("Salvo.");
@@ -1058,7 +1143,15 @@
                 if (e.status !== 401) aviso(e.message, true);
             }
         }
-        const seletor = (campo, opcoes) => h("select", { "aria-label": campo, value: t[campo], onchange: (e) => mudar(campo, e.target.value) }, opcoesDe(opcoes).map(([v, r]) => h("option", { value: v }, r)));
+        // um clique muda e salva; o atual fica marcado (aria-pressed)
+        const escolhas = (campo, rotulo, opcoes) =>
+            h(
+                "div",
+                { class: "escolhas", role: "group", "aria-label": rotulo },
+                opcoesDe(opcoes).map(([v, r]) =>
+                    h("button", { type: "button", class: "escolha", "aria-pressed": String(t[campo] === v), "data-foco": `escolha|${campo}|${v}`, onclick: () => t[campo] !== v && mudar(campo, v) }, r),
+                ),
+            );
 
         const prazoTexto = t.prazo_entrega
             ? h("span", { class: !t.entregue_em && t.prazo_entrega < h0 && ["confirmado", "edicao"].includes(t.status) ? "atrasado" : null }, `${dataMedia(t.prazo_entrega)}${!t.entregue_em ? ` (${relativo(t.prazo_entrega)})` : ""}`)
@@ -1079,7 +1172,7 @@
                     h("span", { class: "item-titulo" }, p.descricao, " ", p.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(p.pago_em ? `pago em ${dataMedia(p.pago_em)}` : p.vencimento ? `vence em ${dataMedia(p.vencimento)} (${relativo(p.vencimento)})` : "sem vencimento", p.forma)),
                 ),
-                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p)) : null, botao("Editar", () => formPagamento(p))),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), undefined, `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
             );
         });
 
@@ -1116,12 +1209,12 @@
                 rotulo: juntar(t.tipo, t.pacote),
                 titulo: nomeTrabalho(t),
                 meta: t.data ? juntar(primeiraMaiuscula(dataLonga(t.data)), t.hora, t.local) : juntar("Sem data", t.local),
-                acoes: [seloStatus(t.status), botao("Editar", () => formTrabalho(t), "botao leve")],
+                acoes: [seloStatus(t.status), botao("Editar", () => formTrabalho(t), "botao leve", "trabalho")],
             }),
             ficha([
-                ["Situação", seletor("status", STATUS)],
-                ["Contrato", seletor("contrato", CONTRATO)],
-                ["Autorização de imagem", seletor("autorizacao", AUTORIZACAO)],
+                ["Situação", escolhas("status", "Situação", STATUS), true],
+                ["Contrato", escolhas("contrato", "Contrato", CONTRATO_CURTO), true],
+                ["Autorização de imagem", escolhas("autorizacao", "Autorização de imagem", AUTORIZACAO), true],
                 ["Cliente", h("a", { class: "link", href: "#/clientes/" + c.id }, c.nome)],
                 ["Valor", t.valor ? dinheiro(t.valor) : null],
                 ["Falta receber", t.valor ? h("span", { class: "numero" }, dinheiro(falta)) : null],
@@ -1164,6 +1257,7 @@
         const de = `${mes}-01`;
         const ate = `${mes}-${pad(new Date(Date.UTC(ano, m, 0)).getUTCDate())}`;
         const r = await api("agenda", { params: { de, ate } });
+        document.title = "Agenda · Painel";
         const vizinho = (n) => {
             const d = new Date(Date.UTC(ano, m - 1 + n, 1));
             return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}`;
@@ -1198,10 +1292,13 @@
             listaDias.querySelectorAll(".destaque").forEach((el) => el.classList.remove("destaque"));
             alvo.classList.add("destaque");
             alvo.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+            // o foco vai junto, pra quem usa teclado continuar dali
+            alvo.querySelector("h3")?.focus({ preventScroll: true });
         }
 
         // a grade do mês, de domingo a sábado
-        const grade = h("div", { class: "calendario", role: "grid", "aria-label": "Calendário" }, SEMANA.map((s) => h("div", { class: "sem-nome", role: "columnheader" }, s)));
+        // a grade é um resumo pra quem vê; a lista embaixo tem tudo (e é o que o leitor de tela lê)
+        const grade = h("div", { class: "calendario" }, SEMANA.map((s) => h("div", { class: "sem-nome", "aria-hidden": "true" }, s)));
         const inicioGrade = new Date(Date.UTC(ano, m - 1, 1));
         inicioGrade.setUTCDate(1 - inicioGrade.getUTCDay());
         const fimGrade = paraData(ate);
@@ -1225,8 +1322,8 @@
             ];
             grade.append(
                 coisas.length
-                    ? h("button", { type: "button", class: classe, "aria-label": rotuloDia, onclick: () => irPara(dia) }, conteudo)
-                    : h("button", { type: "button", class: classe, "aria-label": rotuloDia + ", marcar compromisso", onclick: () => formCompromisso(null, { data: dia }) }, conteudo),
+                    ? h("button", { type: "button", class: classe, "aria-label": `${rotuloDia}. Ver na lista`, onclick: () => irPara(dia) }, conteudo)
+                    : h("div", { class: classe + " vazio-dia", "aria-hidden": "true" }, conteudo),
             );
         }
 
@@ -1237,7 +1334,7 @@
                       h(
                           "section",
                           { class: "dia-lista", id: "dia-" + dia },
-                          h("h3", null, primeiraMaiuscula(fDiaSemana.format(paraData(dia))), dia === h0 ? h("span", { class: "rotulo hoje-rotulo" }, "hoje") : null),
+                          h("h3", { tabindex: "-1" }, primeiraMaiuscula(fDiaSemana.format(paraData(dia))), dia === h0 ? h("span", { class: "rotulo hoje-rotulo" }, "hoje") : null),
                           h(
                               "ul",
                               { class: "lista" },
@@ -1256,16 +1353,16 @@
                           ),
                       ),
                   )
-                : [vazio("Nada neste mês. Toque num dia do calendário pra marcar um compromisso.")]),
+                : [vazio("Nada marcado neste mês.")]),
         );
 
         const titulo = primeiraMaiuscula(fMes.format(paraData(de)));
         const nav = h(
             "div",
             { class: "mes" },
-            h("a", { class: "seta", href: "#/agenda/" + vizinho(-1), "aria-label": "Mês anterior" }, "‹"),
-            h("h2", null, titulo),
-            h("a", { class: "seta", href: "#/agenda/" + vizinho(1), "aria-label": "Próximo mês" }, "›"),
+            h("a", { class: "seta", href: "#/agenda/" + vizinho(-1), "aria-label": "Mês anterior", "data-foco": "mes-anterior" }, h("span", { "aria-hidden": "true" }, "‹")),
+            h("h2", { "aria-live": "polite" }, titulo),
+            h("a", { class: "seta", href: "#/agenda/" + vizinho(1), "aria-label": "Próximo mês", "data-foco": "mes-seguinte" }, h("span", { "aria-hidden": "true" }, "›")),
         );
 
         if (mes === h0.slice(0, 7) && porDia[h0]) requestAnimationFrame(() => document.getElementById("dia-" + h0)?.classList.add("destaque"));
@@ -1273,7 +1370,7 @@
         return pagina(
             cabeca({
                 titulo: "Agenda",
-                acoes: [mes !== h0.slice(0, 7) ? h("a", { class: "botao leve", href: "#/agenda" }, "Hoje") : null, h("button", { type: "button", class: "botao", onclick: () => formCompromisso(null) }, "Novo compromisso")],
+                acoes: [mes !== h0.slice(0, 7) ? h("a", { class: "botao leve", href: "#/agenda" }, "Hoje") : null, h("button", { type: "button", class: "botao", "data-foco": "novo-compromisso", onclick: () => formCompromisso(null) }, "Novo compromisso")],
             }),
             nav,
             h(
@@ -1314,16 +1411,32 @@
         const app = $("#app");
         const minha = ++vezRota;
         const rolagem = window.scrollY;
-        const lento = setTimeout(() => !manterRolagem && app.replaceChildren(h("p", { class: "carregando pagina" }, "Carregando…")), 250);
+        const lento = setTimeout(() => !manterRolagem && app.replaceChildren(h("p", { class: "carregando pagina", role: "status" }, "Carregando…")), 250);
         try {
-            document.title = "Painel · Kaique Mota";
             const conteudo = await abrir(caminho.match(re));
             if (minha !== vezRota) return;
+            // onde estava o foco antes de redesenhar (o botão que foi usado, ou a seção dele)
+            const ativo = document.activeElement;
+            const chave = manterRolagem && ativo?.closest?.("[data-foco]")?.dataset.foco;
+            const secaoAtiva = manterRolagem && ativo?.closest?.("[data-secao]")?.dataset.secao;
+            const focoEstavaAqui = ativo === document.body || app.contains(ativo);
             app.replaceChildren(conteudo);
             window.scrollTo(0, manterRolagem ? rolagem : 0);
-            if (!manterRolagem) app.focus({ preventScroll: true });
+            if (!manterRolagem) {
+                // página nova: o foco vai pro título, e o leitor de tela anuncia onde você está
+                app.querySelector("h1")?.focus({ preventScroll: true });
+            } else if (focoEstavaAqui) {
+                const porChave = chave && [...app.querySelectorAll("[data-foco]")].find((el) => el.dataset.foco === chave);
+                const porSecao = secaoAtiva && [...app.querySelectorAll("[data-secao]")].find((el) => el.dataset.secao === secaoAtiva)?.querySelector("h2");
+                (porChave || porSecao || app.querySelector("h1"))?.focus({ preventScroll: true });
+            }
         } catch (e) {
             if (minha !== vezRota || e.status === 401) return;
+            if (manterRolagem) {
+                // falhou só o redesenho depois de salvar: a página fica, e avisa
+                aviso(e.message, true);
+                return;
+            }
             app.replaceChildren(
                 pagina(
                     h("p", { class: "vazio", text: e.status === 404 ? "Isso não existe mais (pode ter sido apagado)." : e.message }),
@@ -1378,7 +1491,7 @@
             }
         });
         $("#app").replaceChildren(
-            h("div", { class: "entrar" }, h("img", { src: "assinatura.svg", alt: "Assinatura do Kaique Mota", width: 200, height: 213 }), h("p", { class: "rotulo" }, "Painel"), form),
+            h("div", { class: "entrar" }, h("img", { src: "assinatura.svg", alt: "Assinatura do Kaique Mota", width: 200, height: 213 }), h("h1", { class: "rotulo" }, "Painel"), form),
         );
         senha.focus();
     }
@@ -1394,13 +1507,29 @@
 
     async function iniciar() {
         $("#sair").addEventListener("click", sair);
-        window.addEventListener("hashchange", () => rotear());
+        window.addEventListener("hashchange", () => {
+            // voltar/avançar do navegador com uma janela aberta: a janela fecha junto com a página
+            if ($("#janela").open) $("#janela").close();
+            rotear();
+        });
+        // arquivo solto fora da área de envio: o navegador abriria o arquivo e sairia do painel
+        window.addEventListener("dragover", (e) => {
+            if (!e.target.closest?.(".soltar")) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "none";
+            }
+        });
+        window.addEventListener("drop", (e) => {
+            if (!e.target.closest?.(".soltar")) e.preventDefault();
+        });
         try {
             await api("sessao");
             $("#topo").hidden = false;
             await rotear();
         } catch (e) {
-            if (e.status !== 401) $("#app").replaceChildren(pagina(h("p", { class: "vazio", text: e.message })));
+            if (e.status !== 401) {
+                $("#app").replaceChildren(pagina(h("p", { class: "vazio", text: e.message }), h("button", { type: "button", class: "botao leve", onclick: () => location.reload() }, "Tentar de novo")));
+            }
         }
     }
 
