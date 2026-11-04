@@ -1,11 +1,14 @@
 // -------------------------------------------------------------------------
 // Painel do Kaique Mota: clientes, trabalhos, pagamentos, documentos e datas.
-// Um Worker da Cloudflare só: serve as páginas (public/) e a API (/api/*).
+// Um Worker da Cloudflare só: serve as páginas (public/, empacotadas em src/arquivos.gerado.js)
+// e a API (/api/*).
 // Banco: D1 (env.DB). Arquivos: R2 (env.ARQUIVOS).
 // Segredos (configurados na Cloudflare, nunca no código):
 //   PAINEL_SENHA   a senha de entrar
 //   SESSAO_SEGREDO assina o cookie da sessão (gerado sozinho no publicar)
 // -------------------------------------------------------------------------
+
+import PUBLICOS from "./arquivos.gerado.js"; // public/ empacotado (scripts/empacotar.mjs)
 
 const SESSAO_DIAS = 30;
 const COOKIE = "__Host-sessao";
@@ -66,14 +69,28 @@ function json(dados, status = 200, extra = {}) {
     });
 }
 
-function comSeguranca(resposta, html) {
-    const r = new Response(resposta.body, resposta);
-    for (const [k, v] of Object.entries(SEGURANCA)) r.headers.set(k, v);
-    if (html) {
-        r.headers.set("Content-Security-Policy", CSP);
-        r.headers.set("Cache-Control", "no-cache");
+// páginas, CSS, JS, fontes e ícones (de public/), com ETag pra o navegador não baixar de novo o que não mudou
+const bytesPublicos = new Map();
+function servirPublico(request, url) {
+    const caminho = url.pathname === "/" ? "/index.html" : url.pathname;
+    const arquivo = Object.hasOwn(PUBLICOS, caminho) ? PUBLICOS[caminho] : null;
+    if (!arquivo) return new Response("Não encontrado.", { status: 404, headers: { ...SEGURANCA, "Content-Type": "text/plain; charset=utf-8" } });
+    const html = arquivo.tipo.startsWith("text/html");
+    const headers = {
+        ...SEGURANCA,
+        "Content-Type": arquivo.tipo,
+        ETag: arquivo.etag,
+        // fontes e ícones quase nunca mudam; o resto o navegador confere a cada vez (pelo ETag)
+        "Cache-Control": /^(font|image\/png)/.test(arquivo.tipo) ? "public, max-age=604800" : "no-cache",
+    };
+    if (html) headers["Content-Security-Policy"] = CSP;
+    if (request.headers.get("If-None-Match") === arquivo.etag) return new Response(null, { status: 304, headers });
+    let bytes = bytesPublicos.get(caminho);
+    if (!bytes) {
+        bytes = Uint8Array.from(atob(arquivo.b64), (c) => c.charCodeAt(0));
+        bytesPublicos.set(caminho, bytes);
     }
-    return r;
+    return new Response(request.method === "HEAD" ? null : bytes, { headers });
 }
 
 // ---------- Utilidades ----------
@@ -737,8 +754,6 @@ export default {
             }
         }
         if (request.method !== "GET" && request.method !== "HEAD") return new Response("Método não aceito.", { status: 405, headers: SEGURANCA });
-        const resposta = await env.ASSETS.fetch(request);
-        const tipo = resposta.headers.get("Content-Type") || "";
-        return comSeguranca(resposta, tipo.includes("text/html"));
+        return servirPublico(request, url);
     },
 };

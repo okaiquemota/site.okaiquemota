@@ -8,11 +8,11 @@
     "compatibility_date": "2026-09-01",
     "workers_dev": true,
     "preview_urls": false,
-    "assets": {
-        "directory": "./public",
-        "binding": "ASSETS",
-        // tudo passa pelo worker primeiro, pra levar os cabeçalhos de segurança
-        "run_worker_first": true
+    // as páginas de public/ vão dentro do código: antes de rodar ou publicar, o wrangler
+    // junta tudo em src/arquivos.gerado.js (e refaz quando algo em public/ muda)
+    "build": {
+        "command": "node scripts/empacotar.mjs",
+        "watch_dir": "public"
     },
     "d1_databases": [
         {

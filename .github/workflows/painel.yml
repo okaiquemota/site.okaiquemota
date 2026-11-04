@@ -1,5 +1,5 @@
 # Publica o painel (pasta painel/) na Cloudflare a cada mudança nele na main.
-# Precisa dos segredos CLOUDFLARE_API_TOKEN e PAINEL_SENHA (veja painel/README.md).
+# Precisa do segredo CLOUDFLARE_API_TOKEN; PAINEL_SENHA é opcional (veja painel/README.md).
 name: Publicar o painel
 
 on:

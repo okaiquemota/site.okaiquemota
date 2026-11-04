@@ -2,6 +2,8 @@
 
 O painel de gestão dos clientes da fotografia: cadastro, trabalhos, pagamentos, contratos e documentos, compromissos e agenda. Fica só pra você, atrás de senha, e não aparece no site nem no Google.
 
+Fica em **https://painel-okaiquemota.okaiquemota.workers.dev**.
+
 Roda na Cloudflare, na sua conta: um Worker (o site e a API), um banco D1 (os dados) e um R2 (os arquivos). Tudo no plano gratuito, que não pausa por falta de uso. O GitHub Pages não publica esta pasta (veja o `_config.yml` na raiz).
 
 ## O que tem
@@ -15,23 +17,25 @@ Roda na Cloudflare, na sua conta: um Worker (o site e a API), um banco D1 (os da
 
 No celular, abra o endereço no Safari ou no Chrome e use "Adicionar à Tela de Início": vira um app com a assinatura de ícone.
 
-## Publicar pela primeira vez
+## Definir a senha
 
-1. **Cloudflare, ativar o R2**: no painel da Cloudflare, menu *R2 Object Storage*, ative o R2. Ele pede um cartão, mas é grátis até 10 GB.
-2. **Cloudflare, criar o token**: *My Profile → API Tokens → Create Token*, modelo **Edit Cloudflare Workers**. Em *Permissions*, clique em *+ Add more* e acrescente **Account · D1 · Edit**. Em *Account Resources*, escolha a sua conta. Crie e copie o token.
-3. **GitHub, guardar os segredos**: no repositório `site.okaiquemota`, *Settings → Secrets and variables → Actions → New repository secret*. Crie dois:
-   - `CLOUDFLARE_API_TOKEN`: o token do passo 2.
-   - `PAINEL_SENHA`: a senha do painel, com pelo menos 10 caracteres (uma frase longa é ótima).
-4. **Publicar**: depois que esta pasta estiver na `main`, vá em *Actions → Publicar o painel → Run workflow*. Daí pra frente ele publica sozinho a cada mudança na pasta `painel/`.
-5. **Abrir**: o endereço aparece no fim do log do Actions (`https://painel-okaiquemota.<seu-subdominio>.workers.dev`). Também está na Cloudflare, em *Workers e Pages → painel-okaiquemota*.
+O painel já está publicado, mas só abre depois que tiver senha. Na Cloudflare: *Compute → Workers e Pages → painel-okaiquemota → Settings → Variables and Secrets → + Add*. Em *Type* escolha **Secret**, em *Variable name* escreva `PAINEL_SENHA` e em *Value* a senha (pelo menos 10 caracteres; uma frase longa é ótima). Salve com **Deploy**.
 
-O banco (`painel-okaiquemota`, no D1) já está criado na sua conta, e o id dele está no `wrangler.jsonc`. As tabelas, o lugar dos arquivos no R2 e a chave das sessões são criados na primeira publicação.
+## Publicar mudanças
+
+O banco (`painel-okaiquemota`, no D1), o lugar dos arquivos (`painel-okaiquemota`, no R2) e a chave das sessões já estão na sua conta. Publicar de novo só manda o código e aplica as tabelas novas que houver em `migrations/`. Os dados e a senha ficam como estão.
+
+- **Por uma sessão do Claude Code**: o token da Cloudflare está salvo no ambiente "Padrão", então é só pedir "publica o painel". Por baixo, é `CLOUDFLARE_API_TOKEN=proxy-injected npm run publicar` dentro de `painel/`.
+- **Pelo GitHub (sozinho, a cada mudança na `main`)**: no repositório, *Settings → Secrets and variables → Actions → New repository secret*, crie `CLOUDFLARE_API_TOKEN` com o token da Cloudflare (modelo *Edit Cloudflare Workers* + *Account · D1 · Edit*). Daí pra frente, cada mudança na pasta `painel/` que chegar na `main` é publicada pelo workflow *Publicar o painel*. Se criar também o segredo `PAINEL_SENHA` lá, cada publicação regrava a senha com ele.
+- **Pelo computador**: `npx wrangler login` (uma vez) e `npm run publicar`.
+
+As páginas (`public/`) vão dentro do código do Worker: antes de rodar ou publicar, o wrangler roda `scripts/empacotar.mjs`, que junta tudo em `src/arquivos.gerado.js` (esse arquivo é gerado, não vai pro Git).
 
 ## Trocar a senha
 
-Mude o segredo `PAINEL_SENHA` no GitHub e rode *Actions → Publicar o painel* de novo. Trocar a senha desconecta todos os aparelhos.
+No mesmo lugar onde ela foi criada: *Workers e Pages → painel-okaiquemota → Settings → Variables and Secrets*, no segredo `PAINEL_SENHA`. Trocar a senha desconecta todos os aparelhos.
 
-Também dá pra trocar direto na Cloudflare: *Workers e Pages → painel-okaiquemota → Settings → Variables and Secrets*, no segredo `PAINEL_SENHA`. Nesse caso, mude também no GitHub, senão a próxima publicação volta a senha antiga.
+Se você tiver criado o segredo `PAINEL_SENHA` também no GitHub, mude lá junto, senão a próxima publicação pelo GitHub volta a senha antiga.
 
 ## Rodar no computador
 
@@ -43,8 +47,6 @@ npm run dev
 ```
 
 Abra http://localhost:8787. O banco e os arquivos ficam simulados na pasta `.wrangler/` (nada vai pra sua conta).
-
-Pra publicar do computador em vez do GitHub: `npx wrangler login` (uma vez) e `PAINEL_SENHA='a senha' npm run publicar`.
 
 ## Segurança
 
@@ -68,7 +70,9 @@ painel/
 │   ├── assinatura.svg      ícone da aba e da tela de entrar
 │   ├── icone-*.png         ícone do app no celular
 │   └── fontes/             Tinos (licença SIL OFL 1.1)
-└── scripts/publicar.mjs    publica: R2, tabelas, código e segredos
+└── scripts/
+    ├── empacotar.mjs       junta public/ em src/arquivos.gerado.js (roda sozinho)
+    └── publicar.mjs        publica: R2, tabelas, código e chave das sessões
 ```
 
 Os tipos de trabalho e os pacotes (com o prazo de entrega de cada um) estão no começo do `public/painel.js`, em `TIPOS` e `PACOTES`. Se mudar os pacotes no site, mude ali também.
