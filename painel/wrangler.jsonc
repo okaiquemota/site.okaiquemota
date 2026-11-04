@@ -6,7 +6,13 @@
     "name": "painel-okaiquemota",
     "main": "src/worker.js",
     "compatibility_date": "2026-09-01",
-    "workers_dev": true,
+    // o painel só abre pelo seu domínio: o endereço *.workers.dev fica desligado
+    "workers_dev": false,
+    // o endereço do painel no seu domínio (o DNS do okaiquemota.com.br está na Cloudflare);
+    // o certificado HTTPS e o registro de DNS a Cloudflare cria sozinha
+    "routes": [
+        { "pattern": "painel.okaiquemota.com.br", "custom_domain": true }
+    ],
     "preview_urls": false,
     // as páginas de public/ vão dentro do código: antes de rodar ou publicar, o wrangler
     // junta tudo em src/arquivos.gerado.js (e refaz quando algo em public/ muda)
