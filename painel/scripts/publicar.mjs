@@ -27,23 +27,26 @@ function rodar(args, { entrada, aceitar } = {}) {
         throw new Error(`O wrangler falhou em: ${args.join(" ")}`);
     }
     console.log(saida.trim());
-    return saida;
+    return { saida, stdout: r.stdout || "" };
 }
 
+// os nomes dos segredos que o Worker já tem. Se não der pra ler a lista, para tudo:
+// achar que a chave das sessões não existe e criar outra desconectaria todo mundo.
 function segredosAtuais() {
-    const saida = rodar(["secret", "list", "--format", "json"], { aceitar: /not found|does not exist|10007/i });
+    const { stdout } = rodar(["secret", "list", "--format", "json"]);
+    const inicio = stdout.search(/^\s*\[/m);
+    const fim = stdout.lastIndexOf("]");
     try {
-        // a lista vem em JSON depois dos avisos do wrangler: começa na linha que abre com "["
-        const inicio = saida.search(/^\s*\[\s*(?:$|\{|\])/m);
-        return new Set(JSON.parse(saida.slice(inicio)).map((s) => s.name));
+        if (inicio < 0 || fim < inicio) throw new Error("sem lista");
+        return new Set(JSON.parse(stdout.slice(inicio, fim + 1)).map((s) => s.name));
     } catch {
-        return new Set();
+        throw new Error("Não deu pra ler a lista de segredos do Worker; nada foi trocado. Saída do wrangler:\n" + stdout);
     }
 }
 
 try {
     // 1. Lugar dos arquivos (R2). Se já existe, segue.
-    rodar(["r2", "bucket", "create", BALDE, "--location", "enam"], { aceitar: /already exists|10004/i });
+    rodar(["r2", "bucket", "create", BALDE, "--location", "enam"], { aceitar: /already exists|10004/i });  // "já existe" é o normal
 
     // 2. Banco (D1): aplica as migrações que faltam (pasta migrations/)
     rodar(["d1", "migrations", "apply", "DB", "--remote"]);
