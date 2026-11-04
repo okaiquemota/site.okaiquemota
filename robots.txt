@@ -1,0 +1,5 @@
+# Pode tudo. O painel de clientes fica em outro endereço (painel.okaiquemota.com.br) e pede pra não ser indexado.
+User-agent: *
+Allow: /
+
+Sitemap: https://okaiquemota.com.br/sitemap.xml
