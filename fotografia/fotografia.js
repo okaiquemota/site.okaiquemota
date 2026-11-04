@@ -10,6 +10,16 @@
 
     document.querySelectorAll('[data-ano]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
 
+    // A idade do "Sobre" muda sozinha no aniversário (data no data-nascimento, AAAA-MM-DD).
+    // Sem JavaScript fica o número escrito no HTML.
+    document.querySelectorAll('[data-nascimento]').forEach(function (el) {
+        var p = el.getAttribute('data-nascimento').split('-').map(Number);
+        var hoje = new Date();
+        var idade = hoje.getFullYear() - p[0];
+        if (hoje.getMonth() + 1 < p[1] || (hoje.getMonth() + 1 === p[1] && hoje.getDate() < p[2])) idade--;
+        if (idade > 0 && idade < 130) el.textContent = idade;
+    });
+
     // ---------- Topo: ganha uma linha ao rolar; o link acompanha a seção ----------
     var topo = document.querySelector('.topo');
     function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }

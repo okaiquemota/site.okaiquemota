@@ -46,6 +46,10 @@ Antes de publicar, duas coisas:
 - **Autorização de quem aparece na foto** (de um dos pais ou do responsável, se for criança ou adolescente). A Política de Privacidade garante isso (item 5), e quem pedir tem a foto tirada do ar.
 - **Exporte sem metadados** (EXIF). Fotos direto da câmera ou do celular podem levar a localização (GPS), a data e o número de série da câmera. No Lightroom: em Exportar → Metadados, escolha "Somente direitos autorais" (isso já tira a localização).
 
+## Idade no "Sobre"
+
+A idade em "Sou o Kaique, tenho 22 anos" muda sozinha no aniversário: o `fotografia.js` calcula a partir do `data-nascimento="2003-12-14"` do `<span>` em volta do número. O número escrito no HTML só aparece pra quem está sem JavaScript; dá pra atualizar ele uma vez por ano, mas não é obrigatório.
+
 ## Adicionar um depoimento
 
 Os depoimentos ficam numa seção entre "Trabalhos" e "Pacotes" do `fotografia/index.html`, que ainda não existe: ela entra com o primeiro depoimento. O desenho já está no `fotografia.css` (até três por fileira no computador, um embaixo do outro no celular). Cole este bloco logo antes de `<section class="secao wrap" id="pacotes"`, com um `<figure>` por depoimento:
