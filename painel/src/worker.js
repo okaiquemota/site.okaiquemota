@@ -201,6 +201,52 @@ const regra = {
         return x;
     },
     sim_nao: () => (x) => (x ? 1 : 0),
+    // número de dias (prazos do contrato), de 0 a 365; vazio volta pro padrão
+    dias: () => (x, rotulo) => {
+        if (x === undefined || x === null || x === "") return null;
+        const n = typeof x === "number" ? x : /^\d{1,3}$/.test(String(x).trim()) ? Number(String(x).trim()) : NaN;
+        if (!Number.isInteger(n) || n < 0 || n > 365) throw new Erro(400, `${rotulo}: escreva um número de dias, de 0 a 365.`);
+        return String(n);
+    },
+    // o que muda no contrato de um trabalho em relação ao pacote; vazio usa o do pacote
+    detalhes: () => (x, rotulo) => {
+        if (x === undefined || x === null || x === "") return null;
+        if (typeof x !== "object" || Array.isArray(x)) throw new Erro(400, `${rotulo}: inválido.`);
+        const saida = {};
+        for (const [chave, valor] of Object.entries(x)) {
+            const campo = DETALHES_CONTRATO[chave];
+            if (!campo) throw new Erro(400, `${rotulo}: campo desconhecido.`);
+            const v = campo[1](valor, campo[0]);
+            if (v) saida[chave] = v;
+        }
+        return Object.keys(saida).length ? JSON.stringify(saida) : null;
+    },
+};
+
+const DETALHES_CONTRATO = {
+    duracao: ["Duração", regra.texto(120)],
+    equipe: ["Equipe", regra.texto(80)],
+    fotos: ["Fotos editadas", regra.texto(80)],
+    previa: ["Prévia", regra.texto(120)],
+    extra: ["Ensaio extra", regra.texto(200)],
+    hora_adicional: ["Hora adicional", regra.centavos()],
+    forma: ["Forma de pagamento", regra.texto(120)],
+    deslocamento: ["Deslocamento", regra.texto(160)],
+    data_contrato: ["Data do contrato", regra.data()],
+};
+
+// Os seus dados de contratado e os prazos do contrato (ficam no banco, nunca no código)
+const AJUSTES = {
+    nome: ["Seu nome no contrato", regra.texto(120)],
+    documento: ["Seu CPF ou CNPJ", regra.texto(30)],
+    endereco: ["Seu endereço", regra.texto(300)],
+    telefone: ["Seu telefone", regra.texto(30)],
+    forma: ["Formas de pagamento", regra.texto(120)],
+    deslocamento: ["Deslocamento para outras cidades", regra.texto(160)],
+    dias_roteiro: ["Roteiro do dia", regra.dias()],
+    dias_hora_adicional: ["Pagar a hora adicional", regra.dias()],
+    dias_remarcacao: ["Remarcação", regra.dias()],
+    dias_devolucao: ["Devolução", regra.dias()],
 };
 
 // Campos de cada tabela: [rótulo, regra]. Os marcados como "pai" só entram ao criar.
@@ -238,6 +284,7 @@ const TABELAS = {
             entregue_em: ["Entregue em", regra.data()],
             galeria: ["Link da galeria", regra.link()],
             observacoes: ["Observações", regra.texto(5000)],
+            contrato_detalhes: ["Detalhes do contrato", regra.detalhes()],
         },
     },
     pagamentos: {
@@ -435,7 +482,7 @@ async function verCliente(env, id) {
 async function verTrabalho(env, id) {
     const trabalho = await buscar(env, "trabalhos", id);
     const [cliente, pagamentos, documentos, compromissos] = await env.DB.batch([
-        env.DB.prepare("SELECT id, nome, telefone, email FROM clientes WHERE id = ?").bind(trabalho.cliente_id),
+        env.DB.prepare("SELECT id, nome, telefone, email, cpf, endereco, cidade FROM clientes WHERE id = ?").bind(trabalho.cliente_id),
         env.DB.prepare("SELECT * FROM pagamentos WHERE trabalho_id = ? ORDER BY vencimento IS NULL, vencimento, criado_em").bind(id),
         env.DB.prepare("SELECT * FROM documentos WHERE trabalho_id = ? ORDER BY criado_em DESC").bind(id),
         env.DB.prepare("SELECT * FROM compromissos WHERE trabalho_id = ? ORDER BY feito, data, hora").bind(id),
@@ -677,10 +724,143 @@ async function apagarDocumento(env, id) {
     return json({ ok: true });
 }
 
+// ---------- Seus dados do contrato ----------
+
+async function verAjustes(env) {
+    const { results } = await env.DB.prepare("SELECT chave, valor FROM ajustes").all();
+    const saida = {};
+    for (const { chave, valor } of results) if (Object.hasOwn(AJUSTES, chave)) saida[chave] = valor;
+    return saida;
+}
+
+async function salvarAjustes(env, request) {
+    const corpo = await lerCorpo(request);
+    if (!corpo || typeof corpo !== "object" || Array.isArray(corpo)) throw new Erro(400, "Dados inválidos.");
+    const comandos = [];
+    for (const [chave, valor] of Object.entries(corpo)) {
+        if (!Object.hasOwn(AJUSTES, chave)) throw new Erro(400, "Campo desconhecido.");
+        const [rotulo, valida] = AJUSTES[chave];
+        const v = valida(valor, rotulo);
+        comandos.push(
+            v === null
+                ? env.DB.prepare("DELETE FROM ajustes WHERE chave = ?").bind(chave)
+                : env.DB.prepare(
+                      `INSERT INTO ajustes (chave, valor) VALUES (?1, ?2)
+                       ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor, atualizado_em = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')`,
+                  ).bind(chave, v),
+        );
+    }
+    if (comandos.length) await env.DB.batch(comandos);
+    return json(await verAjustes(env));
+}
+
+// ---------- Financeiro ----------
+
+function anoDe(url, hoje) {
+    const a = url.searchParams.get("ano") || hoje.slice(0, 4);
+    if (!/^\d{4}$/.test(a) || a < "2000" || a > "2100") throw new Erro(400, "Ano inválido.");
+    return a;
+}
+
+// os pagamentos recebidos no ano, do mais novo pro mais antigo
+const SQL_RECEBIDOS = `SELECT p.id, p.descricao, p.valor, p.forma, p.pago_em, t.id AS trabalho_id, t.tipo, t.titulo, t.pacote,
+                              c.id AS cliente_id, c.nome AS cliente, c.cpf
+                       FROM pagamentos p JOIN trabalhos t ON t.id = p.trabalho_id JOIN clientes c ON c.id = t.cliente_id
+                       WHERE p.pago_em BETWEEN ?1 || '-01-01' AND ?1 || '-12-31'
+                       ORDER BY p.pago_em DESC, p.criado_em DESC`;
+
+// trabalhos fechados (confirmados, em edição ou entregues) com data no ano; sem data, conta o ano em que foi criado
+const FECHADOS_NO_ANO = `t.status IN ('confirmado', 'edicao', 'entregue') AND substr(COALESCE(t.data, t.criado_em), 1, 4) = ?1`;
+
+async function financeiro(env, url) {
+    const hoje = hojeDe(url);
+    const ano = anoDe(url, hoje);
+    const anterior = String(Number(ano) - 1);
+    // o ano anterior até o mesmo dia (no ano corrente) ou inteiro (nos outros)
+    const ateAnterior = ano === hoje.slice(0, 4) ? anterior + hoje.slice(4) : anterior + "-12-31";
+    const [recebidos, aReceber, totais, porTipo, porOrigem, orcamentos] = await env.DB.batch([
+        env.DB.prepare(SQL_RECEBIDOS).bind(ano),
+        env.DB.prepare(
+            `SELECT substr(p.vencimento, 6, 2) AS mes, SUM(p.valor) AS valor
+             FROM pagamentos p JOIN trabalhos t ON t.id = p.trabalho_id
+             WHERE p.pago_em IS NULL AND t.status != 'cancelado' AND substr(p.vencimento, 1, 4) = ?1
+             GROUP BY mes`,
+        ).bind(ano),
+        env.DB.prepare(
+            `SELECT COALESCE(SUM(p.valor), 0) AS aberto,
+                    COALESCE(SUM(CASE WHEN p.vencimento < ?1 THEN p.valor END), 0) AS vencido,
+                    COALESCE(SUM(CASE WHEN p.vencimento IS NULL THEN p.valor END), 0) AS sem_vencimento,
+                    (SELECT COALESCE(SUM(valor), 0) FROM pagamentos WHERE pago_em BETWEEN ?2 || '-01-01' AND ?3) AS anterior
+             FROM pagamentos p JOIN trabalhos t ON t.id = p.trabalho_id
+             WHERE p.pago_em IS NULL AND t.status != 'cancelado'`,
+        ).bind(hoje, anterior, ateAnterior),
+        env.DB.prepare(
+            `SELECT t.tipo AS nome, COUNT(*) AS quantos, COALESCE(SUM(t.valor), 0) AS valor
+             FROM trabalhos t WHERE ${FECHADOS_NO_ANO}
+             GROUP BY t.tipo ORDER BY valor DESC, quantos DESC`,
+        ).bind(ano),
+        env.DB.prepare(
+            `SELECT COALESCE(NULLIF(TRIM(c.origem), ''), 'Não informado') AS nome, COUNT(*) AS quantos, COALESCE(SUM(t.valor), 0) AS valor
+             FROM trabalhos t JOIN clientes c ON c.id = t.cliente_id WHERE ${FECHADOS_NO_ANO}
+             GROUP BY 1 ORDER BY valor DESC, quantos DESC`,
+        ).bind(ano),
+        env.DB.prepare(
+            `SELECT COUNT(*) AS quantos, COALESCE(SUM(valor), 0) AS valor FROM trabalhos t
+             WHERE t.status = 'orcamento' AND substr(COALESCE(t.data, t.criado_em), 1, 4) = ?1`,
+        ).bind(ano),
+    ]);
+    return json({
+        ano,
+        hoje,
+        recebidos: recebidos.results,
+        a_receber: aReceber.results,
+        totais: totais.results[0],
+        por_tipo: porTipo.results,
+        por_origem: porOrigem.results,
+        orcamentos: orcamentos.results[0],
+    });
+}
+
+// a planilha dos recebimentos do ano (pro imposto de renda / carnê-leão): abre no Excel e no Google Planilhas
+function celulaCsv(v) {
+    let s = String(v ?? "");
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // não deixa a planilha ler o texto como fórmula
+    return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+async function planilha(env, url) {
+    const ano = anoDe(url, hojeDe(url));
+    const { results } = await env.DB.prepare(SQL_RECEBIDOS).bind(ano).all();
+    const linhas = [["Data do pagamento", "Cliente", "CPF", "Trabalho", "Tipo", "Pacote", "Descrição", "Forma de pagamento", "Valor (R$)"]];
+    for (const p of [...results].reverse()) {
+        const d = p.pago_em;
+        linhas.push([
+            `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`,
+            p.cliente,
+            p.cpf,
+            p.titulo || p.tipo,
+            p.tipo,
+            p.pacote,
+            p.descricao,
+            p.forma,
+            (p.valor / 100).toFixed(2).replace(".", ","),
+        ]);
+    }
+    const texto = "﻿" + linhas.map((l) => l.map(celulaCsv).join(";")).join("\r\n") + "\r\n";
+    return new Response(texto, {
+        headers: {
+            ...SEGURANCA,
+            "Content-Type": "text/csv; charset=utf-8",
+            "Cache-Control": "no-store",
+            "Content-Disposition": `attachment; filename="recebimentos-${ano}.csv"`,
+        },
+    });
+}
+
 // ---------- Cópia de segurança ----------
 
 async function backup(env) {
-    const tabelas = ["clientes", "trabalhos", "pagamentos", "documentos", "compromissos"];
+    const tabelas = ["clientes", "trabalhos", "pagamentos", "documentos", "compromissos", "ajustes"];
     const resultados = await env.DB.batch(tabelas.map((t) => env.DB.prepare(`SELECT * FROM ${t}`)));
     const dados = { gerado_em: agoraIso(), aviso: "Os arquivos (PDFs e fotos) não vão neste backup: ficam guardados no R2." };
     tabelas.forEach((t, i) => {
@@ -724,6 +904,10 @@ async function rotasComSessao(request, env, url, metodo, caminho) {
     if (caminho === "/api/resumo" && metodo === "GET") return resumo(env, url);
     if (caminho === "/api/agenda" && metodo === "GET") return agenda(env, url);
     if (caminho === "/api/backup" && metodo === "GET") return backup(env);
+    if (caminho === "/api/financeiro" && metodo === "GET") return financeiro(env, url);
+    if (caminho === "/api/financeiro/planilha" && metodo === "GET") return planilha(env, url);
+    if (caminho === "/api/ajustes" && metodo === "GET") return json(await verAjustes(env));
+    if (caminho === "/api/ajustes" && metodo === "PUT") return salvarAjustes(env, request);
     if (caminho === "/api/clientes" && metodo === "GET") return listarClientes(env, url);
 
     if (caminho === "/api/documentos" && metodo === "POST") return enviarDocumento(env, request, url);
