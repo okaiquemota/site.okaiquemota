@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
    Painel · Kaique Mota
-   Telas: Início, Clientes, ficha do cliente, Trabalho e Agenda.
+   Telas: Início, Clientes, ficha do cliente, Trabalho, Contrato, Agenda e Financeiro.
    Fala com a API em /api (src/worker.js). Tudo o que vem do banco entra
    na página como texto (textContent), nunca como HTML.
 ------------------------------------------------------------------------- */
@@ -23,17 +23,61 @@
         outro: "Outro",
     };
     const TIPOS = ["Casamento", "Pré-wedding", "Festa", "Aniversário", "Making of", "Ensaio", "Marca e negócio", "Outro"];
-    // os pacotes do site (/fotografia), com o prazo de entrega de cada um, em dias
+    // Os pacotes do Orçamento 2026, com o que vai na tabela do contrato.
+    // valor em reais; prazo: dias pra entregar depois do evento
+    const DUPLA = "Dupla de fotógrafos";
+    const P = (nome, valor, prazo, duracao, fotos, outros = {}) => ({ nome, valor: valor * 100, prazo, duracao, fotos, equipe: "1 fotógrafo", previa: "Não se aplica", extra: "Não se aplica", ...outros });
     const PACOTES = {
-        Casamento: [["Casamento Civil", 15], ["Casamento Clássico", 30], ["Casamento Completo", 45]],
-        "Pré-wedding": [["Pré-wedding Essencial", 7], ["Pré-wedding Clássico", 10], ["Pré-wedding Completo", 15]],
-        Festa: [["Festa Essencial", 10], ["Festa Clássica", 15], ["Festa Completa", 20]],
-        Aniversário: [["Aniversário Essencial", 7], ["Aniversário Clássico", 10], ["Aniversário Completo", 10]],
-        "Making of": [["Making of Essencial", 10], ["Making of Clássico", 10], ["Making of Completo", 15]],
-        Ensaio: [["Ensaio Essencial", 7], ["Ensaio Clássico", 10], ["Ensaio Completo", 10]],
-        "Marca e negócio": [["Retrato Profissional", 5], ["Conteúdo para Marca", 7]],
+        Casamento: [
+            P("Casamento Civil", 690, 15, "Até 2 horas", "120"),
+            P("Casamento Clássico", 2090, 30, "Até 6 horas", "400", { equipe: DUPLA, previa: "20 fotos em até 72h" }),
+            P("Casamento Completo", 3490, 45, "Até 8 horas", "600", { equipe: DUPLA, previa: "30 fotos em até 72h", extra: "Pré-wedding Clássico, com a arte do save the date, em data à parte" }),
+        ],
+        "Pré-wedding": [
+            P("Pré-wedding Essencial", 350, 7, "1 hora de ensaio", "25"),
+            P("Pré-wedding Clássico", 450, 10, "1h30 de ensaio", "40", { previa: "10 fotos em até 48h" }),
+            P("Pré-wedding Completo", 650, 15, "Até 2h30 de ensaio", "70", { previa: "10 fotos em até 48h" }),
+        ],
+        Festa: [
+            P("Festa Essencial", 520, 10, "Até 3 horas", "150"),
+            P("Festa Clássica", 850, 15, "Até 5 horas", "250", { previa: "15 fotos em até 48h" }),
+            P("Festa Completa", 1290, 20, "Até 7 horas, com making of e mini ensaio inclusos", "350 + 20 do mini ensaio", { previa: "20 fotos em até 48h", extra: "Mini ensaio no local antes da festa (30 min), dentro das horas do pacote" }),
+        ],
+        Aniversário: [
+            P("Aniversário Essencial", 350, 7, "Até 2 horas", "100"),
+            P("Aniversário Clássico", 490, 10, "Até 3 horas", "150", { previa: "10 fotos no dia seguinte" }),
+            P("Aniversário Completo", 690, 10, "Até 4 horas, com o mini ensaio incluso", "200 + 15 do mini ensaio", { previa: "15 fotos em até 24h", extra: "Mini ensaio do aniversariante antes da festa (30 min), dentro das horas do pacote" }),
+        ],
+        "Making of": [
+            P("Making of Essencial", 320, 10, "Até 1h30", "50"),
+            P("Making of Clássico", 480, 10, "Até 2h30", "90", { previa: "10 fotos em até 24h" }),
+            P("Making of Completo", 650, 15, "Até 3h30", "130", { previa: "15 fotos em até 24h", extra: "Mini ensaio depois de pronta (20 min), dentro das horas do pacote" }),
+        ],
+        Ensaio: [
+            P("Ensaio Essencial", 250, 7, "1 hora de ensaio", "20"),
+            P("Ensaio Clássico", 390, 10, "1h30 de ensaio", "40"),
+            P("Ensaio Completo", 540, 10, "2 horas de ensaio", "60", { previa: "10 fotos em até 48h" }),
+        ],
+        "Marca e negócio": [
+            P("Retrato Profissional", 200, 5, "40 minutos de sessão", "10"),
+            P("Conteúdo para Marca", 450, 7, "1h30 de sessão", "30"),
+        ],
     };
     const TODOS_PACOTES = Object.values(PACOTES).flat();
+    const pacoteDe = (nome) => TODOS_PACOTES.find((p) => p.nome.toLowerCase() === String(nome || "").trim().toLowerCase());
+    // hora adicional de cada tipo, como está no rodapé de cada página do orçamento (pré-wedding e ensaio não têm)
+    const HORA_ADICIONAL = { Casamento: 20000, Festa: 15000, Aniversário: 15000, "Making of": 15000, "Marca e negócio": 15000 };
+    // o que vale no contrato enquanto você não muda em "Seus dados" (são os [colchetes] do modelo)
+    const AJUSTES_PADRAO = {
+        nome: "Kaique Mota",
+        telefone: "(16) 98215-7266",
+        forma: "Pix ou transferência",
+        deslocamento: "combustível e pedágios",
+        dias_roteiro: "7",
+        dias_hora_adicional: "3",
+        dias_remarcacao: "60",
+        dias_devolucao: "7",
+    };
     const FORMAS = ["Pix", "Cartão de crédito", "Cartão de débito", "Dinheiro", "Transferência", "Boleto"];
     const ORIGENS = ["Instagram", "Indicação", "Site", "Google", "WhatsApp"];
     const SINAL = 0.3; // "a data fica garantida após o sinal de 30%"
@@ -527,7 +571,7 @@
                 { nome: "data", rotulo: "Data", tipo: "date" },
                 { nome: "hora", rotulo: "Horário", tipo: "time" },
                 { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
-                { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro" },
+                { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
                 { nome: "status", rotulo: "Situação", tipo: "select", opcoes: opcoesDe(STATUS) },
                 { nome: "contrato", rotulo: "Contrato", tipo: "select", opcoes: opcoesDe(CONTRATO) },
                 { nome: "autorizacao", rotulo: "Autorização de imagem", tipo: "select", opcoes: opcoesDe(AUTORIZACAO) },
@@ -540,22 +584,33 @@
         );
         const el = (n) => corpo.querySelector(`[name="${n}"]`);
         const listaPacotes = corpo.querySelector("datalist");
-        const pacoteDe = (nome) => TODOS_PACOTES.find(([p]) => p.toLowerCase() === String(nome || "").trim().toLowerCase());
         // se o prazo salvo é o que o pacote daria, ele continua acompanhando a data ao editar
-        let prazoAutomatico = t.data && pacoteDe(t.pacote) && t.prazo_entrega === somarDias(t.data, pacoteDe(t.pacote)[1]) ? t.prazo_entrega : null;
-        const atualizarPacotes = () => listaPacotes.replaceChildren(...(PACOTES[el("tipo").value] || TODOS_PACOTES).map(([nome]) => h("option", { value: nome })));
+        let prazoAutomatico = t.data && pacoteDe(t.pacote) && t.prazo_entrega === somarDias(t.data, pacoteDe(t.pacote).prazo) ? t.prazo_entrega : null;
+        // o mesmo com o valor: se é o preço do pacote, trocar de pacote troca o valor
+        let valorAutomatico = pacoteDe(t.pacote) && t.valor === pacoteDe(t.pacote).valor ? dinheiroNoCampo(t.valor) : null;
+        const atualizarPacotes = () =>
+            listaPacotes.replaceChildren(...(PACOTES[el("tipo").value] || TODOS_PACOTES).map((p) => h("option", { value: p.nome, label: `${p.nome} · ${dinheiro(p.valor)}` })));
         const calcularPrazo = () => {
             const pacote = pacoteDe(el("pacote").value);
             const data = el("data").value;
             if (!pacote || !data) return;
             if (el("prazo_entrega").value && el("prazo_entrega").value !== prazoAutomatico) return; // você mudou à mão: fica o seu
-            prazoAutomatico = somarDias(data, pacote[1]);
+            prazoAutomatico = somarDias(data, pacote.prazo);
             el("prazo_entrega").value = prazoAutomatico;
+        };
+        const preencherValor = () => {
+            const pacote = pacoteDe(el("pacote").value);
+            if (!pacote) return;
+            if (el("valor").value && el("valor").value !== valorAutomatico) return; // você mudou à mão: fica o seu
+            valorAutomatico = dinheiroNoCampo(pacote.valor);
+            el("valor").value = valorAutomatico;
         };
         atualizarPacotes();
         el("tipo").addEventListener("change", atualizarPacotes);
-        el("pacote").addEventListener("input", calcularPrazo);
-        el("pacote").addEventListener("change", calcularPrazo);
+        for (const evento of ["input", "change"]) {
+            el("pacote").addEventListener(evento, calcularPrazo);
+            el("pacote").addEventListener(evento, preencherValor);
+        }
         el("data").addEventListener("change", calcularPrazo);
         el("status").addEventListener("change", () => {
             if (el("status").value === "entregue" && !el("entregue_em").value) el("entregue_em").value = hoje();
@@ -889,7 +944,7 @@
             { class: "numeros" },
             h("div", null, h("span", { class: "rotulo" }, "Clientes"), h("strong", null, n.clientes)),
             h("div", null, h("span", { class: "rotulo" }, `Trabalhos em ${ano}`), h("strong", null, n.trabalhos_ano)),
-            h("div", null, h("span", { class: "rotulo" }, `Recebido em ${ano}`), h("strong", null, dinheiro(n.recebido_ano))),
+            h("div", null, h("span", { class: "rotulo" }, `Recebido em ${ano}`), h("strong", null, dinheiro(n.recebido_ano)), h("small", null, h("a", { class: "link", href: "#/financeiro" }, "Ver o financeiro"))),
             h(
                 "div",
                 null,
@@ -993,6 +1048,7 @@
             "footer",
             { class: "rodape" },
             h("a", { href: "/api/backup", download: "" }, "Baixar backup (JSON)"),
+            h("button", { type: "button", "data-foco": "seus-dados", onclick: () => formAjustes() }, "Seus dados do contrato"),
             h("button", { type: "button", onclick: sair }, "Sair"),
         );
     }
@@ -1209,7 +1265,11 @@
                 rotulo: juntar(t.tipo, t.pacote),
                 titulo: nomeTrabalho(t),
                 meta: t.data ? juntar(primeiraMaiuscula(dataLonga(t.data)), t.hora, t.local) : juntar("Sem data", t.local),
-                acoes: [seloStatus(t.status), botao("Editar", () => formTrabalho(t), "botao leve", "trabalho")],
+                acoes: [
+                    seloStatus(t.status),
+                    h("a", { class: "botao leve", href: `#/trabalhos/${t.id}/contrato` }, "Contrato em PDF"),
+                    botao("Editar", () => formTrabalho(t), "botao leve", "trabalho"),
+                ],
             }),
             ficha([
                 ["Situação", escolhas("status", "Situação", STATUS), true],
@@ -1245,6 +1305,677 @@
             secaoCompromissos(compromissos, { trabalhoId: t.id }),
             secaoDocumentos(documentos, { clienteId: c.id, trabalhoId: t.id }),
             h("div", { class: "rodape" }, h("button", { type: "button", class: "link perigo", onclick: apagarTrabalho }, "Apagar trabalho")),
+        );
+    }
+
+    // ---------- Contrato ----------
+
+    // valor por extenso, como vai no contrato: "dois mil e noventa reais"
+    const UNIDADES = ["zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+    const DEZENAS = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+    const CENTENAS = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+    function ate999(n) {
+        if (n === 100) return "cem";
+        const partes = [];
+        if (n >= 100) partes.push(CENTENAS[Math.floor(n / 100)]);
+        const r = n % 100;
+        if (r) partes.push(r < 20 ? UNIDADES[r] : DEZENAS[Math.floor(r / 10)] + (r % 10 ? " e " + UNIDADES[r % 10] : ""));
+        return partes.join(" e ");
+    }
+    function inteiroPorExtenso(n) {
+        const grupos = [
+            [Math.floor(n / 1e6), (x) => (x === 1 ? "um milhão" : ate999(x) + " milhões")],
+            [Math.floor(n / 1000) % 1000, (x) => (x === 1 ? "mil" : ate999(x) + " mil")],
+            [n % 1000, ate999],
+        ].filter(([x]) => x);
+        // o último grupo leva "e" quando é menor que cem ou é centena redonda: "mil e quinhentos", "mil duzentos e noventa"
+        return grupos.map(([x, texto], i) => (i === 0 ? "" : i === grupos.length - 1 && (x < 100 || x % 100 === 0) ? " e " : " ") + texto(x)).join("");
+    }
+    function porExtenso(centavos) {
+        const reais = Math.floor(centavos / 100);
+        const cents = centavos % 100;
+        const partes = [];
+        if (reais) partes.push(inteiroPorExtenso(reais) + (reais === 1 ? " real" : reais % 1e6 === 0 ? " de reais" : " reais"));
+        if (cents) partes.push(ate999(cents) + (cents === 1 ? " centavo" : " centavos"));
+        return partes.join(" e ") || "zero reais";
+    }
+
+    function cnpjValido(c) {
+        const d = digitos(c);
+        if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+        const digito = (n) => {
+            let s = 0;
+            for (let i = 0, peso = n - 7; i < n; i++, peso = peso === 2 ? 9 : peso - 1) s += Number(d[i]) * peso;
+            return s % 11 < 2 ? 0 : 11 - (s % 11);
+        };
+        return digito(12) === Number(d[12]) && digito(13) === Number(d[13]);
+    }
+    const cnpjBonito = (d) => `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+    const horaBonita = (hh) => (hh ? hh.replace(":", "h") : "");
+    const fDataContrato = fmt({ day: "numeric", month: "long", year: "numeric" });
+    const listaTexto = (itens) => new Intl.ListFormat("pt-BR", { type: "conjunction" }).format(itens);
+    const simples = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    function lerDetalhes(s) {
+        try {
+            const d = JSON.parse(s || "{}");
+            return d && typeof d === "object" && !Array.isArray(d) ? d : {};
+        } catch {
+            return {};
+        }
+    }
+
+    async function formAjustes(atual) {
+        const aj = atual || (await api("ajustes"));
+        const padrao = (chave) => `Vazio: ${AJUSTES_PADRAO[chave]}.`;
+        const dias = { tipo: "number", attrs: { min: 0, max: 365, step: 1, inputmode: "numeric" } };
+        abrirJanela({
+            titulo: "Seus dados do contrato",
+            corpo: h(
+                "div",
+                null,
+                h("p", { class: "texto-janela nota-janela" }, "Vão só nos contratos que o painel monta. Ficam guardados aqui no painel, atrás da senha: não aparecem no site nem no GitHub."),
+                campos(
+                    [
+                        { nome: "nome", rotulo: "Seu nome no contrato", inteira: true, attrs: { maxlength: 120 }, ajuda: "Pode ser o nome completo. " + padrao("nome") },
+                        { nome: "documento", rotulo: "CPF ou CNPJ", attrs: { inputmode: "numeric", maxlength: 30 } },
+                        { nome: "telefone", rotulo: "Telefone", tipo: "tel", attrs: { inputmode: "tel", maxlength: 30 }, ajuda: padrao("telefone") },
+                        { nome: "endereco", rotulo: "Endereço", inteira: true, attrs: { maxlength: 300, placeholder: "Rua, número, bairro, Ribeirão Preto, SP" } },
+                        { nome: "forma", rotulo: "Formas de pagamento", inteira: true, attrs: { maxlength: 120 }, ajuda: "Cláusula 3. " + padrao("forma") },
+                        { nome: "deslocamento", rotulo: "Deslocamento para outras cidades", inteira: true, attrs: { maxlength: 160 }, ajuda: "Cláusula 7, “o contratante paga …”. " + padrao("deslocamento") },
+                        { nome: "dias_roteiro", rotulo: "Roteiro do dia: dias antes", ...dias, ajuda: "Cláusula 6. " + padrao("dias_roteiro") },
+                        { nome: "dias_hora_adicional", rotulo: "Pagar hora adicional: dias depois", ...dias, ajuda: "Cláusula 7. " + padrao("dias_hora_adicional") },
+                        { nome: "dias_remarcacao", rotulo: "Avisar remarcação: dias antes", ...dias, ajuda: "Cláusula 10. " + padrao("dias_remarcacao") },
+                        { nome: "dias_devolucao", rotulo: "Devolver se você desistir: dias", ...dias, ajuda: "Cláusula 10. " + padrao("dias_devolucao") },
+                    ],
+                    aj,
+                ),
+            ),
+            aoEnviar: async (form) => {
+                const dados = lerCampos(form);
+                if (dados.documento) {
+                    const d = digitos(dados.documento);
+                    if (d.length === 11 && cpfValido(d)) dados.documento = cpfBonito(d);
+                    else if (d.length === 14 && cnpjValido(d)) dados.documento = cnpjBonito(d);
+                    else {
+                        form.elements.documento.setAttribute("aria-invalid", "true");
+                        throw new Error("Esse CPF ou CNPJ não existe. Confira os números.");
+                    }
+                }
+                if (dados.telefone) dados.telefone = telefoneBonito(dados.telefone);
+                await api("ajustes", { metodo: "PUT", corpo: dados });
+                aviso("Seus dados foram salvos.");
+                recarregar();
+            },
+        });
+    }
+
+    // o que muda no contrato deste trabalho (o resto vem do pacote e dos seus dados)
+    function formDetalhes(t, base) {
+        const doPacote = (texto) => (texto ? `Vazio: ${texto}.` : "O pacote não diz: escreva aqui.");
+        abrirJanela({
+            titulo: "Ajustar o contrato",
+            corpo: h(
+                "div",
+                null,
+                h("p", { class: "texto-janela nota-janela" }, `Só pra este trabalho. O que ficar vazio usa ${base.pacote ? `o ${base.pacote.nome}, como no orçamento` : "o padrão"}. A data, o horário, o local, o valor e o prazo de entrega mudam em “Editar trabalho”.`),
+                campos(
+                    [
+                        { nome: "duracao", rotulo: "Duração da cobertura", inteira: true, attrs: { maxlength: 120 }, ajuda: doPacote(base.duracao) },
+                        { nome: "equipe", rotulo: "Equipe", lista: ["1 fotógrafo", DUPLA], attrs: { maxlength: 80 }, ajuda: doPacote(base.equipe) },
+                        { nome: "fotos", rotulo: "Fotos editadas", attrs: { maxlength: 80 }, ajuda: doPacote(base.fotos) },
+                        { nome: "previa", rotulo: "Prévia", inteira: true, attrs: { maxlength: 120 }, ajuda: doPacote(base.previa) },
+                        { nome: "extra", rotulo: "Ensaio extra", inteira: true, attrs: { maxlength: 200 }, ajuda: doPacote(base.extra) },
+                        { nome: "hora_adicional", rotulo: "Hora adicional (R$)", tipo: "dinheiro", ajuda: base.hora ? `Vazio: ${dinheiro(base.hora)}, do orçamento.` : "O orçamento deste tipo não tem: escreva aqui." },
+                        { nome: "data_contrato", rotulo: "Data do contrato", tipo: "date", ajuda: "Vazio: o dia em que baixar." },
+                        { nome: "forma", rotulo: "Forma de pagamento", inteira: true, attrs: { maxlength: 120 }, ajuda: `Vazio: ${base.forma}.` },
+                        { nome: "deslocamento", rotulo: "Deslocamento para outra cidade", inteira: true, attrs: { maxlength: 160, placeholder: "Ex.: valor fixo de R$ 80,00" }, ajuda: `Vazio: ${base.deslocamento}.` },
+                    ],
+                    lerDetalhes(t.contrato_detalhes),
+                ),
+            ),
+            aoEnviar: async (form) => {
+                await api("trabalhos/" + t.id, { metodo: "PUT", corpo: { contrato_detalhes: lerCampos(form) } });
+                aviso("Contrato ajustado.");
+                recarregar();
+            },
+        });
+    }
+
+    async function paginaContrato(id) {
+        const [r, aj] = await Promise.all([api("trabalhos/" + id), api("ajustes")]);
+        const { trabalho: t, cliente: c, pagamentos } = r;
+        const det = lerDetalhes(t.contrato_detalhes);
+        const eu = { ...AJUSTES_PADRAO, ...aj };
+        const pacote = pacoteDe(t.pacote);
+        const base = { pacote, duracao: pacote?.duracao, equipe: pacote?.equipe, fotos: pacote?.fotos, previa: pacote?.previa, extra: pacote?.extra, hora: HORA_ADICIONAL[t.tipo], forma: eu.forma, deslocamento: eu.deslocamento };
+        const usa = (chave) => det[chave] || base[chave];
+        document.title = `Contrato ${c.nome} · ${t.pacote || nomeTrabalho(t)}`;
+
+        // o que falta sai no PDF como uma linha em branco, pra preencher à mão; na tela, vira um aviso com o botão que resolve
+        const ACOES = {
+            cliente: ["Completar cliente", async () => formCliente((await api("clientes/" + c.id)).cliente)],
+            trabalho: ["Editar trabalho", () => formTrabalho(t)],
+            contrato: ["Ajustar contrato", () => formDetalhes(t, base)],
+            eu: ["Seus dados", () => formAjustes(aj)],
+        };
+        const GRUPOS = { cliente: `Do cliente`, trabalho: "Do trabalho", contrato: "Do pacote", eu: "Seus dados" };
+        const faltas = new Map();
+        const preencher = (valor, oQue, grupo) => {
+            if (valor !== null && valor !== undefined && String(valor).trim() !== "") return String(valor);
+            if (!faltas.has(grupo)) faltas.set(grupo, new Set());
+            faltas.get(grupo).add(oQue);
+            return h("span", { class: "preencher" }, h("span", { class: "preencher-texto" }, `[${oQue}]`));
+        };
+
+        const enderecoCliente = c.endereco && c.cidade && !simples(c.endereco).includes(simples(c.cidade.split(",")[0])) ? `${c.endereco}, ${c.cidade}` : c.endereco;
+        const nomeCliente = c.nome;
+        const cpfCliente = () => preencher(c.cpf, "CPF", "cliente"); // aparece em dois lugares: cada um com a sua linha
+        const temValor = t.valor > 0;
+        const sinal = Math.round(t.valor * SINAL);
+        const valorTotal = preencher(temValor ? `${dinheiro(t.valor)} (${porExtenso(t.valor)})` : null, "valor", "trabalho");
+        const n = t.data && t.prazo_entrega ? diasEntre(t.data, t.prazo_entrega) : null;
+        const prazo = n !== null && n >= 0 ? `Até ${n} ${n === 1 ? "dia" : "dias"} após o evento (${dataMedia(t.prazo_entrega)})` : pacote ? `Até ${pacote.prazo} dias após o evento` : null;
+        const horaAdicional = det.hora_adicional || base.hora;
+
+        // ---- peças da folha ----
+        const folha = (numero, conteudo, direita) =>
+            h(
+                "article",
+                { class: "folha", "aria-label": `Página ${numero} de 4` },
+                h("header", { class: "folha-topo" }, h("span", null, "Kaique Mota"), h("span", { class: "cinza" }, `Contrato · ${pad(numero)} de 04`)),
+                conteudo,
+                h(
+                    "footer",
+                    { class: "folha-base" },
+                    h("span", null, `Kaique Mota · Fotografia · ${eu.telefone}`),
+                    direita || h("span", { class: "rubricas" }, "Rubricas", h("span", { class: "rubrica" }), h("span", { class: "rubrica" })),
+                ),
+            );
+        const clausula = (numero, titulo, ...corpo) => h("section", { class: "clausula" }, h("p", { class: "clausula-num" }, `CLÁUSULA ${pad(numero)}`), h("h2", null, titulo), corpo);
+        const par = (...partes) => h("p", null, partes);
+        const numerada = (itens) => h("ol", { class: "itens" }, itens.map((x, i) => h("li", null, h("span", { class: "marcador" }, `${i + 1}.`), h("span", null, x))));
+        const dado = (rotulo, valor, larga) => h("p", { class: "dado" + (larga ? " larga" : "") }, h("span", { class: "cinza" }, `${rotulo}: `), valor);
+        const caixa = (marcada, texto) =>
+            h("p", { class: "opcao" }, h("span", { class: "caixa", "aria-hidden": "true" }, marcada ? "×" : ""), h("span", null, texto, marcada ? escondido(" (marcado)") : null));
+        const italico = (texto) => h("em", null, texto);
+
+        const folha1 = folha(
+            1,
+            [
+                h("div", { class: "folha-abre" }, h("p", { class: "folha-titulo" }, "Contrato"), h("p", { class: "folha-sub" }, "Prestação de serviços fotográficos")),
+                h(
+                    "div",
+                    { class: "folha-corpo com-linha" },
+                    clausula(
+                        1,
+                        "Partes",
+                        h("p", { class: "papel" }, "CONTRATANTE"),
+                        h(
+                            "div",
+                            { class: "dados" },
+                            dado("Nome", nomeCliente),
+                            dado("CPF", cpfCliente()),
+                            dado("Endereço", preencher(enderecoCliente, "endereço", "cliente"), true),
+                            dado("Telefone", preencher(c.telefone ? telefoneBonito(c.telefone) : null, "telefone", "cliente")),
+                            dado("E-mail", preencher(c.email, "e-mail", "cliente")),
+                        ),
+                        h("p", { class: "papel" }, "FOTÓGRAFO"),
+                        h(
+                            "div",
+                            { class: "dados" },
+                            dado("Nome", eu.nome),
+                            dado("CPF/CNPJ", preencher(aj.documento, "seu CPF ou CNPJ", "eu")),
+                            dado("Endereço", preencher(aj.endereco, "seu endereço", "eu"), true),
+                            dado("Telefone", eu.telefone),
+                            dado("Instagram", "@okaiquemota"),
+                        ),
+                        par("As partes acima, daqui em diante chamadas CONTRATANTE e FOTÓGRAFO, celebram este contrato de prestação de serviços fotográficos, que segue as cláusulas abaixo."),
+                    ),
+                    clausula(
+                        2,
+                        "Objeto",
+                        par("O FOTÓGRAFO fará a cobertura fotográfica descrita abaixo, conforme o pacote escolhido no orçamento enviado ao CONTRATANTE, que faz parte deste contrato."),
+                        h(
+                            "dl",
+                            { class: "objeto" },
+                            [
+                                ["Pacote", preencher(t.pacote, "pacote", "trabalho")],
+                                ["Data do evento", preencher(t.data ? dataMedia(t.data) : null, "data", "trabalho")],
+                                ["Local", preencher(t.local, "local", "trabalho")],
+                                ["Horário de início", preencher(horaBonita(t.hora), "horário", "trabalho")],
+                                ["Duração da cobertura", preencher(usa("duracao"), "duração", "contrato")],
+                                ["Equipe", preencher(usa("equipe"), "equipe", "contrato")],
+                                ["Fotos editadas", preencher(usa("fotos"), "fotos editadas", "contrato")],
+                                ["Prévia", preencher(usa("previa"), "prévia", "contrato")],
+                                ["Prazo de entrega", preencher(prazo, "prazo de entrega", "trabalho")],
+                                ["Ensaio extra", preencher(usa("extra"), "ensaio extra", "contrato")],
+                            ].map(([rotulo, valor]) => h("div", null, h("dt", null, rotulo), h("dd", null, valor))),
+                        ),
+                        par("Serviços que não estão no pacote, como álbum impresso ou horas extras, só fazem parte deste contrato se forem acrescentados por escrito."),
+                    ),
+                ),
+            ],
+        );
+
+        const folha2 = folha(
+            2,
+            h(
+                "div",
+                { class: "folha-corpo" },
+                clausula(
+                    3,
+                    "Valor e pagamento",
+                    par("O valor total dos serviços é de ", valorTotal, ", pago em duas partes:"),
+                    numerada([
+                        ["Sinal de 30%: ", preencher(temValor ? dinheiro(sinal) : null, "valor", "trabalho"), ", na assinatura deste contrato."],
+                        ["Restante de 70%: ", preencher(temValor ? dinheiro(t.valor - sinal) : null, "valor", "trabalho"), ", até o dia do evento ou do ensaio, antes do início da cobertura."],
+                    ]),
+                    par("Forma de pagamento: ", usa("forma"), "."),
+                    par("O sinal confirma a reserva e é descontado do valor total. A entrega das fotos depende do pagamento integral. Atraso no pagamento do restante gera multa de 2% e juros de 1% ao mês sobre o valor em aberto."),
+                ),
+                clausula(
+                    4,
+                    "Reserva da data",
+                    par("A data só fica reservada depois que o sinal é pago e este contrato é assinado pelas duas partes. Até lá, o FOTÓGRAFO pode aceitar outro trabalho para o mesmo dia."),
+                    par("Com a reserva confirmada, o FOTÓGRAFO se compromete a não aceitar outro evento que conflite com o horário contratado."),
+                ),
+                clausula(
+                    5,
+                    "Obrigações do fotógrafo",
+                    par("O FOTÓGRAFO se compromete a:"),
+                    numerada([
+                        "Chegar ao local no horário combinado, com a equipe prevista no pacote.",
+                        "Levar equipamento profissional e equipamento reserva: câmera, lentes, baterias e cartões de memória.",
+                        "Fotografar os momentos combinados com o CONTRATANTE, com direção de poses quando necessário.",
+                        "Manter cópia de segurança dos arquivos até a entrega final.",
+                        "Selecionar e editar as fotos e entregar a prévia e as fotos finais nos prazos do pacote.",
+                        "Avisar o CONTRATANTE com antecedência sobre qualquer imprevisto que afete o serviço.",
+                    ]),
+                    par("Quando o pacote incluir dupla de fotógrafos, o segundo profissional é escolhido pelo FOTÓGRAFO, que responde pelo trabalho dele."),
+                ),
+                clausula(
+                    6,
+                    "Obrigações do contratante",
+                    par("O CONTRATANTE se compromete a:"),
+                    numerada([
+                        `Enviar, até ${eu.dias_roteiro} dias antes do evento, o roteiro do dia e a lista de fotos que não podem faltar.`,
+                        "Garantir o acesso da equipe aos locais combinados, incluindo preparação, cerimônia e festa.",
+                        "Oferecer refeição à equipe em coberturas com mais de 5 horas.",
+                        "Avisar com antecedência qualquer mudança de horário, local ou programação.",
+                        "Informar se houver alguma restrição de fotos no local, como regras de igreja ou cerimonial.",
+                    ]),
+                    par("Atrasos ou mudanças de programação que não dependam do FOTÓGRAFO não aumentam a duração contratada. Momentos que aconteçam fora do horário contratado podem não ser fotografados."),
+                ),
+            ),
+        );
+
+        const folha3 = folha(
+            3,
+            h(
+                "div",
+                { class: "folha-corpo" },
+                clausula(
+                    7,
+                    "Horas adicionais e deslocamento",
+                    par("As horas contam a partir da chegada do FOTÓGRAFO ao primeiro local combinado. Making of e mini ensaio fazem parte do total de horas do pacote."),
+                    par(
+                        "Se o CONTRATANTE quiser estender a cobertura no dia, a hora adicional custa ",
+                        preencher(horaAdicional ? dinheiro(horaAdicional) : null, "valor da hora adicional", "contrato"),
+                        ` e depende da disponibilidade da equipe. Ela é paga até ${eu.dias_hora_adicional} dias após o evento.`,
+                    ),
+                    par(`O deslocamento em Ribeirão Preto está incluso. Para outras cidades, o CONTRATANTE paga ${usa("deslocamento")}, combinado antes da assinatura. Se for preciso hospedagem, ela também fica por conta do CONTRATANTE.`),
+                ),
+                clausula(
+                    8,
+                    "Entrega, seleção e edição",
+                    par(`As fotos são entregues em alta resolução por link do Google Drive, no prazo do pacote, contado a partir da data do evento. O link fica disponível por ${DIAS_LINK} dias. Depois disso, guardar os arquivos é responsabilidade do CONTRATANTE.`),
+                    par("A seleção das fotos e o estilo de edição são do FOTÓGRAFO, no mesmo padrão do portfólio apresentado. A quantidade de fotos do pacote pode variar em até 10%, para mais ou para menos, conforme o andamento do evento."),
+                    par("Arquivos brutos (RAW) e fotos não selecionadas não são entregues. Retoques além da edição padrão, como manipulação de corpo ou remoção de objetos complexos, não estão inclusos e podem ser orçados à parte."),
+                ),
+                clausula(
+                    9,
+                    "Direitos autorais e uso de imagem",
+                    par("As fotos são obra do FOTÓGRAFO, que mantém os direitos autorais (Lei 9.610/98). O CONTRATANTE pode usar as fotos livremente para fins pessoais: imprimir, guardar e publicar nas redes sociais, de preferência com o crédito @okaiquemota. Vender as fotos ou usá-las em publicidade depende de autorização por escrito."),
+                    par("O FOTÓGRAFO pode usar algumas fotos no portfólio, no site e nas redes sociais, somente se o CONTRATANTE autorizar abaixo:"),
+                    h(
+                        "div",
+                        { class: "opcoes" },
+                        caixa(t.autorizacao === "sim", "Autorizo o uso das fotos no portfólio e nas redes do FOTÓGRAFO."),
+                        caixa(t.autorizacao === "nao", "Não autorizo o uso das fotos fora da entrega ao CONTRATANTE."),
+                    ),
+                    par("A autorização pode ser retirada a qualquer momento, por escrito, valendo para publicações futuras."),
+                ),
+            ),
+        );
+
+        const folha4 = folha(
+            4,
+            h(
+                "div",
+                { class: "folha-corpo" },
+                clausula(
+                    10,
+                    "Remarcação e cancelamento",
+                    par(italico("Direito de arrependimento."), " Quando o contrato for fechado à distância, por WhatsApp, e-mail ou outro meio fora de um estabelecimento comercial, o CONTRATANTE pode desistir em até 7 dias após a assinatura, com devolução integral do que pagou (Código de Defesa do Consumidor, art. 49)."),
+                    par(italico("Remarcação."), ` O CONTRATANTE pode remarcar a data uma vez, sem custo, avisando com pelo menos ${eu.dias_remarcacao} dias de antecedência, desde que o FOTÓGRAFO tenha a nova data livre. O sinal pago vale para a nova data. Sem data livre, a remarcação é tratada como cancelamento.`),
+                    par(italico("Cancelamento pelo CONTRATANTE."), " Depois dos 7 dias de arrependimento, o sinal de 30% fica com o FOTÓGRAFO como multa e compensação pela data reservada (Código Civil, art. 418), seja qual for a antecedência do aviso. O restante do valor não é cobrado."),
+                    par(italico("Cancelamento pelo FOTÓGRAFO."), ` Se o FOTÓGRAFO desistir do serviço, devolve todo o valor pago e mais um valor igual ao sinal (Código Civil, art. 418), em até ${eu.dias_devolucao} dias. Se o CONTRATANTE quiser, ele também indica outro profissional. Casos de força maior seguem a cláusula 11.`),
+                ),
+                clausula(
+                    11,
+                    "Força maior e falhas técnicas",
+                    par("Se o FOTÓGRAFO não puder comparecer por motivo de força maior, como doença grave, acidente ou morte na família, ele avisa o CONTRATANTE assim que possível e tenta enviar outro profissional do mesmo nível. Se isso não for possível ou o CONTRATANTE não aceitar, o FOTÓGRAFO devolve todo o valor pago, sem multa para nenhuma das partes."),
+                    par("O mesmo vale quando o evento não puder acontecer por motivo alheio às duas partes, como interdição do local ou calamidade. Nesse caso, as partes tentam primeiro remarcar a data."),
+                    par("Se, apesar do equipamento reserva e da cópia de segurança, houver perda de arquivos por falha técnica, a responsabilidade do FOTÓGRAFO se limita à devolução proporcional do valor referente à parte não entregue."),
+                ),
+                clausula(
+                    12,
+                    "Disposições gerais e foro",
+                    h(
+                        "ul",
+                        { class: "itens" },
+                        [
+                            "O orçamento enviado ao CONTRATANTE faz parte deste contrato. Se houver diferença entre os dois, vale este contrato.",
+                            "Mudanças neste contrato só valem se combinadas por escrito, inclusive por WhatsApp ou e-mail, com a concordância das duas partes.",
+                            "Os dados pessoais do CONTRATANTE são usados apenas para cumprir este contrato e não são compartilhados com terceiros (Lei Geral de Proteção de Dados, Lei 13.709/2018).",
+                            "Fica eleito o foro da comarca de Ribeirão Preto, SP, para resolver questões sobre este contrato.",
+                        ].map((x) => h("li", null, h("span", { class: "marcador" }, "–"), h("span", null, x))),
+                    ),
+                ),
+                h(
+                    "section",
+                    { class: "clausula assinaturas" },
+                    par(`Por estarem de acordo, as partes assinam este contrato. Ribeirão Preto, ${fDataContrato.format(paraData(det.data_contrato || hoje()))}.`),
+                    h(
+                        "div",
+                        { class: "assinantes" },
+                        h("div", null, h("p", null, `CONTRATANTE · ${nomeCliente}`), h("p", { class: "cinza" }, "CPF ", cpfCliente())),
+                        h("div", null, h("p", null, `FOTÓGRAFO · ${eu.nome}`), h("p", { class: "cinza" }, "CPF/CNPJ ", preencher(aj.documento, "seu CPF ou CNPJ", "eu"))),
+                    ),
+                ),
+            ),
+            h("span", null, "As partes também podem assinar pelo assinador gratuito do gov.br."),
+        );
+
+        // ---- o que só aparece na tela ----
+        async function marcarEnviado() {
+            try {
+                await api("trabalhos/" + t.id, { metodo: "PUT", corpo: { contrato: "enviado" } });
+                aviso("Contrato marcado como enviado.", false, async () => {
+                    await api("trabalhos/" + t.id, { metodo: "PUT", corpo: { contrato: "a_enviar" } });
+                    aviso("Voltou pra a enviar.");
+                    recarregar();
+                });
+                recarregar();
+            } catch (e) {
+                if (e.status !== 401) aviso(e.message, true);
+            }
+        }
+
+        const notas = [];
+        if (pagamentos.length && temValor && (pagamentos.reduce((s, p) => s + p.valor, 0) !== t.valor || !pagamentos.some((p) => p.valor === sinal))) {
+            notas.push(`Os pagamentos deste trabalho não seguem 30% + 70%. O contrato diz sinal de ${dinheiro(sinal)} e restante de ${dinheiro(t.valor - sinal)}.`);
+        }
+        if (t.autorizacao === "pendente") notas.push("A autorização de imagem está pendente: as duas opções da cláusula 9 saem em branco, pro cliente marcar.");
+
+        const topo = cabeca({
+            voltar: ["#/trabalhos/" + t.id, nomeTrabalho(t)],
+            rotulo: "Contrato",
+            titulo: c.nome,
+            meta: juntar(t.pacote || t.tipo, t.data ? dataMedia(t.data) : "sem data", CONTRATO[t.contrato]),
+            acoes: [
+                h("button", { type: "button", class: "botao", "data-foco": "baixar-pdf", onclick: () => window.print() }, "Baixar PDF"),
+                botao("Ajustar contrato", ACOES.contrato[1], "botao leve"),
+                botao("Seus dados", ACOES.eu[1], "botao leve"),
+                t.contrato === "a_enviar" ? botao("Marcar como enviado", marcarEnviado, "botao leve") : null,
+            ],
+        });
+        topo.classList.add("so-tela");
+
+        const conferir = h(
+            "div",
+            { class: "conferir so-tela" },
+            faltas.size
+                ? [
+                      h("p", { class: "conferir-titulo" }, "Antes de enviar, falta preencher:"),
+                      h(
+                          "ul",
+                          null,
+                          [...faltas].map(([grupo, itens]) => h("li", null, h("span", null, `${GRUPOS[grupo]}: ${listaTexto([...itens])}.`), botao(ACOES[grupo][0], ACOES[grupo][1]))),
+                      ),
+                      h("p", { class: "cinza" }, "Se baixar assim, o que falta sai como uma linha em branco, pra preencher à mão."),
+                  ]
+                : h("p", { class: "conferir-titulo" }, "Tudo preenchido."),
+            notas.map((x) => h("p", { class: "cinza" }, x)),
+            h("p", { class: "cinza" }, "“Baixar PDF” abre a janela de imprimir: escolha “Salvar como PDF”. No iPhone, toque em Compartilhar e em “Salvar em Arquivos”."),
+        );
+
+        return h("div", { class: "pagina documento" }, topo, conferir, h("div", { class: "folhas" }, folha1, folha2, folha3, folha4));
+    }
+
+    // ---------- Financeiro ----------
+
+    const MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    // eixo do gráfico: "2,5 mil", "500"
+    const eixo = (c) => {
+        const r = c / 100;
+        return r >= 1000 ? `${(r / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil` : String(Math.round(r));
+    };
+    // o topo do gráfico arredondado pra cima: 1, 2, 2,5 ou 5 vezes uma potência de 10
+    function topoBonito(max) {
+        const reais = Math.max(max / 100, 100);
+        const potencia = 10 ** Math.floor(Math.log10(reais));
+        return [1, 2, 2.5, 5, 10].find((m) => m * potencia >= reais) * potencia * 100;
+    }
+
+    function graficoMeses(recebido, receber, ano, mesAtual) {
+        const totais = recebido.map((v, i) => v + receber[i]);
+        const topo = topoBonito(Math.max(...totais));
+        const pct = (v) => `${Math.min(100, (v / topo) * 100)}%`;
+        const area = h("div", { class: "grafico-area", "aria-hidden": "true" });
+        const dica = h("div", { class: "dica", hidden: true });
+        for (const fracao of [0.5, 1]) {
+            const linha = h("div", { class: "grade" }, h("span", null, eixo(topo * fracao)));
+            linha.style.bottom = `${fracao * 100}%`;
+            area.append(linha);
+        }
+        const pico = Math.max(...recebido) > 0 ? recebido.indexOf(Math.max(...recebido)) : -1;
+        const colunas = h("div", { class: "colunas" });
+        recebido.forEach((v, i) => {
+            const pilha = h("div", { class: "pilha" });
+            if (receber[i]) {
+                const b = h("div", { class: "barra receber" });
+                b.style.height = pct(receber[i]);
+                pilha.append(b);
+            }
+            if (v) {
+                const b = h("div", { class: "barra recebido" });
+                b.style.height = pct(v);
+                pilha.append(b);
+            }
+            const coluna = h("div", { class: "coluna" + (i === mesAtual ? " atual" : "") }, pilha);
+            if (i === pico) {
+                const rotulo = h("span", { class: "rotulo-barra" }, eixo(v));
+                rotulo.style.bottom = pct(totais[i]);
+                coluna.append(rotulo);
+            }
+            const mostrar = () => {
+                dica.replaceChildren(
+                    ...[
+                        h("strong", null, `${primeiraMaiuscula(MESES_LONGOS[i])} de ${ano}`),
+                        h("span", null, `Recebido: ${dinheiro(v)}`),
+                        receber[i] ? h("span", null, `A receber: ${dinheiro(receber[i])}`) : null,
+                    ].filter(Boolean),
+                );
+                dica.hidden = false;
+                colunas.querySelectorAll(".ativa").forEach((el) => el.classList.remove("ativa"));
+                coluna.classList.add("ativa");
+                const meio = coluna.offsetLeft + coluna.offsetWidth / 2;
+                const metade = dica.offsetWidth / 2;
+                dica.style.left = `${Math.min(Math.max(meio, metade), colunas.offsetWidth - metade)}px`;
+            };
+            coluna.addEventListener("pointerenter", mostrar);
+            coluna.addEventListener("click", mostrar);
+            colunas.append(coluna);
+        });
+        colunas.addEventListener("pointerleave", (e) => {
+            if (e.pointerType !== "mouse") return; // no toque, a dica fica até tocar em outro mês
+            dica.hidden = true;
+            colunas.querySelectorAll(".ativa").forEach((el) => el.classList.remove("ativa"));
+        });
+        colunas.append(dica);
+        area.append(colunas);
+
+        const totalRecebido = recebido.reduce((a, b) => a + b, 0);
+        const totalReceber = receber.reduce((a, b) => a + b, 0);
+        const resumo = pico >= 0 ? `Recebido por mês em ${ano}: ${dinheiro(totalRecebido)} no total; o maior mês foi ${MESES_LONGOS[pico]}, com ${dinheiro(recebido[pico])}.` : `Nada recebido em ${ano}.`;
+        return h(
+            "figure",
+            { class: "grafico" },
+            h(
+                "div",
+                { class: "legenda", "aria-hidden": "true" },
+                h("span", null, h("span", { class: "amostra recebido" }), "Recebido"),
+                totalReceber ? h("span", null, h("span", { class: "amostra receber" }), "A receber, no mês em que vence") : null,
+            ),
+            h("figcaption", { class: "visualmente-escondido" }, resumo),
+            area,
+            h("div", { class: "grafico-meses", "aria-hidden": "true" }, MESES.map((m, i) => h("span", { class: i === mesAtual ? "atual" : null }, m))),
+            h(
+                "details",
+                { class: "ver-tabela" },
+                h("summary", null, "Ver em tabela"),
+                h(
+                    "table",
+                    { class: "tabela" },
+                    h("thead", null, h("tr", null, h("th", { scope: "col" }, "Mês"), h("th", { scope: "col", class: "num" }, "Recebido"), h("th", { scope: "col", class: "num" }, "A receber"))),
+                    h(
+                        "tbody",
+                        null,
+                        MESES_LONGOS.map((m, i) => h("tr", null, h("th", { scope: "row" }, primeiraMaiuscula(m)), h("td", { class: "num" }, dinheiro(recebido[i])), h("td", { class: "num" }, receber[i] ? dinheiro(receber[i]) : "—"))),
+                    ),
+                    h("tfoot", null, h("tr", null, h("th", { scope: "row" }, "Total"), h("td", { class: "num" }, dinheiro(totalRecebido)), h("td", { class: "num" }, dinheiro(totalReceber)))),
+                ),
+            ),
+        );
+    }
+
+    // tipo de trabalho ou "como conheceu": quantos trabalhos, quanto somam e a média
+    function tabelaPartes(linhas, rotulo) {
+        const maior = Math.max(...linhas.map((l) => l.valor), 1);
+        return h(
+            "table",
+            { class: "tabela partes" },
+            h("thead", null, h("tr", null, h("th", { scope: "col" }, rotulo), h("th", { scope: "col", class: "num" }, "Trabalhos"), h("th", { scope: "col", class: "num" }, "Total"), h("th", { scope: "col", class: "num media" }, "Média"))),
+            h(
+                "tbody",
+                null,
+                linhas.map((l) => {
+                    const barra = h("span", { class: "barra-fina", "aria-hidden": "true" });
+                    barra.style.width = `${(l.valor / maior) * 100}%`;
+                    return h(
+                        "tr",
+                        null,
+                        h("th", { scope: "row" }, h("span", null, l.nome), barra),
+                        h("td", { class: "num" }, l.quantos),
+                        h("td", { class: "num" }, dinheiro(l.valor)),
+                        h("td", { class: "num media" }, dinheiro(Math.round(l.valor / l.quantos))),
+                    );
+                }),
+            ),
+        );
+    }
+
+    async function paginaFinanceiro(anoPedido) {
+        const h0 = hoje();
+        const ano = anoPedido || h0.slice(0, 4);
+        const r = await api("financeiro", { params: { ano, hoje: h0 } });
+        document.title = `Financeiro ${ano} · Painel`;
+        const anoAtual = ano === h0.slice(0, 4);
+        const mesAtual = anoAtual ? Number(h0.slice(5, 7)) - 1 : -1;
+        const recebido = Array(12).fill(0);
+        for (const p of r.recebidos) recebido[Number(p.pago_em.slice(5, 7)) - 1] += p.valor;
+        const receber = Array(12).fill(0);
+        for (const x of r.a_receber) if (x.mes) receber[Number(x.mes) - 1] = x.valor;
+        const totalAno = recebido.reduce((a, b) => a + b, 0);
+        const fechados = r.por_tipo.reduce((s, l) => ({ quantos: s.quantos + l.quantos, valor: s.valor + l.valor }), { quantos: 0, valor: 0 });
+        const anterior = Number(ano) - 1;
+
+        const numeros = h(
+            "div",
+            { class: "numeros" },
+            h(
+                "div",
+                null,
+                h("span", { class: "rotulo" }, `Recebido em ${ano}`),
+                h("strong", null, dinheiro(totalAno)),
+                h("small", null, `${anoAtual ? "No mesmo período de" : "Em"} ${anterior}: ${dinheiro(r.totais.anterior)}`),
+            ),
+            h(
+                "div",
+                null,
+                h("span", { class: "rotulo" }, "A receber"),
+                h("strong", null, dinheiro(r.totais.aberto)),
+                r.totais.vencido ? h("small", { class: "atrasado" }, `${dinheiro(r.totais.vencido)} vencido`) : h("small", null, "somando todos os anos"),
+            ),
+            h("div", null, h("span", { class: "rotulo" }, `Fechados em ${ano}`), h("strong", null, fechados.quantos), h("small", null, `${dinheiro(fechados.valor)} no total`)),
+            h("div", null, h("span", { class: "rotulo" }, "Valor médio"), h("strong", null, fechados.quantos ? dinheiro(Math.round(fechados.valor / fechados.quantos)) : "—"), h("small", null, "por trabalho fechado")),
+        );
+
+        const nav = h(
+            "div",
+            { class: "mes" },
+            h("a", { class: "seta", href: `#/financeiro/${anterior}`, "aria-label": "Ano anterior", "data-foco": "ano-anterior" }, h("span", { "aria-hidden": "true" }, "‹")),
+            h("h2", { "aria-live": "polite" }, ano),
+            h("a", { class: "seta", href: `#/financeiro/${Number(ano) + 1}`, "aria-label": "Próximo ano", "data-foco": "ano-seguinte" }, h("span", { "aria-hidden": "true" }, "›")),
+        );
+
+        const temGrafico = totalAno > 0 || receber.some(Boolean);
+        const grafico = secao(
+            "Recebido por mês",
+            { nota: "em reais" },
+            temGrafico ? graficoMeses(recebido, receber, ano, mesAtual) : vazio(`Nada recebido em ${ano}.`),
+            r.totais.sem_vencimento ? h("p", { class: "cinza nota-pequena" }, `Mais ${dinheiro(r.totais.sem_vencimento)} a receber sem vencimento, que não entram no gráfico.`) : null,
+        );
+        const tipos = secao(
+            "Por tipo de trabalho",
+            { nota: r.orcamentos.quantos ? `${r.orcamentos.quantos} em orçamento` : null },
+            r.por_tipo.length ? tabelaPartes(r.por_tipo, "Tipo") : vazio(`Nenhum trabalho fechado em ${ano}.`),
+        );
+        const origens = secao(
+            "De onde vêm os clientes",
+            {},
+            r.por_origem.length ? tabelaPartes(r.por_origem, "Como conheceu") : vazio(`Nenhum trabalho fechado em ${ano}.`),
+        );
+        const recebimentos = secao(
+            "Recebimentos",
+            { acoes: r.recebidos.length ? [h("a", { class: "botao leve pequeno", href: `/api/financeiro/planilha?ano=${ano}`, download: "", "data-foco": "planilha" }, "Baixar planilha")] : null },
+            r.recebidos.length
+                ? [
+                      h("p", { class: "cinza nota-pequena" }, "A planilha tem a data, o cliente (com o CPF) e o valor de cada recebimento do ano: serve pro carnê-leão e pro imposto de renda."),
+                      listaLimitada(
+                          r.recebidos,
+                          (p) =>
+                              item({
+                                  href: "#/trabalhos/" + p.trabalho_id,
+                                  dia: p.pago_em,
+                                  titulo: `${p.descricao} · ${p.cliente}`,
+                                  info: juntar(nomeTrabalho(p), p.forma),
+                                  lado: h("span", { class: "numero", text: dinheiro(p.valor) }),
+                              }),
+                          8,
+                      ),
+                  ]
+                : vazio(`Nenhum pagamento recebido em ${ano}.`),
+        );
+
+        return pagina(
+            cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null] }),
+            nav,
+            numeros,
+            grafico,
+            h("div", { class: "duas" }, tipos, origens),
+            recebimentos,
         );
     }
 
@@ -1395,7 +2126,9 @@
         [/^clientes$/, () => paginaClientes(), "clientes"],
         [/^clientes\/([0-9a-f-]{36})$/, (m) => paginaCliente(m[1]), "clientes"],
         [/^trabalhos\/([0-9a-f-]{36})$/, (m) => paginaTrabalho(m[1]), "clientes"],
+        [/^trabalhos\/([0-9a-f-]{36})\/contrato$/, (m) => paginaContrato(m[1]), "clientes"],
         [/^agenda(?:\/(\d{4}-\d{2}))?$/, (m) => paginaAgenda(m[1]), "agenda"],
+        [/^financeiro(?:\/(\d{4}))?$/, (m) => paginaFinanceiro(m[1]), "financeiro"],
     ];
     let vezRota = 0;
 
