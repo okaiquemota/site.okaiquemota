@@ -1016,10 +1016,10 @@
     // ---------- Trabalhos (a tela principal): um quadro com uma coluna por etapa ----------
 
     const ETAPAS = [
-        ["orcamento", "Orçamento", "Ainda não fechou"],
-        ["confirmado", "Confirmado", "Fechado, falta fotografar"],
-        ["edicao", "Em edição", "Fotografado, falta entregar"],
-        ["entregue", "Entregue", "Os mais recentes"],
+        ["orcamento", "Orçamento", "Ainda não fechou", "Nenhum orçamento em aberto."],
+        ["confirmado", "Confirmado", "Fechado, falta fotografar", "Nada confirmado por enquanto."],
+        ["edicao", "Em edição", "Fotografado, falta entregar", "Nenhuma edição na fila."],
+        ["entregue", "Entregue", "Os mais recentes", "Os trabalhos entregues aparecem aqui."],
     ];
 
     // O que falta fazer num trabalho, em uma frase. "acao" diz qual botão resolve (na página do trabalho).
@@ -1082,16 +1082,28 @@
             edicao: (a, b) => (a.prazo_entrega || "9").localeCompare(b.prazo_entrega || "9"),
             entregue: (a, b) => (b.entregue_em || b.data || "").localeCompare(a.entregue_em || a.data || ""),
         };
-        const coluna = ([status, nome, explicacao]) => {
+        const coluna = ([status, nome, explicacao, semNada]) => {
             const lista = trabalhos.filter((t) => t.status === status).sort(ordem[status]);
             return h(
                 "section",
                 { class: "coluna-etapa etapa-" + status, "data-secao": nome },
                 h("div", { class: "coluna-topo" }, h("h2", { tabindex: "-1" }, nome, h("span", { class: "conta" }, lista.length)), h("p", { class: "item-info" }, explicacao)),
-                lista.length ? listaLimitada(lista, cartaoTrabalho, status === "entregue" ? 5 : 12) : h("p", { class: "vazio" }, "Nenhum."),
+                lista.length ? listaLimitada(lista, cartaoTrabalho, status === "entregue" ? 5 : 12) : h("p", { class: "vazio" }, semNada),
             );
         };
         const cancelados = trabalhos.filter((t) => t.status === "cancelado");
+
+        // o que está atrasado ou vencido vem antes de tudo, numa faixa só
+        const urgentes = trabalhos.map((t) => ({ t, p: proximoPasso(t, h0) })).filter(({ p }) => p?.alerta);
+        const atencao = urgentes.length
+            ? h(
+                  "section",
+                  { class: "atencao", "aria-label": "Precisa de você agora" },
+                  h("h2", null, urgentes.length === 1 ? "1 trabalho precisa de você agora" : `${urgentes.length} trabalhos precisam de você agora`),
+                  h("ul", null, urgentes.slice(0, 4).map(({ t, p }) => h("li", null, h("a", { href: "#/trabalhos/" + t.id }, h("strong", null, p.texto), h("span", null, juntar(nomeTrabalho(t), t.cliente)))))),
+                  urgentes.length > 4 ? h("p", { class: "item-info" }, `e mais ${urgentes.length - 4}, marcados em vermelho no quadro.`) : null,
+              )
+            : null;
 
         const receber = secao(
             "A receber",
@@ -1121,7 +1133,16 @@
                 rotulo: primeiraMaiuscula(fSemana.format(paraData(h0))),
                 titulo: "Trabalhos",
             }),
-            trabalhos.length ? h("div", { class: "quadro" }, ETAPAS.map(coluna)) : h("div", { class: "secao" }, vazio("Nenhum trabalho ainda. Comece pelo botão “+ Novo trabalho”: o cliente é cadastrado junto.")),
+            atencao,
+            trabalhos.length
+                ? h("div", { class: "quadro" }, ETAPAS.map(coluna))
+                : h(
+                      "div",
+                      { class: "vazio-grande" },
+                      h("h2", null, "Nenhum trabalho ainda"),
+                      h("p", null, "Registre o primeiro: o cliente é cadastrado junto, e o painel passa a mostrar o próximo passo de cada trabalho."),
+                      h("button", { type: "button", class: "botao", onclick: () => formTrabalho(null).catch((e) => e.status !== 401 && aviso(e.message, true)) }, "Novo trabalho"),
+                  ),
             cancelados.length
                 ? h("details", { class: "cancelados" }, h("summary", null, `Cancelados (${cancelados.length})`), h("ul", { class: "lista-cartoes" }, cancelados.map(cartaoTrabalho)))
                 : null,

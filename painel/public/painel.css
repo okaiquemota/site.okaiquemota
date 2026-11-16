@@ -385,6 +385,19 @@ dialog::backdrop { background: rgba(27, 26, 23, 0.45); }
 .cancelados summary { display: inline-flex; align-items: center; min-height: 44px; color: var(--texto-3); font-size: var(--t-14); cursor: pointer; }
 .cancelados .lista-cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 
+/* faixa do que está atrasado ou vencido: a primeira coisa que o olho encontra */
+.atencao { margin-bottom: var(--e5); padding: var(--e4) var(--e5); border: 1px solid var(--perigo); border-radius: var(--raio); background: var(--perigo-suave); }
+.atencao h2 { color: var(--perigo); font-size: var(--t-15); font-weight: 700; }
+.atencao ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--e2); margin-top: var(--e3); }
+.atencao a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: var(--e2) var(--e3); border-radius: var(--raio-p); background: var(--sup); box-shadow: var(--sombra); }
+.atencao a span { color: var(--texto-3); font-size: var(--t-13); }
+.atencao .item-info { margin-top: var(--e2); }
+@media (hover: hover) and (pointer: fine) { .atencao a:hover strong { text-decoration: underline; text-underline-offset: 3px; } }
+/* painel sem nenhum trabalho: diz o que fazer e dá o botão */
+.vazio-grande { display: flex; flex-direction: column; align-items: center; gap: var(--e3); padding: var(--e10) var(--e5); border: 1px dashed var(--borda-forte); border-radius: var(--raio); text-align: center; }
+.vazio-grande h2 { font-size: var(--t-20); font-weight: 700; }
+.vazio-grande p { max-width: 44ch; color: var(--texto-3); }
+
 /* Página do trabalho: o que fazer à esquerda, os dados à direita */
 .trabalho { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--e5); align-items: start; }
 .trabalho > * > .secao:first-child { margin-top: 0; }
