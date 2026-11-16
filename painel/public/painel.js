@@ -1169,7 +1169,10 @@
         const lista = h("ul", { class: "lista" });
         document.title = "Clientes · Painel";
         const contagem = h("p", { class: "rotulo contagem", role: "status" });
-        const busca = h("input", { type: "search", placeholder: "Buscar por nome, telefone, e-mail, CPF ou Instagram", "aria-label": "Buscar clientes", value: ultimaBusca, autocomplete: "off" });
+        const busca = h("input", { type: "search", placeholder: "Filtrar por nome, telefone, e-mail, CPF ou Instagram", "aria-label": "Filtrar clientes", value: ultimaBusca, autocomplete: "off" });
+        const iniciais = (nome) => nome.trim().split(/\s+/).filter((_, i, a) => i === 0 || i === a.length - 1).map((x) => x[0].toUpperCase()).join("");
+        const cabecalhoLista = h("div", { class: "linha-cliente cabecalho-lista", "aria-hidden": "true" }, h("span"), h("span", null, "Nome"), h("span", null, "WhatsApp"), h("span", null, "Cidade"), h("span", null, "Trabalhos"), h("span", null, "Próximo"));
+        const semNinguem = h("div", { class: "vazio-grande", hidden: true });
         let vez = 0;
 
         async function carregar() {
@@ -1179,18 +1182,36 @@
             const { clientes } = await api("clientes", { params: { q, hoje: hoje() } });
             if (minha !== vez) return;
             contagem.textContent = q ? `${clientes.length} encontrado${clientes.length === 1 ? "" : "s"}` : `${clientes.length} cliente${clientes.length === 1 ? "" : "s"}`;
+            // no computador é uma tabela (uma coluna por informação); no celular, cada cliente vira um cartão de duas linhas
+            const trabalhosDe = (c) => (c.trabalhos ? `${c.trabalhos} trabalho${c.trabalhos === 1 ? "" : "s"}` : "Nenhum trabalho");
             lista.replaceChildren(
                 ...clientes.map((c) =>
-                    item({
-                        href: "#/clientes/" + c.id,
-                        semDia: true,
-                        titulo: c.nome,
-                        info: juntar(telefoneBonito(c.telefone), c.cidade, c.trabalhos ? `${c.trabalhos} trabalho${c.trabalhos === 1 ? "" : "s"}` : null),
-                        lado: c.proximo ? selo("Próximo: " + dataCurta(c.proximo)) : null,
-                    }),
+                    h(
+                        "li",
+                        null,
+                        h(
+                            "a",
+                            { class: "linha-cliente", href: "#/clientes/" + c.id },
+                            h("span", { class: "avatar", "aria-hidden": "true" }, iniciais(c.nome)),
+                            h("span", { class: "item-corpo" }, h("span", { class: "item-titulo" }, c.nome), h("span", { class: "item-info so-estreito" }, juntar(telefoneBonito(c.telefone), c.cidade, trabalhosDe(c)))),
+                            h("span", { class: "so-largo" }, telefoneBonito(c.telefone) || "—"),
+                            h("span", { class: "so-largo" }, c.cidade || "—"),
+                            h("span", { class: "so-largo" }, trabalhosDe(c)),
+                            h("span", { class: "c-proximo" }, c.proximo ? selo(dataCurta(c.proximo), "st-confirmado") : h("span", { class: "so-largo cinza" }, "—")),
+                        ),
+                    ),
                 ),
             );
-            if (!clientes.length) lista.replaceChildren(h("li", null, vazio(q ? `Ninguém encontrado com “${q}”.` : "Nenhum cliente ainda. Comece pelo botão Novo cliente.")));
+            cabecalhoLista.hidden = !clientes.length;
+            lista.hidden = !clientes.length;
+            semNinguem.hidden = Boolean(clientes.length);
+            if (!clientes.length) {
+                semNinguem.replaceChildren(
+                    ...(q
+                        ? [h("h2", null, `Ninguém encontrado com “${q}”`), h("p", null, "Confira a grafia ou procure por outro dado: telefone, e-mail, CPF ou Instagram.")]
+                        : [h("h2", null, "Nenhum cliente ainda"), h("p", null, "Os clientes entram sozinhos quando você registra um trabalho. Também dá pra cadastrar só o contato."), h("button", { type: "button", class: "botao", onclick: () => formCliente(null) }, "Novo cliente")]),
+                );
+            }
         }
 
         let espera;
@@ -1201,10 +1222,10 @@
         await carregar();
 
         return pagina(
-            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")] }),
-            h("div", { class: "busca" }, busca),
-            contagem,
-            lista,
+            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao leve", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")] }),
+            h("div", { class: "filtro" }, h("div", { class: "busca" }, busca), contagem),
+            h("div", { class: "tabela-clientes" }, cabecalhoLista, lista),
+            semNinguem,
         );
     }
 
@@ -1213,12 +1234,6 @@
         document.title = `${c.nome} · Painel`;
         const zap = linkWhatsApp(c.telefone);
         const insta = linkInstagram(c.instagram);
-        const contatos = [
-            zap ? externo(zap, "WhatsApp " + telefoneBonito(c.telefone)) : c.telefone ? h("span", { text: c.telefone }) : null,
-            c.email ? h("a", { class: "link", href: "mailto:" + c.email }, c.email) : null,
-            insta ? externo(insta, c.instagram) : null,
-        ].filter(Boolean);
-
         const listaTrabalhos = trabalhos.length
             ? h(
                   "ul",
@@ -1237,7 +1252,7 @@
                       });
                   }),
               )
-            : vazio("Nenhum trabalho ainda.");
+            : vazio("Nenhum trabalho ainda. Use “Novo trabalho” pra registrar o primeiro deste cliente.");
 
         const apagarCliente = async () => {
             const texto = `Apagar ${c.nome} e tudo o que é dele? Vão junto ${trabalhos.length} trabalho${trabalhos.length === 1 ? "" : "s"}, os pagamentos, ${documentos.length} arquivo${documentos.length === 1 ? "" : "s"} e os compromissos.\n\nNão dá pra desfazer.`;
@@ -1253,32 +1268,51 @@
         };
 
         const anos = idade(c.nascimento);
+        const totalTrabalhos = trabalhos.filter((t) => t.status !== "cancelado").reduce((soma, t) => soma + (t.valor || 0), 0);
+        const faltaReceber = trabalhos.filter((t) => t.status !== "cancelado").reduce((soma, t) => soma + Math.max(0, (t.valor || 0) - (t.recebido || 0)), 0);
         return pagina(
             cabeca({
                 voltar: ["#/clientes", "Clientes"],
                 titulo: c.nome,
-                meta: contatos.length ? h("span", { class: "contatos" }, contatos) : null,
-                acoes: [botao("Editar", () => formCliente(c), "botao leve", "cliente"), h("button", { type: "button", class: "botao", "data-foco": "novo-trabalho", onclick: () => formTrabalho(null, c) }, "Novo trabalho")],
+                meta: juntar(c.cidade, `cliente desde ${dataMedia(diaDoInstante(c.criado_em))}`),
+                acoes: [
+                    zap ? h("a", { class: "botao leve", href: zap, target: "_blank", rel: "noopener noreferrer" }, "WhatsApp") : null,
+                    h("button", { type: "button", class: "botao", "data-foco": "novo-trabalho", onclick: () => formTrabalho(null, c) }, "Novo trabalho"),
+                ],
             }),
-            secao("Trabalhos", { nota: trabalhos.length ? String(trabalhos.length) : null }, listaTrabalhos),
-            secaoCompromissos(compromissos, { clienteId: c.id }),
-            secaoDocumentos(documentos, { clienteId: c.id, trabalhos }),
-            secao(
-                "Dados",
-                { acoes: [botao("Editar", () => formCliente(c), undefined, "dados do cliente")] },
-                ficha([
-                    ["WhatsApp", telefoneBonito(c.telefone)],
-                    ["E-mail", c.email],
-                    ["Instagram", c.instagram],
-                    ["CPF", c.cpf],
-                    ["RG", c.rg],
-                    ["Nascimento", c.nascimento ? `${dataMedia(c.nascimento)}${anos !== null ? ` (${anos} anos)` : ""}` : null],
-                    ["Cidade", c.cidade],
-                    ["Como conheceu", c.origem],
-                    ["Cliente desde", dataMedia(diaDoInstante(c.criado_em))],
-                    ["Endereço", c.endereco, true],
-                    c.observacoes ? ["Observações", c.observacoes, true] : null,
-                ]),
+            h(
+                "div",
+                { class: "trabalho" },
+                h(
+                    "div",
+                    { class: "trabalho-principal" },
+                    secao(
+                        "Trabalhos",
+                        { nota: trabalhos.length ? juntar(`${trabalhos.length}`, totalTrabalhos ? `${dinheiro(totalTrabalhos)} no total` : null, faltaReceber ? `falta receber ${dinheiro(faltaReceber)}` : null) : null },
+                        listaTrabalhos,
+                    ),
+                    secaoCompromissos(compromissos, { clienteId: c.id }),
+                    secaoDocumentos(documentos, { clienteId: c.id, trabalhos }),
+                ),
+                h(
+                    "aside",
+                    { class: "trabalho-lateral" },
+                    secao(
+                        "Dados",
+                        { acoes: [botao("Editar", () => formCliente(c), undefined, "dados do cliente")] },
+                        ficha([
+                            ["WhatsApp", zap ? externo(zap, telefoneBonito(c.telefone)) : telefoneBonito(c.telefone), true],
+                            ["E-mail", c.email ? h("a", { class: "link", href: "mailto:" + c.email }, c.email) : null, true],
+                            ["Instagram", insta ? externo(insta, c.instagram) : c.instagram, true],
+                            ["CPF", c.cpf],
+                            ["RG", c.rg],
+                            ["Nascimento", c.nascimento ? `${dataMedia(c.nascimento)}${anos !== null ? ` (${anos} anos)` : ""}` : null, true],
+                            ["Como conheceu", c.origem, true],
+                            ["Endereço", juntar(c.endereco, c.cidade) || null, true],
+                            c.observacoes ? ["Observações", c.observacoes, true] : null,
+                        ]),
+                    ),
+                ),
             ),
             h("div", { class: "rodape" }, h("button", { type: "button", class: "link perigo", onclick: apagarCliente }, "Apagar cliente")),
         );
