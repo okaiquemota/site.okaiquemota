@@ -14,20 +14,33 @@
     <link rel="stylesheet" href="painel.css">
 </head>
 <body>
-    <header class="topo" id="topo" hidden>
+    <aside class="lado" id="topo" hidden>
         <a class="marca" href="#/">Kaique Mota <span class="rotulo">Painel</span></a>
+        <button class="botao novo" type="button" id="novo-trabalho">+ Novo trabalho</button>
         <nav class="menu" aria-label="Menu">
-            <a href="#/" data-menu="inicio"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg><span>Início</span></a>
-            <a href="#/clientes" data-menu="clientes"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><span>Clientes</span></a>
+            <a href="#/" data-menu="inicio"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg><span>Trabalhos</span></a>
             <a href="#/agenda" data-menu="agenda"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg><span>Agenda</span></a>
+            <a href="#/clientes" data-menu="clientes"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><span>Clientes</span></a>
             <a href="#/financeiro" data-menu="financeiro"><svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Financeiro</span></a>
         </nav>
-        <button class="menu-sair" type="button" id="sair">Sair</button>
-    </header>
+        <div class="lado-base">
+            <button type="button" id="seus-dados">Seus dados do contrato</button>
+            <a href="/api/backup" download>Baixar backup</a>
+            <button type="button" id="sair">Sair</button>
+        </div>
+    </aside>
 
-    <main id="app" tabindex="-1">
-        <p class="carregando pagina">Carregando…</p>
-    </main>
+    <div class="palco">
+        <div class="barra" id="barra">
+            <div class="busca-geral">
+                <input type="search" id="busca-geral" placeholder="Buscar trabalho ou cliente" aria-label="Buscar trabalho ou cliente" autocomplete="off">
+                <div class="busca-resultados" id="busca-resultados" hidden></div>
+            </div>
+        </div>
+        <main id="app" tabindex="-1">
+            <p class="carregando pagina">Carregando…</p>
+        </main>
+    </div>
 
     <dialog id="janela" aria-labelledby="janela-titulo"></dialog>
     <div class="aviso" id="aviso" role="status" aria-live="polite"></div>

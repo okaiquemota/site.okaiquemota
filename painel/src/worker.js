@@ -478,6 +478,23 @@ async function listarClientes(env, url) {
     return json({ clientes: results });
 }
 
+// todos os trabalhos, pro quadro por etapa e pra busca (só leitura)
+async function listarTrabalhos(env, url) {
+    const hoje = hojeDe(url);
+    const { results } = await env.DB.prepare(
+        `SELECT t.id, t.cliente_id, t.tipo, t.titulo, t.data, t.hora, t.local, t.pacote, t.valor, t.status, t.contrato, t.autorizacao,
+                t.prazo_entrega, t.entregue_em, c.nome AS cliente, c.telefone,
+                (SELECT COUNT(*) FROM pagamentos p WHERE p.trabalho_id = t.id) AS pagamentos,
+                (SELECT COALESCE(SUM(p.valor), 0) FROM pagamentos p WHERE p.trabalho_id = t.id AND p.pago_em IS NOT NULL) AS recebido,
+                (SELECT COALESCE(SUM(p.valor), 0) FROM pagamentos p WHERE p.trabalho_id = t.id AND p.pago_em IS NULL AND p.vencimento < ?1) AS vencido
+         FROM trabalhos t JOIN clientes c ON c.id = t.cliente_id
+         ORDER BY t.data IS NULL, t.data, t.hora LIMIT 5000`,
+    )
+        .bind(hoje)
+        .all();
+    return json({ trabalhos: results });
+}
+
 async function verCliente(env, id) {
     const cliente = await buscar(env, "clientes", id);
     const [trabalhos, documentos, compromissos] = await env.DB.batch([
@@ -939,6 +956,7 @@ async function rotasComSessao(request, env, url, metodo, caminho) {
     if (caminho === "/api/ajustes" && metodo === "GET") return json(await verAjustes(env));
     if (caminho === "/api/ajustes" && metodo === "PUT") return salvarAjustes(env, request);
     if (caminho === "/api/clientes" && metodo === "GET") return listarClientes(env, url);
+    if (caminho === "/api/trabalhos" && metodo === "GET") return listarTrabalhos(env, url);
 
     if (caminho === "/api/documentos" && metodo === "POST") return enviarDocumento(env, request, url);
     let m = caminho.match(/^\/api\/documentos\/([0-9a-f-]{36})$/);
