@@ -8,7 +8,7 @@ Roda na Cloudflare, na sua conta: um Worker (o site e a API), um banco D1 (os da
 
 ## O que tem
 
-- **Início**: os números do ano (clientes, trabalhos, recebido e a receber), os próximos trabalhos, o que falta receber (com botão "Recebi"), o que falta entregar (com o prazo, em vermelho quando passou), as pendências (contrato não assinado, autorização de imagem pendente) e os compromissos dos próximos 14 dias.
+- **Início**: quatro cartões com o que precisa de você (a receber, para entregar, pendências e compromissos; ficam vermelhos quando tem algo vencido ou atrasado, e tocar num deles leva até a lista), o resumo do ano numa linha, o que falta receber (com botão "Recebi"), o que falta entregar (com o prazo, em vermelho quando passou), os próximos trabalhos, as pendências (contrato não assinado, autorização de imagem pendente) e os compromissos dos próximos 14 dias.
 - **Clientes**: busca por nome, telefone, e-mail, CPF ou Instagram, sem se preocupar com acento. Na ficha ficam os dados (com o CPF conferido e o link pro WhatsApp), os trabalhos, os compromissos e os documentos. Apagar um cliente apaga tudo o que é dele, inclusive os arquivos, e serve pros pedidos de exclusão da LGPD.
 - **Trabalho**: tipo, pacote, data, horário, local, valor, situação (Orçamento, Confirmado, Em edição, Entregue, Cancelado), contrato, autorização de imagem, prazo de entrega e o link da galeria. Ao escolher o pacote, o valor se preenche com o preço do orçamento; com a data, o prazo de entrega também. O botão "Sinal 30% + restante" cria os dois pagamentos do jeito do "Como funciona" (o restante vence no dia). Ao marcar a entrega, mostra até quando o link do Drive fica no ar (90 dias).
 - **Terceiros**: no trabalho, quem você contrata ou indica pra ele (a Amanda no vídeo, um segundo fotógrafo, um assistente) e quanto repassa pra cada um. "Paguei" marca o repasse feito (com "Desfazer"). Embaixo aparece o repassado, o que falta repassar e o que fica com você. No Financeiro, a seção Terceiros mostra o recebido no ano, o repassado e o que fica com você.
@@ -71,7 +71,7 @@ painel/
 ├── src/worker.js           a API: login, cadastros, arquivos, agenda, financeiro, planilha e backup
 ├── public/
 │   ├── index.html
-│   ├── painel.css          o mesmo visual do site: branco, tinta preta, Tinos, linhas finas
+│   ├── painel.css          blocos brancos, letra de sistema, uma cor por situação; Tinos só nos títulos e no contrato
 │   ├── painel.js           as telas
 │   ├── assinatura.svg      ícone da aba e da tela de entrar
 │   ├── icone-*.png         ícone do app no celular

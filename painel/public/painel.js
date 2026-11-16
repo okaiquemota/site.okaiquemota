@@ -10,7 +10,8 @@
     // ---------- Vocabulário ----------
 
     const STATUS = { orcamento: "Orçamento", confirmado: "Confirmado", edicao: "Em edição", entregue: "Entregue", cancelado: "Cancelado" };
-    const CLASSE_STATUS = { orcamento: "", confirmado: "cheio", edicao: "", entregue: "apagado", cancelado: "apagado" };
+    // cada situação com a sua cor, pra bater o olho e saber
+    const CLASSE_STATUS = { orcamento: "st-orcamento", confirmado: "st-confirmado", edicao: "st-edicao", entregue: "st-entregue", cancelado: "st-cancelado" };
     const CONTRATO = { a_enviar: "A enviar", enviado: "Enviado, falta assinar", assinado: "Assinado", dispensado: "Sem contrato" };
     const CONTRATO_CURTO = { a_enviar: "A enviar", enviado: "Enviado", assinado: "Assinado", dispensado: "Sem contrato" };
     const AUTORIZACAO = { pendente: "Pendente", sim: "Autorizou", nao: "Não autorizou" };
@@ -995,19 +996,31 @@
         const ano = h0.slice(0, 4);
         const n = r.numeros;
 
+        // o que precisa de você vem primeiro; tocar num cartão leva até a lista dele
+        const irPara = (titulo) => () => {
+            const alvo = document.querySelector(`[data-secao="${titulo}"]`);
+            alvo?.scrollIntoView({ behavior: "smooth", block: "start" });
+            alvo?.querySelector("h2")?.focus({ preventScroll: true });
+        };
+        const cartao = (rotulo, valor, nota, alerta, alvo) =>
+            h("button", { type: "button", class: "cartao" + (alerta ? " alerta" : ""), onclick: irPara(alvo) }, h("span", { class: "rotulo" }, rotulo), h("strong", null, valor), h("small", null, nota));
+        const plural = (q, um, varios) => `${q} ${q === 1 ? um : varios}`;
+        const entregasAtrasadas = r.entregas.filter((t) => t.prazo_entrega && t.prazo_entrega < h0).length;
+        const compromissosAtrasados = r.compromissos.filter((k) => !k.feito && k.data < h0).length;
+        const compromissosHoje = r.compromissos.filter((k) => !k.feito && k.data === h0).length;
         const numeros = h(
             "div",
             { class: "numeros" },
-            h("div", null, h("span", { class: "rotulo" }, "Clientes"), h("strong", null, n.clientes)),
-            h("div", null, h("span", { class: "rotulo" }, `Trabalhos em ${ano}`), h("strong", null, n.trabalhos_ano)),
-            h("div", null, h("span", { class: "rotulo" }, `Recebido em ${ano}`), h("strong", null, dinheiro(n.recebido_ano)), h("small", null, h("a", { class: "link", href: "#/financeiro" }, "Ver o financeiro"))),
-            h(
-                "div",
-                null,
-                h("span", { class: "rotulo" }, "A receber"),
-                h("strong", null, dinheiro(r.totais.aberto)),
-                r.totais.vencido ? h("small", { class: "atrasado" }, `${dinheiro(r.totais.vencido)} vencido`) : null,
-            ),
+            cartao("A receber", dinheiro(r.totais.aberto), r.totais.vencido ? `${dinheiro(r.totais.vencido)} vencido` : r.totais.aberto ? "nada vencido" : "nada em aberto", r.totais.vencido > 0, "A receber"),
+            cartao("Para entregar", r.entregas.length, entregasAtrasadas ? plural(entregasAtrasadas, "atrasada", "atrasadas") : r.entregas.length ? "no prazo" : "tudo entregue", entregasAtrasadas > 0, "Para entregar"),
+            cartao("Pendências", r.pendencias.length, r.pendencias.length ? "contrato ou autorização" : "tudo em dia", false, "Pendências"),
+            cartao("Compromissos", r.compromissos.length, compromissosAtrasados ? plural(compromissosAtrasados, "atrasado", "atrasados") : compromissosHoje ? `${compromissosHoje} hoje` : "próximos 14 dias", compromissosAtrasados > 0, "Compromissos"),
+        );
+        const doAno = h(
+            "p",
+            { class: "do-ano" },
+            `Em ${ano}: ${plural(n.trabalhos_ano, "trabalho", "trabalhos")} · ${dinheiro(n.recebido_ano)} recebido · ${plural(n.clientes, "cliente", "clientes")} · `,
+            h("a", { class: "link", href: "#/financeiro" }, "Ver o financeiro"),
         );
 
         const proximos = secao(
@@ -1037,7 +1050,7 @@
                           dia: p.vencimento,
                           titulo: `${p.descricao} · ${p.cliente}`,
                           info: h("span", { class: vencido ? "atrasado" : null }, juntar(nomeTrabalho(p), p.vencimento ? (vencido ? `venceu ${relativo(p.vencimento)}` : `vence ${relativo(p.vencimento)}`) : "sem vencimento")),
-                          lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p), undefined, `${p.descricao} de ${p.cliente}, ${dinheiro(p.valor)}`)],
+                          lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p), "botao pequeno feito-botao", `${p.descricao} de ${p.cliente}, ${dinheiro(p.valor)}`)],
                       });
                   })
                 : vazio("Nada em aberto."),
@@ -1093,7 +1106,8 @@
                 acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")],
             }),
             numeros,
-            h("div", { class: "duas" }, proximos, receber, entregas, pendencias),
+            doAno,
+            h("div", { class: "duas" }, receber, entregas, proximos, pendencias),
             compromissos,
             rodape(),
         );
@@ -1286,7 +1300,7 @@
                     h("span", { class: "item-titulo" }, p.descricao, " ", p.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(p.pago_em ? `pago em ${dataMedia(p.pago_em)}` : p.vencimento ? `vence em ${dataMedia(p.vencimento)} (${relativo(p.vencimento)})` : "sem vencimento", p.forma)),
                 ),
-                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), undefined, `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), "botao pequeno feito-botao", `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
             );
         });
 
@@ -1301,7 +1315,7 @@
                     h("span", { class: "item-titulo" }, juntar(r.nome, r.servico), " ", r.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(r.pago_em ? `pago em ${dataMedia(r.pago_em)}` : r.vencimento ? `pagar até ${dataMedia(r.vencimento)} (${relativo(r.vencimento)})` : "a pagar", r.forma, r.observacoes)),
                 ),
-                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(r.valor) }), !r.pago_em ? botao("Paguei", () => marcarRepassado(r), undefined, `${r.nome}, ${dinheiro(r.valor)}`) : null, botao("Editar", () => formTerceiro(r), undefined, `terceiro ${r.nome}`)),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(r.valor) }), !r.pago_em ? botao("Paguei", () => marcarRepassado(r), "botao pequeno feito-botao", `${r.nome}, ${dinheiro(r.valor)}`) : null, botao("Editar", () => formTerceiro(r), undefined, `terceiro ${r.nome}`)),
             );
         });
 
@@ -1345,9 +1359,6 @@
                 ],
             }),
             ficha([
-                ["Situação", escolhas("status", "Situação", STATUS), true],
-                ["Contrato", escolhas("contrato", "Contrato", CONTRATO_CURTO), true],
-                ["Autorização de imagem", escolhas("autorizacao", "Autorização de imagem", AUTORIZACAO), true],
                 ["Cliente", h("a", { class: "link", href: "#/clientes/" + c.id }, c.nome)],
                 ["Valor", t.valor ? dinheiro(t.valor) : null],
                 ["Falta receber", t.valor ? h("span", { class: "numero" }, dinheiro(falta)) : null],
@@ -1356,6 +1367,15 @@
                 ["Galeria", galeria],
                 t.observacoes ? ["Observações", t.observacoes, true] : null,
             ]),
+            secao(
+                "Andamento",
+                { nota: "toque pra mudar, salva na hora" },
+                ficha([
+                    ["Situação", escolhas("status", "Situação", STATUS), true],
+                    ["Contrato", escolhas("contrato", "Contrato", CONTRATO_CURTO), true],
+                    ["Autorização de imagem", escolhas("autorizacao", "Autorização de imagem", AUTORIZACAO), true],
+                ]),
+            ),
             secao(
                 "Pagamentos",
                 {

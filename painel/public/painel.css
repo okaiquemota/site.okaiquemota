@@ -1,8 +1,8 @@
 /* -------------------------------------------------------------------------
    Painel · Kaique Mota
-   O mesmo visual do site: fundo branco, tinta preta, cinza nos detalhes,
-   Tinos (o desenho da Times) e linhas finas. O vermelho só aparece no que
-   está atrasado.
+   Feito pra usar, não pra enfeitar: letra de sistema (a do celular), blocos
+   brancos sobre fundo cinza claro, botões com cara de botão e uma cor pra
+   cada situação. A Tinos do site fica só na marca, nos títulos e no contrato.
 ------------------------------------------------------------------------- */
 @font-face { font-family: "Tinos"; src: url("fontes/tinos-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Tinos"; src: url("fontes/tinos-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
@@ -10,12 +10,19 @@
 :root {
     --papel: #ffffff;
     --tinta: #111111;
-    --cinza: #707070;
+    --cinza: #5f5f5f;
     --linha: #dcdcdc;
     --linha-forte: #bdbdbd;
     --nevoa: #f6f6f5;
     --erro: #a3362f;
-    --f: Tinos, "Times New Roman", Times, serif;
+    --serifa: Tinos, "Times New Roman", Times, serif;
+    --f: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fundo: #f4f4f1;
+    --raio: 10px;
+    --verde: #1f6b3a; --verde-fundo: #e3f1e6;
+    --ambar: #7a4f00; --ambar-fundo: #fbeccb;
+    --azul: #1d4f91; --azul-fundo: #e1ebf8;
+    --erro-fundo: #fbe9e7;
     --margem: clamp(16px, 4vw, 48px);
     --topo: 60px;
     --base: 0px;
@@ -438,3 +445,104 @@ dialog::backdrop { background: rgba(17, 17, 17, 0.35); }
 .barra-fina { display: block; min-width: 2px; height: 3px; margin-top: 7px; border-radius: 0 2px 2px 0; background: var(--tinta); }
 @media (max-width: 520px) { .tabela .media { display: none; } }
 .nota-pequena { margin-top: 12px; font-size: 14px; }
+
+/* =========================================================================
+   Usabilidade: blocos, cores e botões
+========================================================================= */
+html, body { background: var(--fundo); }
+.entrar { background: var(--papel); }
+.marca, .titulo, .secao-topo h2, .janela-topo h2, .mes h2, .dia-lista h3, .folha, .entrar { font-family: var(--serifa); }
+.titulo { font-size: clamp(26px, 4vw, 36px); }
+:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+
+/* rótulos: maiores e sem o espaçamento largo, que cansava de ler */
+.rotulo, .ficha dt, .campo > label, .campo > .rotulo, .tabela thead th, .calendario .sem-nome, .dia span, .tipo-item { font-size: 12.5px; letter-spacing: 0.02em; text-transform: none; font-weight: 600; }
+.dia span { text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; }
+.item-titulo { font-weight: 600; }
+.item-info, .campo .ajuda, .vazio, .carregando { font-style: normal; }
+.item-info { font-size: 14.5px; }
+.atrasado { font-weight: 600; }
+
+/* botões com cara de botão */
+.botao, .escolha, .campo input, .campo select, .campo textarea, .busca input, dialog, .soltar, .conferir { border-radius: 8px; }
+.botao { font-weight: 600; }
+.botao.leve { border-color: var(--linha-forte); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04); }
+.botao.pequeno { min-height: 38px; padding: 0 14px; }
+.botao.feito-botao { background: var(--verde); border-color: var(--verde); color: #fff; }
+.botao.perigo { background: var(--papel); }
+@media (hover: hover) and (pointer: fine) {
+    .botao.leve:not([disabled]):hover { background: var(--nevoa); }
+    .botao.feito-botao:not([disabled]):hover { background: #17552d; color: #fff; }
+}
+.link { background-image: linear-gradient(var(--cinza), var(--cinza)); }
+
+/* uma cor pra cada situação */
+.selo { min-height: 24px; padding: 2px 10px; border: 0; background: var(--nevoa); font-size: 12.5px; font-weight: 600; }
+.selo.st-orcamento { background: var(--ambar-fundo); color: var(--ambar); }
+.selo.st-confirmado { background: var(--verde-fundo); color: var(--verde); }
+.selo.st-edicao { background: var(--azul-fundo); color: var(--azul); }
+.selo.st-entregue, .selo.apagado { background: #ececea; color: var(--cinza); }
+.selo.st-cancelado { background: #ececea; color: var(--cinza); text-decoration: line-through; }
+.selo.alerta { background: var(--erro-fundo); color: var(--erro); }
+
+/* topo e menu */
+.topo { background: var(--papel); }
+.menu a { gap: 8px; font-weight: 600; }
+.menu a::after { height: 2px; }
+.icone { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+@media (min-width: 721px) { .menu .icone { display: none; } }
+@media (max-width: 720px) {
+    :root { --base: 64px; }
+    .menu { background: var(--papel); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .menu a { flex-direction: column; gap: 3px; font-size: 12px; }
+    .menu a::after { display: none; }
+}
+
+/* cada assunto no seu bloco */
+.secao, .ficha, .busca + .contagem + .lista, .grafico { background: var(--papel); border: 1px solid var(--linha); border-radius: var(--raio); }
+.secao { margin-top: 20px; padding: 6px 18px 10px; scroll-margin-top: calc(var(--topo) + 12px); }
+.secao-topo { min-height: 54px; padding: 8px 0; border-bottom: 1px solid var(--linha); }
+.secao-topo .rotulo { font-weight: 400; }
+.secao .lista > li:last-child, .secao .ficha > div:last-child { border-bottom: 0; }
+.secao .ficha { border: 0; border-radius: 0; padding: 0; }
+.ficha { padding: 4px 18px; }
+.pagina > .ficha > div { border-bottom: 0; }
+.busca + .contagem + .lista { padding: 0 18px; }
+.busca + .contagem + .lista > li:last-child { border-bottom: 0; }
+.grafico { padding: 12px 18px 16px; }
+.duas { gap: 0 20px; align-items: start; }
+.saldo { margin-top: 4px; border-top: 1px solid var(--linha); }
+.saldo strong { font-weight: 700; }
+.cabeca { margin-bottom: 20px; }
+@media (max-width: 720px) { .secao, .ficha { padding-left: 14px; padding-right: 14px; } }
+
+/* cartões do topo (Início e Financeiro) */
+.numeros { gap: 12px; border: 0; }
+.numeros > div, .numeros > .cartao, .numeros > div + div { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--linha); border-radius: var(--raio); background: var(--papel); text-align: left; }
+.numeros strong { font-size: clamp(20px, 5.4vw, 28px); font-weight: 700; }
+.numeros small { font-size: 13.5px; }
+.cartao { cursor: pointer; transition: border-color 0.2s; }
+.cartao.alerta { border-color: var(--erro) !important; background: var(--erro-fundo) !important; }
+.cartao.alerta small { color: var(--erro); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) { .cartao:hover { border-color: var(--tinta) !important; } }
+@media (max-width: 720px) {
+    .numeros > div:nth-child(n + 3) { border-top: 1px solid var(--linha); }
+    .numeros > div:nth-child(3) { padding-left: 16px; border-left: 1px solid var(--linha); }
+    .numeros .rotulo { min-height: 0; }
+}
+.do-ano { margin-top: 12px; color: var(--cinza); font-size: 14.5px; }
+
+/* escolhas: a marcada leva um ✓ */
+.escolha { min-height: 40px; font-weight: 600; }
+.escolha[aria-pressed="true"]::before { content: "✓"; margin-right: 6px; }
+
+/* agenda */
+.calendario { background: var(--papel); }
+.cel.hoje .num { font-weight: 700; }
+
+/* janelas */
+dialog { border: 0; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
+@media (max-width: 720px) { dialog { border-radius: 0; } }
+.folha { border-radius: 0; }
+.secao .grafico { padding: 0; border: 0; }
+.secao-topo .rotulo, .marca .rotulo { font-family: var(--f); font-size: 13px; }
