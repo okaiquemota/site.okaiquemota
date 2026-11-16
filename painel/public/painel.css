@@ -363,7 +363,6 @@ dialog::backdrop { background: rgba(27, 26, 23, 0.45); }
     .janela-base .botao { flex: 1; }
     .etapa { padding-left: 0; padding-right: 0; font-size: 11.5px; }
 }
-}
 
 .entrar { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; padding: var(--e8) var(--margem); background: var(--sup); text-align: center; }
 .entrar img { width: min(200px, 52vw); height: auto; margin-bottom: var(--e2); }
