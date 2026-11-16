@@ -298,6 +298,19 @@ const TABELAS = {
             forma: ["Forma de pagamento", regra.texto(30)],
         },
     },
+    terceiros: {
+        pai: "trabalho_id",
+        campos: {
+            trabalho_id: ["Trabalho", regra.id(true)],
+            nome: ["Nome", regra.texto(120, true)],
+            servico: ["Serviço", regra.texto(80)],
+            valor: ["Valor", regra.centavos(true)],
+            vencimento: ["Vencimento", regra.data()],
+            pago_em: ["Pago em", regra.data()],
+            forma: ["Forma de pagamento", regra.texto(30)],
+            observacoes: ["Observações", regra.texto(2000)],
+        },
+    },
     compromissos: {
         campos: {
             cliente_id: ["Cliente", regra.id()],
@@ -481,9 +494,10 @@ async function verCliente(env, id) {
 
 async function verTrabalho(env, id) {
     const trabalho = await buscar(env, "trabalhos", id);
-    const [cliente, pagamentos, documentos, compromissos] = await env.DB.batch([
+    const [cliente, pagamentos, terceiros, documentos, compromissos] = await env.DB.batch([
         env.DB.prepare("SELECT id, nome, telefone, email, cpf, endereco, cidade FROM clientes WHERE id = ?").bind(trabalho.cliente_id),
         env.DB.prepare("SELECT * FROM pagamentos WHERE trabalho_id = ? ORDER BY vencimento IS NULL, vencimento, criado_em").bind(id),
+        env.DB.prepare("SELECT * FROM terceiros WHERE trabalho_id = ? ORDER BY vencimento IS NULL, vencimento, criado_em").bind(id),
         env.DB.prepare("SELECT * FROM documentos WHERE trabalho_id = ? ORDER BY criado_em DESC").bind(id),
         env.DB.prepare("SELECT * FROM compromissos WHERE trabalho_id = ? ORDER BY feito, data, hora").bind(id),
     ]);
@@ -491,6 +505,7 @@ async function verTrabalho(env, id) {
         trabalho,
         cliente: cliente.results[0],
         pagamentos: pagamentos.results,
+        terceiros: terceiros.results,
         documentos: documentos.results,
         compromissos: compromissos.results,
     });
@@ -609,7 +624,7 @@ async function agenda(env, url) {
 async function criar(env, tabela, request) {
     const dados = validar(tabela, await lerCorpo(request), true);
     if (tabela === "trabalhos" && !(await existe(env, "clientes", dados.cliente_id))) throw new Erro(400, "Cliente não encontrado.");
-    if (tabela === "pagamentos" && !(await existe(env, "trabalhos", dados.trabalho_id))) throw new Erro(400, "Trabalho não encontrado.");
+    if ((tabela === "pagamentos" || tabela === "terceiros") && !(await existe(env, "trabalhos", dados.trabalho_id))) throw new Erro(400, "Trabalho não encontrado.");
     if (tabela === "compromissos") await ligarCompromisso(env, dados);
     return json(await inserir(env, tabela, dados), 201);
 }
@@ -778,7 +793,7 @@ async function financeiro(env, url) {
     const anterior = String(Number(ano) - 1);
     // o ano anterior até o mesmo dia (no ano corrente) ou inteiro (nos outros)
     const ateAnterior = ano === hoje.slice(0, 4) ? anterior + hoje.slice(4) : anterior + "-12-31";
-    const [recebidos, aReceber, totais, porTipo, porOrigem, orcamentos] = await env.DB.batch([
+    const [recebidos, aReceber, totais, porTipo, porOrigem, orcamentos, repassados, repassesTotais] = await env.DB.batch([
         env.DB.prepare(SQL_RECEBIDOS).bind(ano),
         env.DB.prepare(
             `SELECT substr(p.vencimento, 6, 2) AS mes, SUM(p.valor) AS valor
@@ -808,6 +823,19 @@ async function financeiro(env, url) {
             `SELECT COUNT(*) AS quantos, COALESCE(SUM(valor), 0) AS valor FROM trabalhos t
              WHERE t.status = 'orcamento' AND substr(COALESCE(t.data, t.criado_em), 1, 4) = ?1`,
         ).bind(ano),
+        // o que você pagou a terceiros no ano (a Amanda, outro fotógrafo...)
+        env.DB.prepare(
+            `SELECT r.id, r.nome, r.servico, r.valor, r.forma, r.pago_em, t.id AS trabalho_id, t.tipo, t.titulo, t.pacote, c.nome AS cliente
+             FROM terceiros r JOIN trabalhos t ON t.id = r.trabalho_id JOIN clientes c ON c.id = t.cliente_id
+             WHERE r.pago_em BETWEEN ?1 || '-01-01' AND ?1 || '-12-31'
+             ORDER BY r.pago_em DESC, r.criado_em DESC`,
+        ).bind(ano),
+        // o que ainda falta pagar a terceiros (todos os anos, menos trabalho cancelado)
+        env.DB.prepare(
+            `SELECT COALESCE(SUM(r.valor), 0) AS a_pagar
+             FROM terceiros r JOIN trabalhos t ON t.id = r.trabalho_id
+             WHERE r.pago_em IS NULL AND t.status != 'cancelado'`,
+        ),
     ]);
     return json({
         ano,
@@ -818,6 +846,8 @@ async function financeiro(env, url) {
         por_tipo: porTipo.results,
         por_origem: porOrigem.results,
         orcamentos: orcamentos.results[0],
+        repassados: repassados.results,
+        repasses: repassesTotais.results[0],
     });
 }
 
@@ -860,7 +890,7 @@ async function planilha(env, url) {
 // ---------- Cópia de segurança ----------
 
 async function backup(env) {
-    const tabelas = ["clientes", "trabalhos", "pagamentos", "documentos", "compromissos", "ajustes"];
+    const tabelas = ["clientes", "trabalhos", "pagamentos", "terceiros", "documentos", "compromissos", "ajustes"];
     const resultados = await env.DB.batch(tabelas.map((t) => env.DB.prepare(`SELECT * FROM ${t}`)));
     const dados = { gerado_em: agoraIso(), aviso: "Os arquivos (PDFs e fotos) não vão neste backup: ficam guardados no R2." };
     tabelas.forEach((t, i) => {
@@ -875,7 +905,7 @@ async function backup(env) {
 
 // ---------- Roteador ----------
 
-const ROTAS_TABELA = { clientes: "clientes", trabalhos: "trabalhos", pagamentos: "pagamentos", compromissos: "compromissos" };
+const ROTAS_TABELA = { clientes: "clientes", trabalhos: "trabalhos", pagamentos: "pagamentos", terceiros: "terceiros", compromissos: "compromissos" };
 
 async function api(request, env, url) {
     const metodo = request.method;
@@ -918,7 +948,7 @@ async function rotasComSessao(request, env, url, metodo, caminho) {
         if (metodo === "DELETE") return apagarDocumento(env, m[1]);
     }
 
-    m = caminho.match(/^\/api\/(clientes|trabalhos|pagamentos|compromissos)(?:\/([0-9a-f-]{36}))?$/);
+    m = caminho.match(/^\/api\/(clientes|trabalhos|pagamentos|terceiros|compromissos)(?:\/([0-9a-f-]{36}))?$/);
     if (m) {
         const tabela = ROTAS_TABELA[m[1]];
         const id = m[2];
