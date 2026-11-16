@@ -295,17 +295,18 @@
                 dlg.close();
             }
         };
+        const temObrigatorio = corpo instanceof Node && corpo.querySelector?.("[required]");
         const form = h(
             "form",
-            { class: "janela", novalidate: true },
+            { class: "janela" + (perigo ? " confirmacao" : ""), novalidate: true },
             h(
                 "div",
                 { class: "janela-topo" },
                 h("h2", { id: "janela-titulo", text: titulo }),
                 h("button", { type: "button", class: "fechar", "aria-label": "Fechar", onclick: fechar }, h("span", { "aria-hidden": "true" }, "×")),
             ),
-            h("div", { class: "janela-corpo" }, corpo),
-            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: fechar }, "Cancelar"), botao),
+            h("div", { class: "janela-corpo" }, corpo, temObrigatorio ? h("p", { class: "ajuda legenda-obrigatorio" }, "* obrigatório") : null),
+            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: fechar }, perigo ? "Voltar" : "Cancelar"), botao),
         );
         form.addEventListener("input", (e) => e.target.removeAttribute?.("aria-invalid"));
         form.addEventListener("submit", async (e) => {
@@ -337,6 +338,7 @@
                 botao.disabled = false;
             }
         });
+        dlg.classList.toggle("estreito", perigo);
         dlg.replaceChildren(form);
         if (dlg.open) dlg.close();
         // Esc (e o "voltar" do Android): mesma regra do Cancelar
@@ -379,6 +381,8 @@
     }
 
     function campo(c, valor) {
+        // { grupo: "Título" } abre um grupo de campos (só um título; não é um campo)
+        if (c.grupo) return h("h3", { class: "grupo inteira" }, c.grupo, c.nota ? h("span", { class: "ajuda" }, c.nota) : null);
         const id = `c-${c.nome}-${Math.random().toString(36).slice(2, 8)}`;
         const comum = { id, name: c.nome, required: c.obrigatorio || null, ...(c.attrs || {}) };
         if (c.tipo === "caixa") {
@@ -527,16 +531,19 @@
     // ---------- Formulários ----------
 
     const CAMPOS_CLIENTE = [
+        { grupo: "Contato" },
         { nome: "nome", rotulo: "Nome", obrigatorio: true, inteira: true, attrs: { maxlength: 120 } },
         { nome: "telefone", rotulo: "WhatsApp", tipo: "tel", attrs: { inputmode: "tel", placeholder: "(16) 99999-9999", maxlength: 30 } },
         { nome: "email", rotulo: "E-mail", tipo: "email", attrs: { maxlength: 160 } },
         { nome: "instagram", rotulo: "Instagram", attrs: { placeholder: "@usuario", maxlength: 60 } },
         { nome: "origem", rotulo: "Como conheceu", lista: ORIGENS, attrs: { maxlength: 60 } },
+        { grupo: "Pro contrato", nota: "Pode preencher depois: o contrato avisa o que falta." },
         { nome: "cpf", rotulo: "CPF", attrs: { inputmode: "numeric", placeholder: "000.000.000-00", maxlength: 20 } },
         { nome: "rg", rotulo: "RG", attrs: { maxlength: 30 } },
         { nome: "nascimento", rotulo: "Nascimento", tipo: "date" },
         { nome: "cidade", rotulo: "Cidade", attrs: { placeholder: "Ribeirão Preto, SP", maxlength: 80 } },
         { nome: "endereco", rotulo: "Endereço", inteira: true, attrs: { placeholder: "Rua, número, bairro e CEP", maxlength: 300 } },
+        { grupo: "Anotações" },
         { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 5000 } },
     ];
 
@@ -575,27 +582,34 @@
         const clientes = novo && !clienteFixo ? (await api("clientes")).clientes : [];
         const lista = novo
             ? [
+                  { grupo: "Quem" },
                   { nome: "cliente", rotulo: "Cliente", obrigatorio: true, lista: clientes.map((c) => c.nome), attrs: { maxlength: 120, placeholder: "Nome de quem contratou", readonly: clienteFixo ? true : null }, ajuda: clienteFixo ? null : "Escreva o nome: se já existe, aparece pra escolher; se não, é cadastrado agora." },
                   clienteFixo ? null : { nome: "cliente_telefone", rotulo: "WhatsApp do cliente", tipo: "tel", attrs: { inputmode: "tel", placeholder: "(16) 99999-9999", maxlength: 30 } },
+                  { grupo: "O quê" },
                   { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: TIPOS.map((x) => [x, x]), obrigatorio: true },
                   { nome: "pacote", rotulo: "Pacote", lista: [], attrs: { maxlength: 80 } },
+                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
+                  { nome: "status", rotulo: "Em que pé está", tipo: "select", opcoes: [["orcamento", "Orçamento (ainda não fechou)"], ["confirmado", "Confirmado (fechou)"]] },
+                  { grupo: "Quando e onde", nota: "Se ainda não sabe, deixe em branco." },
                   { nome: "data", rotulo: "Data", tipo: "date" },
                   { nome: "hora", rotulo: "Horário", tipo: "time" },
                   { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
-                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
-                  { nome: "status", rotulo: "Em que pé está", tipo: "select", opcoes: [["orcamento", "Orçamento (ainda não fechou)"], ["confirmado", "Confirmado (fechou)"]] },
               ].filter(Boolean)
             : [
+                  { grupo: "O quê" },
                   { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: TIPOS.map((x) => [x, x]), obrigatorio: true },
                   { nome: "pacote", rotulo: "Pacote", lista: [], attrs: { maxlength: 80 } },
                   { nome: "titulo", rotulo: "Título", inteira: true, attrs: { placeholder: "Ex.: Casamento Ana e João", maxlength: 120 }, ajuda: "Se ficar vazio, aparece o tipo." },
+                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
+                  { grupo: "Quando e onde" },
                   { nome: "data", rotulo: "Data", tipo: "date" },
                   { nome: "hora", rotulo: "Horário", tipo: "time" },
                   { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
-                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
+                  { grupo: "Entrega" },
                   { nome: "prazo_entrega", rotulo: "Prazo de entrega", tipo: "date", ajuda: "Preenche sozinho pelo pacote e pela data." },
                   { nome: "entregue_em", rotulo: "Entregue em", tipo: "date" },
                   { nome: "galeria", rotulo: "Link da galeria (Google Drive)", tipo: "url", inteira: true, attrs: { placeholder: "https://drive.google.com/…", maxlength: 600 } },
+                  { grupo: "Anotações" },
                   { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 5000 } },
               ];
         const corpo = campos(lista, t);
@@ -1438,11 +1452,50 @@
             ? h("div", { class: "proximo" + (passo.alerta ? " alerta" : passo.feito ? " feito" : "") }, h("div", null, h("span", { class: "rotulo" }, "Próximo passo"), h("strong", null, passo.texto)), ACOES_PASSO[passo.acao] || null)
             : null;
 
+        // as quatro etapas em sequência (clicar numa muda e salva); cancelar fica à parte, pra não ser clicado sem querer
+        const ORDEM = ["orcamento", "confirmado", "edicao", "entregue"];
+        const posicao = ORDEM.indexOf(t.status);
+        const cancelar = async () => {
+            if (await confirmar("Cancelar trabalho", `Cancelar “${nomeTrabalho(t)}”? Ele sai do quadro e das pendências, mas nada é apagado: dá pra reabrir depois.`, "Cancelar trabalho")) mudar("status", "cancelado");
+        };
+        const secaoEtapa =
+            t.status === "cancelado"
+                ? secao("Etapa", {}, h("div", { class: "cancelado-aviso" }, h("p", null, "Este trabalho está cancelado."), botao("Reabrir como orçamento", () => mudar("status", "orcamento"))))
+                : secao(
+                      "Etapa",
+                      { nota: "clique numa etapa pra mudar", acoes: [botao("Cancelar trabalho", cancelar)] },
+                      h(
+                          "ol",
+                          { class: "etapas" },
+                          ORDEM.map((v, i) =>
+                              h(
+                                  "li",
+                                  { class: i < posicao ? "feita" : i === posicao ? "atual" : null },
+                                  h(
+                                      "button",
+                                      { type: "button", class: "etapa", "aria-current": i === posicao ? "step" : null, "data-foco": `escolha|status|${v}`, onclick: () => t.status !== v && mudar("status", v) },
+                                      h("span", { class: "etapa-num", "aria-hidden": "true" }, i < posicao ? "✓" : String(i + 1)),
+                                      h("span", null, STATUS[v]),
+                                      i < posicao ? escondido(" (feita)") : null,
+                                  ),
+                              ),
+                          ),
+                      ),
+                  );
+        // quanto do valor já entrou, numa barra
+        let barraRecebido = null;
+        if (t.valor > 0) {
+            const parte = Math.min(100, Math.round((recebido / t.valor) * 100));
+            const cheio = h("span");
+            cheio.style.width = parte + "%";
+            barraRecebido = h("div", { class: "progresso", role: "img", "aria-label": `${parte}% recebido: ${dinheiro(recebido)} de ${dinheiro(t.valor)}` }, cheio);
+        }
+
         const principal = h(
             "div",
             { class: "trabalho-principal" },
             faixaPasso,
-            secao("Etapa", { nota: "clique pra mudar, salva na hora" }, escolhas("status", "Etapa", STATUS)),
+            secaoEtapa,
             secao(
                 "Pagamentos",
                 {
@@ -1452,6 +1505,7 @@
                     ],
                 },
                 pagamentos.length ? h("ul", { class: "lista" }, linhasPagamento) : vazio(t.valor ? "Nenhum pagamento ainda." : "Coloque o valor do trabalho em Editar pra controlar os pagamentos."),
+                barraRecebido,
                 t.valor || pagamentos.length
                     ? h(
                           "p",
@@ -1584,12 +1638,15 @@
                 h("p", { class: "texto-janela nota-janela" }, "Vão só nos contratos que o painel monta. Ficam guardados aqui no painel, atrás da senha: não aparecem no site nem no GitHub."),
                 campos(
                     [
+                        { grupo: "Quem é você no contrato" },
                         { nome: "nome", rotulo: "Seu nome no contrato", inteira: true, attrs: { maxlength: 120 }, ajuda: "Pode ser o nome completo. " + padrao("nome") },
                         { nome: "documento", rotulo: "CPF ou CNPJ", attrs: { inputmode: "numeric", maxlength: 30 } },
                         { nome: "telefone", rotulo: "Telefone", tipo: "tel", attrs: { inputmode: "tel", maxlength: 30 }, ajuda: padrao("telefone") },
                         { nome: "endereco", rotulo: "Endereço", inteira: true, attrs: { maxlength: 300, placeholder: "Rua, número, bairro, Ribeirão Preto, SP" } },
+                        { grupo: "Pagamento e deslocamento" },
                         { nome: "forma", rotulo: "Formas de pagamento", inteira: true, attrs: { maxlength: 120 }, ajuda: "Cláusula 3. " + padrao("forma") },
                         { nome: "deslocamento", rotulo: "Deslocamento para outras cidades", inteira: true, attrs: { maxlength: 160 }, ajuda: "Cláusula 7, “o contratante paga …”. " + padrao("deslocamento") },
+                        { grupo: "Prazos, em dias" },
                         { nome: "dias_roteiro", rotulo: "Roteiro do dia: dias antes", ...dias, ajuda: "Cláusula 6. " + padrao("dias_roteiro") },
                         { nome: "dias_hora_adicional", rotulo: "Pagar hora adicional: dias depois", ...dias, ajuda: "Cláusula 7. " + padrao("dias_hora_adicional") },
                         { nome: "dias_remarcacao", rotulo: "Avisar remarcação: dias antes", ...dias, ajuda: "Cláusula 10. " + padrao("dias_remarcacao") },
@@ -1930,7 +1987,7 @@
             voltar: ["#/trabalhos/" + t.id, nomeTrabalho(t)],
             rotulo: "Contrato",
             titulo: c.nome,
-            meta: juntar(t.pacote || t.tipo, t.data ? dataMedia(t.data) : "sem data", CONTRATO[t.contrato]),
+            meta: h("span", { class: "contatos" }, juntar(t.pacote || t.tipo, t.data ? dataMedia(t.data) : "sem data"), selo(CONTRATO[t.contrato], t.contrato === "assinado" ? "st-confirmado" : t.contrato === "enviado" ? "st-orcamento" : "")),
             acoes: [
                 h("button", { type: "button", class: "botao", "data-foco": "baixar-pdf", onclick: () => window.print() }, "Baixar PDF"),
                 botao("Ajustar contrato", ACOES.contrato[1], "botao leve"),
