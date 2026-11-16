@@ -10,7 +10,8 @@
     // ---------- Vocabulário ----------
 
     const STATUS = { orcamento: "Orçamento", confirmado: "Confirmado", edicao: "Em edição", entregue: "Entregue", cancelado: "Cancelado" };
-    const CLASSE_STATUS = { orcamento: "", confirmado: "cheio", edicao: "", entregue: "apagado", cancelado: "apagado" };
+    // cada situação com a sua cor, pra bater o olho e saber
+    const CLASSE_STATUS = { orcamento: "st-orcamento", confirmado: "st-confirmado", edicao: "st-edicao", entregue: "st-entregue", cancelado: "st-cancelado" };
     const CONTRATO = { a_enviar: "A enviar", enviado: "Enviado, falta assinar", assinado: "Assinado", dispensado: "Sem contrato" };
     const CONTRATO_CURTO = { a_enviar: "A enviar", enviado: "Enviado", assinado: "Assinado", dispensado: "Sem contrato" };
     const AUTORIZACAO = { pendente: "Pendente", sim: "Autorizou", nao: "Não autorizou" };
@@ -269,7 +270,7 @@
                   },
               }, "Desfazer")
             : null;
-        el.replaceChildren(h("span", null, mensagem), botaoDesfazer);
+        el.replaceChildren(...[h("span", null, mensagem), botaoDesfazer].filter(Boolean));
         el.classList.toggle("erro", erro);
         el.classList.add("mostra");
         clearTimeout(avisoTempo);
@@ -294,17 +295,18 @@
                 dlg.close();
             }
         };
+        const temObrigatorio = corpo instanceof Node && corpo.querySelector?.("[required]");
         const form = h(
             "form",
-            { class: "janela", novalidate: true },
+            { class: "janela" + (perigo ? " confirmacao" : ""), novalidate: true },
             h(
                 "div",
                 { class: "janela-topo" },
                 h("h2", { id: "janela-titulo", text: titulo }),
                 h("button", { type: "button", class: "fechar", "aria-label": "Fechar", onclick: fechar }, h("span", { "aria-hidden": "true" }, "×")),
             ),
-            h("div", { class: "janela-corpo" }, corpo),
-            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: fechar }, "Cancelar"), botao),
+            h("div", { class: "janela-corpo" }, corpo, temObrigatorio ? h("p", { class: "ajuda legenda-obrigatorio" }, "* obrigatório") : null),
+            h("div", { class: "janela-base" }, erro, extra, h("button", { type: "button", class: "botao leve", onclick: fechar }, perigo ? "Voltar" : "Cancelar"), botao),
         );
         form.addEventListener("input", (e) => e.target.removeAttribute?.("aria-invalid"));
         form.addEventListener("submit", async (e) => {
@@ -336,6 +338,7 @@
                 botao.disabled = false;
             }
         });
+        dlg.classList.toggle("estreito", perigo);
         dlg.replaceChildren(form);
         if (dlg.open) dlg.close();
         // Esc (e o "voltar" do Android): mesma regra do Cancelar
@@ -378,6 +381,8 @@
     }
 
     function campo(c, valor) {
+        // { grupo: "Título" } abre um grupo de campos (só um título; não é um campo)
+        if (c.grupo) return h("h3", { class: "grupo inteira" }, c.grupo, c.nota ? h("span", { class: "ajuda" }, c.nota) : null);
         const id = `c-${c.nome}-${Math.random().toString(36).slice(2, 8)}`;
         const comum = { id, name: c.nome, required: c.obrigatorio || null, ...(c.attrs || {}) };
         if (c.tipo === "caixa") {
@@ -435,6 +440,12 @@
     const opcoesDe = (obj) => Object.entries(obj);
 
     // ---------- Peças das páginas ----------
+
+    // o desenho da página enquanto ela carrega (em vez de um "Carregando…" solto)
+    function esqueleto() {
+        const s = (classe) => h("span", { class: classe });
+        return h("div", { class: "pagina carregando esqueleto", role: "status" }, escondido("Carregando…"), s("e-titulo"), s("e-linha"), h("div", { class: "e-grade" }, s(), s(), s(), s()), s("e-bloco"));
+    }
 
     function pagina(...filhos) {
         return h("div", { class: "pagina" }, filhos);
@@ -520,16 +531,19 @@
     // ---------- Formulários ----------
 
     const CAMPOS_CLIENTE = [
+        { grupo: "Contato" },
         { nome: "nome", rotulo: "Nome", obrigatorio: true, inteira: true, attrs: { maxlength: 120 } },
         { nome: "telefone", rotulo: "WhatsApp", tipo: "tel", attrs: { inputmode: "tel", placeholder: "(16) 99999-9999", maxlength: 30 } },
         { nome: "email", rotulo: "E-mail", tipo: "email", attrs: { maxlength: 160 } },
         { nome: "instagram", rotulo: "Instagram", attrs: { placeholder: "@usuario", maxlength: 60 } },
         { nome: "origem", rotulo: "Como conheceu", lista: ORIGENS, attrs: { maxlength: 60 } },
+        { grupo: "Pro contrato", nota: "Pode preencher depois: o contrato avisa o que falta." },
         { nome: "cpf", rotulo: "CPF", attrs: { inputmode: "numeric", placeholder: "000.000.000-00", maxlength: 20 } },
         { nome: "rg", rotulo: "RG", attrs: { maxlength: 30 } },
         { nome: "nascimento", rotulo: "Nascimento", tipo: "date" },
         { nome: "cidade", rotulo: "Cidade", attrs: { placeholder: "Ribeirão Preto, SP", maxlength: 80 } },
         { nome: "endereco", rotulo: "Endereço", inteira: true, attrs: { placeholder: "Rua, número, bairro e CEP", maxlength: 300 } },
+        { grupo: "Anotações" },
         { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 5000 } },
     ];
 
@@ -561,29 +575,56 @@
         });
     }
 
-    function formTrabalho(trabalho, clienteId) {
-        const t = trabalho || { tipo: TIPOS[0], status: "orcamento", contrato: "a_enviar", autorizacao: "pendente" };
-        const corpo = campos(
-            [
-                { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: TIPOS.map((x) => [x, x]), obrigatorio: true },
-                { nome: "pacote", rotulo: "Pacote", lista: [], attrs: { maxlength: 80 } },
-                { nome: "titulo", rotulo: "Título", inteira: true, attrs: { placeholder: "Ex.: Casamento Ana e João", maxlength: 120 }, ajuda: "Se ficar vazio, aparece o tipo." },
-                { nome: "data", rotulo: "Data", tipo: "date" },
-                { nome: "hora", rotulo: "Horário", tipo: "time" },
-                { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
-                { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
-                { nome: "status", rotulo: "Situação", tipo: "select", opcoes: opcoesDe(STATUS) },
-                { nome: "contrato", rotulo: "Contrato", tipo: "select", opcoes: opcoesDe(CONTRATO) },
-                { nome: "autorizacao", rotulo: "Autorização de imagem", tipo: "select", opcoes: opcoesDe(AUTORIZACAO) },
-                { nome: "prazo_entrega", rotulo: "Prazo de entrega", tipo: "date", ajuda: "Preenche sozinho pelo pacote e pela data." },
-                { nome: "entregue_em", rotulo: "Entregue em", tipo: "date" },
-                { nome: "galeria", rotulo: "Link da galeria (Google Drive)", tipo: "url", inteira: true, attrs: { placeholder: "https://drive.google.com/…", maxlength: 600 } },
-                { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 5000 } },
-            ],
-            t,
-        );
+    // Editar: todos os campos. Novo: um passo só, com o cliente junto (o que já existe ou um novo).
+    async function formTrabalho(trabalho, clienteFixo) {
+        const novo = !trabalho;
+        const t = trabalho || { tipo: TIPOS[0], status: "orcamento", cliente: clienteFixo?.nome || "" };
+        const clientes = novo && !clienteFixo ? (await api("clientes")).clientes : [];
+        const lista = novo
+            ? [
+                  { grupo: "Quem" },
+                  { nome: "cliente", rotulo: "Cliente", obrigatorio: true, lista: clientes.map((c) => c.nome), attrs: { maxlength: 120, placeholder: "Nome de quem contratou", readonly: clienteFixo ? true : null }, ajuda: clienteFixo ? null : "Escreva o nome: se já existe, aparece pra escolher; se não, é cadastrado agora." },
+                  clienteFixo ? null : { nome: "cliente_telefone", rotulo: "WhatsApp do cliente", tipo: "tel", attrs: { inputmode: "tel", placeholder: "(16) 99999-9999", maxlength: 30 } },
+                  { grupo: "O quê" },
+                  { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: TIPOS.map((x) => [x, x]), obrigatorio: true },
+                  { nome: "pacote", rotulo: "Pacote", lista: [], attrs: { maxlength: 80 } },
+                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
+                  { nome: "status", rotulo: "Em que pé está", tipo: "select", opcoes: [["orcamento", "Orçamento (ainda não fechou)"], ["confirmado", "Confirmado (fechou)"]] },
+                  { grupo: "Quando e onde", nota: "Se ainda não sabe, deixe em branco." },
+                  { nome: "data", rotulo: "Data", tipo: "date" },
+                  { nome: "hora", rotulo: "Horário", tipo: "time" },
+                  { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
+              ].filter(Boolean)
+            : [
+                  { grupo: "O quê" },
+                  { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: TIPOS.map((x) => [x, x]), obrigatorio: true },
+                  { nome: "pacote", rotulo: "Pacote", lista: [], attrs: { maxlength: 80 } },
+                  { nome: "titulo", rotulo: "Título", inteira: true, attrs: { placeholder: "Ex.: Casamento Ana e João", maxlength: 120 }, ajuda: "Se ficar vazio, aparece o tipo." },
+                  { nome: "valor", rotulo: "Valor total (R$)", tipo: "dinheiro", ajuda: "Preenche sozinho com o preço do pacote." },
+                  { grupo: "Quando e onde" },
+                  { nome: "data", rotulo: "Data", tipo: "date" },
+                  { nome: "hora", rotulo: "Horário", tipo: "time" },
+                  { nome: "local", rotulo: "Local", inteira: true, attrs: { maxlength: 200 } },
+                  { grupo: "Entrega" },
+                  { nome: "prazo_entrega", rotulo: "Prazo de entrega", tipo: "date", ajuda: "Preenche sozinho pelo pacote e pela data." },
+                  { nome: "entregue_em", rotulo: "Entregue em", tipo: "date" },
+                  { nome: "galeria", rotulo: "Link da galeria (Google Drive)", tipo: "url", inteira: true, attrs: { placeholder: "https://drive.google.com/…", maxlength: 600 } },
+                  { grupo: "Anotações" },
+                  { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 5000 } },
+              ];
+        const corpo = campos(lista, t);
         const el = (n) => corpo.querySelector(`[name="${n}"]`);
-        const listaPacotes = corpo.querySelector("datalist");
+        const listaPacotes = el("pacote").parentNode.querySelector("datalist");
+        const igual = (a, b) => simples(a).trim() === simples(b).trim();
+        const clienteExistente = () => clientes.find((c) => igual(c.nome, el("cliente").value));
+        if (novo && !clienteFixo) {
+            // escolheu alguém que já existe: o WhatsApp dele aparece e não precisa escrever de novo
+            el("cliente").addEventListener("input", () => {
+                const c = clienteExistente();
+                el("cliente_telefone").disabled = Boolean(c);
+                if (c) el("cliente_telefone").value = telefoneBonito(c.telefone);
+            });
+        }
         // se o prazo salvo é o que o pacote daria, ele continua acompanhando a data ao editar
         let prazoAutomatico = t.data && pacoteDe(t.pacote) && t.prazo_entrega === somarDias(t.data, pacoteDe(t.pacote).prazo) ? t.prazo_entrega : null;
         // o mesmo com o valor: se é o preço do pacote, trocar de pacote troca o valor
@@ -593,7 +634,7 @@
         const calcularPrazo = () => {
             const pacote = pacoteDe(el("pacote").value);
             const data = el("data").value;
-            if (!pacote || !data) return;
+            if (novo || !pacote || !data) return;
             if (el("prazo_entrega").value && el("prazo_entrega").value !== prazoAutomatico) return; // você mudou à mão: fica o seu
             prazoAutomatico = somarDias(data, pacote.prazo);
             el("prazo_entrega").value = prazoAutomatico;
@@ -612,29 +653,31 @@
             el("pacote").addEventListener(evento, preencherValor);
         }
         el("data").addEventListener("change", calcularPrazo);
-        el("status").addEventListener("change", () => {
-            if (el("status").value === "entregue" && !el("entregue_em").value) el("entregue_em").value = hoje();
-            // saiu de "Entregue": sem isso o trabalho some de "Para entregar"
-            if (el("status").value !== "entregue" && el("entregue_em").value) el("entregue_em").value = "";
-        });
-        el("entregue_em").addEventListener("change", () => {
-            if (el("entregue_em").value && ["confirmado", "edicao"].includes(el("status").value)) el("status").value = "entregue";
-        });
 
         abrirJanela({
-            titulo: trabalho ? "Editar trabalho" : "Novo trabalho",
+            titulo: novo ? "Novo trabalho" : "Editar trabalho",
+            enviar: novo ? "Criar trabalho" : "Salvar",
             corpo,
             aoEnviar: async (form) => {
                 const dados = lerCampos(form);
-                if (trabalho) {
+                if (!novo) {
+                    // a data de entrega e a situação andam juntas
+                    if (dados.entregue_em && ["confirmado", "edicao"].includes(trabalho.status)) dados.status = "entregue";
+                    if (!dados.entregue_em && trabalho.status === "entregue") dados.status = "edicao";
                     await api("trabalhos/" + trabalho.id, { metodo: "PUT", corpo: dados });
                     aviso("Trabalho salvo.");
                     recarregar();
-                } else {
-                    const novo = await api("trabalhos", { metodo: "POST", corpo: { ...dados, cliente_id: clienteId } });
-                    aviso("Trabalho criado.");
-                    location.hash = "#/trabalhos/" + novo.id;
+                    return;
                 }
+                const { cliente, cliente_telefone, ...resto } = dados;
+                let clienteId = clienteFixo?.id || clienteExistente()?.id;
+                if (!clienteId) clienteId = (await api("clientes", { metodo: "POST", corpo: { nome: cliente, telefone: cliente_telefone ? telefoneBonito(cliente_telefone) : "" } })).id;
+                const pacote = pacoteDe(resto.pacote);
+                if (pacote && resto.data) resto.prazo_entrega = somarDias(resto.data, pacote.prazo);
+                const criado = await api("trabalhos", { metodo: "POST", corpo: { ...resto, cliente_id: clienteId } });
+                trabalhosGuardados = null;
+                aviso("Trabalho criado.");
+                location.hash = "#/trabalhos/" + criado.id;
             },
         });
     }
@@ -984,51 +1027,101 @@
         );
     }
 
-    // ---------- Início ----------
+    // ---------- Trabalhos (a tela principal): um quadro com uma coluna por etapa ----------
+
+    const ETAPAS = [
+        ["orcamento", "Orçamento", "Ainda não fechou", "Nenhum orçamento em aberto."],
+        ["confirmado", "Confirmado", "Fechado, falta fotografar", "Nada confirmado por enquanto."],
+        ["edicao", "Em edição", "Fotografado, falta entregar", "Nenhuma edição na fila."],
+        ["entregue", "Entregue", "Os mais recentes", "Os trabalhos entregues aparecem aqui."],
+    ];
+
+    // O que falta fazer num trabalho, em uma frase. "acao" diz qual botão resolve (na página do trabalho).
+    // t precisa de: status, contrato, autorizacao, data, prazo_entrega, valor, recebido, vencido, pagamentos (quantos)
+    function proximoPasso(t, h0) {
+        const falta = Math.max(0, (t.valor || 0) - (t.recebido || 0));
+        if (t.status === "cancelado") return null;
+        if (t.vencido > 0) return { texto: `Cobrar ${dinheiro(t.vencido)} vencido`, alerta: true, acao: "cobrar" };
+        if (t.status === "orcamento") return { texto: "Esperando o cliente fechar", acao: "confirmar" };
+        if (t.status === "confirmado") {
+            if (t.contrato === "a_enviar") return { texto: "Enviar o contrato", acao: "contrato" };
+            if (t.contrato === "enviado") return { texto: "Falta o cliente assinar o contrato", acao: "assinado" };
+            if (t.valor && !t.pagamentos) return { texto: "Lançar o sinal e o restante", acao: "sinal" };
+            if (t.data && t.data < h0) return { texto: "Já fotografou? Passar pra edição", acao: "edicao" };
+            return t.data ? { texto: `Fotografar ${relativo(t.data)}` } : { texto: "Marcar a data", acao: "editar" };
+        }
+        if (t.status === "edicao") {
+            if (!t.prazo_entrega) return { texto: "Entregar as fotos", acao: "entregar" };
+            return t.prazo_entrega < h0
+                ? { texto: `Entrega atrasada (era ${dataCurta(t.prazo_entrega)})`, alerta: true, acao: "entregar" }
+                : { texto: `Entregar até ${dataCurta(t.prazo_entrega)} (${relativo(t.prazo_entrega)})`, acao: "entregar" };
+        }
+        if (falta > 0 && t.valor) return { texto: `Falta receber ${dinheiro(falta)}`, acao: "pagamentos" };
+        if (t.autorizacao === "pendente") return { texto: "Pedir a autorização de imagem", acao: "autorizacao" };
+        return { texto: "Tudo certo", feito: true };
+    }
+    const seloPasso = (p) => (p ? h("span", { class: "passo" + (p.alerta ? " alerta" : p.feito ? " feito" : "") }, p.texto) : null);
+
+    // a lista de todos os trabalhos fica guardada um instante: a busca do topo usa a mesma
+    let trabalhosGuardados = null;
+    async function todosTrabalhos(fresco = false) {
+        if (fresco || !trabalhosGuardados || Date.now() - trabalhosGuardados.em > 30000) {
+            trabalhosGuardados = { em: Date.now(), lista: (await api("trabalhos", { params: { hoje: hoje() } })).trabalhos };
+        }
+        return trabalhosGuardados.lista;
+    }
+    const dataDoCartao = (d, h0) => (d ? `${dataCurta(d)}${d.slice(0, 4) !== h0.slice(0, 4) ? " " + d.slice(0, 4) : ""}` : "Sem data");
 
     async function paginaInicio() {
-        const r = await api("resumo", { params: { hoje: hoje() } });
-        document.title = "Início · Painel";
+        const [r, trabalhos] = await Promise.all([api("resumo", { params: { hoje: hoje() } }), todosTrabalhos(true)]);
+        document.title = "Trabalhos · Painel";
         const h0 = r.hoje;
-        const horaAgora = new Date().getHours();
-        const saudacao = horaAgora < 5 ? "Boa noite" : horaAgora < 12 ? "Bom dia" : horaAgora < 18 ? "Boa tarde" : "Boa noite";
-        const ano = h0.slice(0, 4);
-        const n = r.numeros;
 
-        const numeros = h(
-            "div",
-            { class: "numeros" },
-            h("div", null, h("span", { class: "rotulo" }, "Clientes"), h("strong", null, n.clientes)),
-            h("div", null, h("span", { class: "rotulo" }, `Trabalhos em ${ano}`), h("strong", null, n.trabalhos_ano)),
-            h("div", null, h("span", { class: "rotulo" }, `Recebido em ${ano}`), h("strong", null, dinheiro(n.recebido_ano)), h("small", null, h("a", { class: "link", href: "#/financeiro" }, "Ver o financeiro"))),
+        const cartaoTrabalho = (t) =>
             h(
-                "div",
+                "li",
                 null,
-                h("span", { class: "rotulo" }, "A receber"),
-                h("strong", null, dinheiro(r.totais.aberto)),
-                r.totais.vencido ? h("small", { class: "atrasado" }, `${dinheiro(r.totais.vencido)} vencido`) : null,
-            ),
-        );
+                h(
+                    "a",
+                    { class: "cartao-trabalho", href: "#/trabalhos/" + t.id },
+                    h("span", { class: "cartao-data" }, juntar(dataDoCartao(t.data, h0), t.hora)),
+                    h("strong", null, nomeTrabalho(t)),
+                    h("span", { class: "item-info" }, juntar(t.cliente, t.titulo ? t.tipo : null, t.valor ? dinheiro(t.valor) : null)),
+                    seloPasso(proximoPasso(t, h0)),
+                ),
+            );
+        const ordem = {
+            orcamento: (a, b) => (a.data || "9").localeCompare(b.data || "9"),
+            confirmado: (a, b) => (a.data || "9").localeCompare(b.data || "9"),
+            edicao: (a, b) => (a.prazo_entrega || "9").localeCompare(b.prazo_entrega || "9"),
+            entregue: (a, b) => (b.entregue_em || b.data || "").localeCompare(a.entregue_em || a.data || ""),
+        };
+        const coluna = ([status, nome, explicacao, semNada]) => {
+            const lista = trabalhos.filter((t) => t.status === status).sort(ordem[status]);
+            return h(
+                "section",
+                { class: "coluna-etapa etapa-" + status, "data-secao": nome },
+                h("div", { class: "coluna-topo" }, h("h2", { tabindex: "-1" }, nome, h("span", { class: "conta" }, lista.length)), h("p", { class: "item-info" }, explicacao)),
+                lista.length ? listaLimitada(lista, cartaoTrabalho, status === "entregue" ? 5 : 12) : h("p", { class: "vazio" }, semNada),
+            );
+        };
+        const cancelados = trabalhos.filter((t) => t.status === "cancelado");
 
-        const proximos = secao(
-            "Próximos trabalhos",
-            {},
-            r.proximos.length
-                ? listaLimitada(r.proximos, (t) =>
-                      item({
-                          href: "#/trabalhos/" + t.id,
-                          dia: t.data,
-                          titulo: nomeTrabalho(t),
-                          info: juntar(t.cliente, t.hora, t.local),
-                          lado: [seloStatus(t.status), h("span", { class: "item-info", text: relativo(t.data) })],
-                      }),
-                  )
-                : vazio("Nenhum trabalho marcado daqui pra frente."),
-        );
+        // o que está atrasado ou vencido vem antes de tudo, numa faixa só
+        const urgentes = trabalhos.map((t) => ({ t, p: proximoPasso(t, h0) })).filter(({ p }) => p?.alerta);
+        const atencao = urgentes.length
+            ? h(
+                  "section",
+                  { class: "atencao", "aria-label": "Precisa de você agora" },
+                  h("h2", null, urgentes.length === 1 ? "1 trabalho precisa de você agora" : `${urgentes.length} trabalhos precisam de você agora`),
+                  h("ul", null, urgentes.slice(0, 4).map(({ t, p }) => h("li", null, h("a", { href: "#/trabalhos/" + t.id }, h("strong", null, p.texto), h("span", null, juntar(nomeTrabalho(t), t.cliente)))))),
+                  urgentes.length > 4 ? h("p", { class: "item-info" }, `e mais ${urgentes.length - 4}, marcados em vermelho no quadro.`) : null,
+              )
+            : null;
 
         const receber = secao(
             "A receber",
-            {},
+            { nota: r.totais.aberto ? juntar(dinheiro(r.totais.aberto), r.totais.vencido ? `${dinheiro(r.totais.vencido)} vencido` : null) : null },
             r.receber.length
                 ? listaLimitada(r.receber, (p) => {
                       const vencido = p.vencimento && p.vencimento < h0;
@@ -1037,64 +1130,37 @@
                           dia: p.vencimento,
                           titulo: `${p.descricao} · ${p.cliente}`,
                           info: h("span", { class: vencido ? "atrasado" : null }, juntar(nomeTrabalho(p), p.vencimento ? (vencido ? `venceu ${relativo(p.vencimento)}` : `vence ${relativo(p.vencimento)}`) : "sem vencimento")),
-                          lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p), undefined, `${p.descricao} de ${p.cliente}, ${dinheiro(p.valor)}`)],
+                          lado: [h("span", { class: "numero", text: dinheiro(p.valor) }), botao("Recebi", () => marcarPago(p), "botao pequeno feito-botao", `${p.descricao} de ${p.cliente}, ${dinheiro(p.valor)}`)],
                       });
-                  })
+                  }, 5)
                 : vazio("Nada em aberto."),
-        );
-
-        const entregas = secao(
-            "Para entregar",
-            {},
-            r.entregas.length
-                ? listaLimitada(r.entregas, (t) => {
-                      const atrasado = t.prazo_entrega && t.prazo_entrega < h0;
-                      const prazo = !t.prazo_entrega ? "sem prazo" : atrasado ? `atrasado, o prazo era ${relativo(t.prazo_entrega) === "ontem" ? "ontem" : dataMedia(t.prazo_entrega)}` : `entregar ${relativo(t.prazo_entrega)}`;
-                      return item({
-                          href: "#/trabalhos/" + t.id,
-                          dia: t.prazo_entrega,
-                          titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
-                          info: h("span", { class: atrasado ? "atrasado" : null }, juntar(prazo, t.data ? `fotografado em ${dataMedia(t.data)}` : null)),
-                          lado: seloStatus(t.status),
-                      });
-                  })
-                : vazio("Nenhuma entrega pendente."),
-        );
-
-        const pendencias = secao(
-            "Pendências",
-            {},
-            r.pendencias.length
-                ? listaLimitada(r.pendencias, (t) =>
-                      item({
-                          href: "#/trabalhos/" + t.id,
-                          semDia: true,
-                          titulo: `${nomeTrabalho(t)} · ${t.cliente}`,
-                          info: juntar(
-                              t.contrato === "a_enviar" ? "contrato a enviar" : t.contrato === "enviado" ? "contrato enviado, falta assinar" : null,
-                              t.autorizacao === "pendente" ? "autorização de imagem pendente" : null,
-                          ),
-                          lado: t.data ? h("span", { class: "item-info", text: dataCurta(t.data) }) : null,
-                      }),
-                  )
-                : vazio("Contratos e autorizações em dia."),
         );
 
         const compromissos = secao(
             "Compromissos",
             { nota: "próximos 14 dias", acoes: [botao("Novo compromisso", () => formCompromisso(null))] },
-            r.compromissos.length ? listaLimitada(r.compromissos, (k) => linhaCompromisso(k, h0, true)) : vazio("Nada marcado pros próximos dias."),
+            r.compromissos.length ? listaLimitada(r.compromissos, (k) => linhaCompromisso(k, h0, true), 5) : vazio("Nada marcado pros próximos dias."),
         );
 
         return pagina(
             cabeca({
                 rotulo: primeiraMaiuscula(fSemana.format(paraData(h0))),
-                titulo: `${saudacao}, Kaique.`,
-                acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")],
+                titulo: "Trabalhos",
             }),
-            numeros,
-            h("div", { class: "duas" }, proximos, receber, entregas, pendencias),
-            compromissos,
+            atencao,
+            trabalhos.length
+                ? h("div", { class: "quadro" }, ETAPAS.map(coluna))
+                : h(
+                      "div",
+                      { class: "vazio-grande" },
+                      h("h2", null, "Nenhum trabalho ainda"),
+                      h("p", null, "Registre o primeiro: o cliente é cadastrado junto, e o painel passa a mostrar o próximo passo de cada trabalho."),
+                      h("button", { type: "button", class: "botao", onclick: () => formTrabalho(null).catch((e) => e.status !== 401 && aviso(e.message, true)) }, "Novo trabalho"),
+                  ),
+            cancelados.length
+                ? h("details", { class: "cancelados" }, h("summary", null, `Cancelados (${cancelados.length})`), h("ul", { class: "lista-cartoes" }, cancelados.map(cartaoTrabalho)))
+                : null,
+            h("div", { class: "duas" }, receber, compromissos),
             rodape(),
         );
     }
@@ -1102,7 +1168,7 @@
     function rodape() {
         return h(
             "footer",
-            { class: "rodape" },
+            { class: "rodape so-celular" },
             h("a", { href: "/api/backup", download: "" }, "Baixar backup (JSON)"),
             h("button", { type: "button", "data-foco": "seus-dados", onclick: () => formAjustes() }, "Seus dados do contrato"),
             h("button", { type: "button", onclick: sair }, "Sair"),
@@ -1117,7 +1183,10 @@
         const lista = h("ul", { class: "lista" });
         document.title = "Clientes · Painel";
         const contagem = h("p", { class: "rotulo contagem", role: "status" });
-        const busca = h("input", { type: "search", placeholder: "Buscar por nome, telefone, e-mail, CPF ou Instagram", "aria-label": "Buscar clientes", value: ultimaBusca, autocomplete: "off" });
+        const busca = h("input", { type: "search", placeholder: "Filtrar por nome, telefone, e-mail, CPF ou Instagram", "aria-label": "Filtrar clientes", value: ultimaBusca, autocomplete: "off" });
+        const iniciais = (nome) => nome.trim().split(/\s+/).filter((_, i, a) => i === 0 || i === a.length - 1).map((x) => x[0].toUpperCase()).join("");
+        const cabecalhoLista = h("div", { class: "linha-cliente cabecalho-lista", "aria-hidden": "true" }, h("span"), h("span", null, "Nome"), h("span", null, "WhatsApp"), h("span", null, "Cidade"), h("span", null, "Trabalhos"), h("span", null, "Próximo"));
+        const semNinguem = h("div", { class: "vazio-grande", hidden: true });
         let vez = 0;
 
         async function carregar() {
@@ -1127,18 +1196,36 @@
             const { clientes } = await api("clientes", { params: { q, hoje: hoje() } });
             if (minha !== vez) return;
             contagem.textContent = q ? `${clientes.length} encontrado${clientes.length === 1 ? "" : "s"}` : `${clientes.length} cliente${clientes.length === 1 ? "" : "s"}`;
+            // no computador é uma tabela (uma coluna por informação); no celular, cada cliente vira um cartão de duas linhas
+            const trabalhosDe = (c) => (c.trabalhos ? `${c.trabalhos} trabalho${c.trabalhos === 1 ? "" : "s"}` : "Nenhum trabalho");
             lista.replaceChildren(
                 ...clientes.map((c) =>
-                    item({
-                        href: "#/clientes/" + c.id,
-                        semDia: true,
-                        titulo: c.nome,
-                        info: juntar(telefoneBonito(c.telefone), c.cidade, c.trabalhos ? `${c.trabalhos} trabalho${c.trabalhos === 1 ? "" : "s"}` : null),
-                        lado: c.proximo ? selo("Próximo: " + dataCurta(c.proximo)) : null,
-                    }),
+                    h(
+                        "li",
+                        null,
+                        h(
+                            "a",
+                            { class: "linha-cliente", href: "#/clientes/" + c.id },
+                            h("span", { class: "avatar", "aria-hidden": "true" }, iniciais(c.nome)),
+                            h("span", { class: "item-corpo" }, h("span", { class: "item-titulo" }, c.nome), h("span", { class: "item-info so-estreito" }, juntar(telefoneBonito(c.telefone), c.cidade, trabalhosDe(c)))),
+                            h("span", { class: "so-largo" }, telefoneBonito(c.telefone) || "—"),
+                            h("span", { class: "so-largo" }, c.cidade || "—"),
+                            h("span", { class: "so-largo" }, trabalhosDe(c)),
+                            h("span", { class: "c-proximo" }, c.proximo ? selo(dataCurta(c.proximo), "st-confirmado") : h("span", { class: "so-largo cinza" }, "—")),
+                        ),
+                    ),
                 ),
             );
-            if (!clientes.length) lista.replaceChildren(h("li", null, vazio(q ? `Ninguém encontrado com “${q}”.` : "Nenhum cliente ainda. Comece pelo botão Novo cliente.")));
+            cabecalhoLista.hidden = !clientes.length;
+            lista.hidden = !clientes.length;
+            semNinguem.hidden = Boolean(clientes.length);
+            if (!clientes.length) {
+                semNinguem.replaceChildren(
+                    ...(q
+                        ? [h("h2", null, `Ninguém encontrado com “${q}”`), h("p", null, "Confira a grafia ou procure por outro dado: telefone, e-mail, CPF ou Instagram.")]
+                        : [h("h2", null, "Nenhum cliente ainda"), h("p", null, "Os clientes entram sozinhos quando você registra um trabalho. Também dá pra cadastrar só o contato."), h("button", { type: "button", class: "botao", onclick: () => formCliente(null) }, "Novo cliente")]),
+                );
+            }
         }
 
         let espera;
@@ -1149,10 +1236,10 @@
         await carregar();
 
         return pagina(
-            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")] }),
-            h("div", { class: "busca" }, busca),
-            contagem,
-            lista,
+            cabeca({ titulo: "Clientes", acoes: [h("button", { type: "button", class: "botao leve", "data-foco": "novo-cliente", onclick: () => formCliente(null) }, "Novo cliente")] }),
+            h("div", { class: "filtro" }, h("div", { class: "busca" }, busca), contagem),
+            h("div", { class: "tabela-clientes" }, cabecalhoLista, lista),
+            semNinguem,
         );
     }
 
@@ -1161,12 +1248,6 @@
         document.title = `${c.nome} · Painel`;
         const zap = linkWhatsApp(c.telefone);
         const insta = linkInstagram(c.instagram);
-        const contatos = [
-            zap ? externo(zap, "WhatsApp " + telefoneBonito(c.telefone)) : c.telefone ? h("span", { text: c.telefone }) : null,
-            c.email ? h("a", { class: "link", href: "mailto:" + c.email }, c.email) : null,
-            insta ? externo(insta, c.instagram) : null,
-        ].filter(Boolean);
-
         const listaTrabalhos = trabalhos.length
             ? h(
                   "ul",
@@ -1185,7 +1266,7 @@
                       });
                   }),
               )
-            : vazio("Nenhum trabalho ainda.");
+            : vazio("Nenhum trabalho ainda. Use “Novo trabalho” pra registrar o primeiro deste cliente.");
 
         const apagarCliente = async () => {
             const texto = `Apagar ${c.nome} e tudo o que é dele? Vão junto ${trabalhos.length} trabalho${trabalhos.length === 1 ? "" : "s"}, os pagamentos, ${documentos.length} arquivo${documentos.length === 1 ? "" : "s"} e os compromissos.\n\nNão dá pra desfazer.`;
@@ -1201,32 +1282,51 @@
         };
 
         const anos = idade(c.nascimento);
+        const totalTrabalhos = trabalhos.filter((t) => t.status !== "cancelado").reduce((soma, t) => soma + (t.valor || 0), 0);
+        const faltaReceber = trabalhos.filter((t) => t.status !== "cancelado").reduce((soma, t) => soma + Math.max(0, (t.valor || 0) - (t.recebido || 0)), 0);
         return pagina(
             cabeca({
                 voltar: ["#/clientes", "Clientes"],
                 titulo: c.nome,
-                meta: contatos.length ? h("span", { class: "contatos" }, contatos) : null,
-                acoes: [botao("Editar", () => formCliente(c), "botao leve", "cliente"), h("button", { type: "button", class: "botao", "data-foco": "novo-trabalho", onclick: () => formTrabalho(null, c.id) }, "Novo trabalho")],
+                meta: juntar(c.cidade, `cliente desde ${dataMedia(diaDoInstante(c.criado_em))}`),
+                acoes: [
+                    zap ? h("a", { class: "botao leve", href: zap, target: "_blank", rel: "noopener noreferrer" }, "WhatsApp") : null,
+                    h("button", { type: "button", class: "botao", "data-foco": "novo-trabalho", onclick: () => formTrabalho(null, c) }, "Novo trabalho"),
+                ],
             }),
-            secao("Trabalhos", { nota: trabalhos.length ? String(trabalhos.length) : null }, listaTrabalhos),
-            secaoCompromissos(compromissos, { clienteId: c.id }),
-            secaoDocumentos(documentos, { clienteId: c.id, trabalhos }),
-            secao(
-                "Dados",
-                { acoes: [botao("Editar", () => formCliente(c), undefined, "dados do cliente")] },
-                ficha([
-                    ["WhatsApp", telefoneBonito(c.telefone)],
-                    ["E-mail", c.email],
-                    ["Instagram", c.instagram],
-                    ["CPF", c.cpf],
-                    ["RG", c.rg],
-                    ["Nascimento", c.nascimento ? `${dataMedia(c.nascimento)}${anos !== null ? ` (${anos} anos)` : ""}` : null],
-                    ["Cidade", c.cidade],
-                    ["Como conheceu", c.origem],
-                    ["Cliente desde", dataMedia(diaDoInstante(c.criado_em))],
-                    ["Endereço", c.endereco, true],
-                    c.observacoes ? ["Observações", c.observacoes, true] : null,
-                ]),
+            h(
+                "div",
+                { class: "trabalho" },
+                h(
+                    "div",
+                    { class: "trabalho-principal" },
+                    secao(
+                        "Trabalhos",
+                        { nota: trabalhos.length ? juntar(`${trabalhos.length}`, totalTrabalhos ? `${dinheiro(totalTrabalhos)} no total` : null, faltaReceber ? `falta receber ${dinheiro(faltaReceber)}` : null) : null },
+                        listaTrabalhos,
+                    ),
+                    secaoCompromissos(compromissos, { clienteId: c.id }),
+                    secaoDocumentos(documentos, { clienteId: c.id, trabalhos }),
+                ),
+                h(
+                    "aside",
+                    { class: "trabalho-lateral" },
+                    secao(
+                        "Dados",
+                        { acoes: [botao("Editar", () => formCliente(c), undefined, "dados do cliente")] },
+                        ficha([
+                            ["WhatsApp", zap ? externo(zap, telefoneBonito(c.telefone)) : telefoneBonito(c.telefone), true],
+                            ["E-mail", c.email ? h("a", { class: "link", href: "mailto:" + c.email }, c.email) : null, true],
+                            ["Instagram", insta ? externo(insta, c.instagram) : c.instagram, true],
+                            ["CPF", c.cpf],
+                            ["RG", c.rg],
+                            ["Nascimento", c.nascimento ? `${dataMedia(c.nascimento)}${anos !== null ? ` (${anos} anos)` : ""}` : null, true],
+                            ["Como conheceu", c.origem, true],
+                            ["Endereço", juntar(c.endereco, c.cidade) || null, true],
+                            c.observacoes ? ["Observações", c.observacoes, true] : null,
+                        ]),
+                    ),
+                ),
             ),
             h("div", { class: "rodape" }, h("button", { type: "button", class: "link perigo", onclick: apagarCliente }, "Apagar cliente")),
         );
@@ -1286,7 +1386,7 @@
                     h("span", { class: "item-titulo" }, p.descricao, " ", p.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(p.pago_em ? `pago em ${dataMedia(p.pago_em)}` : p.vencimento ? `vence em ${dataMedia(p.vencimento)} (${relativo(p.vencimento)})` : "sem vencimento", p.forma)),
                 ),
-                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), undefined, `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), "botao pequeno feito-botao", `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
             );
         });
 
@@ -1301,7 +1401,7 @@
                     h("span", { class: "item-titulo" }, juntar(r.nome, r.servico), " ", r.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(r.pago_em ? `pago em ${dataMedia(r.pago_em)}` : r.vencimento ? `pagar até ${dataMedia(r.vencimento)} (${relativo(r.vencimento)})` : "a pagar", r.forma, r.observacoes)),
                 ),
-                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(r.valor) }), !r.pago_em ? botao("Paguei", () => marcarRepassado(r), undefined, `${r.nome}, ${dinheiro(r.valor)}`) : null, botao("Editar", () => formTerceiro(r), undefined, `terceiro ${r.nome}`)),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(r.valor) }), !r.pago_em ? botao("Paguei", () => marcarRepassado(r), "botao pequeno feito-botao", `${r.nome}, ${dinheiro(r.valor)}`) : null, botao("Editar", () => formTerceiro(r), undefined, `terceiro ${r.nome}`)),
             );
         });
 
@@ -1325,37 +1425,77 @@
                 try {
                     await api("trabalhos/" + t.id, { metodo: "DELETE" });
                     aviso("Trabalho apagado.");
-                    location.hash = "#/clientes/" + c.id;
+                    location.hash = "#/";
                 } catch (e) {
                     if (e.status !== 401) aviso(e.message, true);
                 }
             }
         };
 
-        return pagina(
-            cabeca({
-                voltar: ["#/clientes/" + c.id, c.nome],
-                rotulo: juntar(t.tipo, t.pacote),
-                titulo: nomeTrabalho(t),
-                meta: t.data ? juntar(primeiraMaiuscula(dataLonga(t.data)), t.hora, t.local) : juntar("Sem data", t.local),
-                acoes: [
-                    seloStatus(t.status),
-                    h("a", { class: "botao leve", href: `#/trabalhos/${t.id}/contrato` }, "Contrato em PDF"),
-                    botao("Editar", () => formTrabalho(t), "botao leve", "trabalho"),
-                ],
-            }),
-            ficha([
-                ["Situação", escolhas("status", "Situação", STATUS), true],
-                ["Contrato", escolhas("contrato", "Contrato", CONTRATO_CURTO), true],
-                ["Autorização de imagem", escolhas("autorizacao", "Autorização de imagem", AUTORIZACAO), true],
-                ["Cliente", h("a", { class: "link", href: "#/clientes/" + c.id }, c.nome)],
-                ["Valor", t.valor ? dinheiro(t.valor) : null],
-                ["Falta receber", t.valor ? h("span", { class: "numero" }, dinheiro(falta)) : null],
-                ["Prazo de entrega", prazoTexto],
-                ["Entregue em", t.entregue_em ? dataMedia(t.entregue_em) : null],
-                ["Galeria", galeria],
-                t.observacoes ? ["Observações", t.observacoes, true] : null,
-            ]),
+        // o próximo passo, com o botão que resolve
+        const passo = proximoPasso({ ...t, recebido, pagamentos: pagamentos.length, vencido: pagamentos.filter((p) => !p.pago_em && p.vencimento && p.vencimento < h0).reduce((s, p) => s + p.valor, 0) }, h0);
+        const zap = linkWhatsApp(c.telefone);
+        const irParaSecao = (nome) => () => document.querySelector(`[data-secao="${nome}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const ACOES_PASSO = {
+            cobrar: zap ? h("a", { class: "botao", href: zap, target: "_blank", rel: "noopener noreferrer" }, "Chamar no WhatsApp") : botao("Ver pagamentos", irParaSecao("Pagamentos"), "botao"),
+            confirmar: botao("Fechou: confirmar", () => mudar("status", "confirmado"), "botao"),
+            contrato: h("a", { class: "botao", href: `#/trabalhos/${t.id}/contrato` }, "Montar o contrato"),
+            assinado: botao("Assinou", () => mudar("contrato", "assinado"), "botao"),
+            sinal: botao("Lançar sinal 30% + restante", sinalERestante, "botao"),
+            edicao: botao("Passar pra edição", () => mudar("status", "edicao"), "botao"),
+            entregar: botao("Marcar como entregue", () => mudar("status", "entregue"), "botao"),
+            editar: botao("Editar trabalho", () => formTrabalho(t), "botao"),
+            pagamentos: botao("Ver pagamentos", irParaSecao("Pagamentos"), "botao"),
+            autorizacao: botao("Autorizou", () => mudar("autorizacao", "sim"), "botao"),
+        };
+        const faixaPasso = passo
+            ? h("div", { class: "proximo" + (passo.alerta ? " alerta" : passo.feito ? " feito" : "") }, h("div", null, h("span", { class: "rotulo" }, "Próximo passo"), h("strong", null, passo.texto)), ACOES_PASSO[passo.acao] || null)
+            : null;
+
+        // as quatro etapas em sequência (clicar numa muda e salva); cancelar fica à parte, pra não ser clicado sem querer
+        const ORDEM = ["orcamento", "confirmado", "edicao", "entregue"];
+        const posicao = ORDEM.indexOf(t.status);
+        const cancelar = async () => {
+            if (await confirmar("Cancelar trabalho", `Cancelar “${nomeTrabalho(t)}”? Ele sai do quadro e das pendências, mas nada é apagado: dá pra reabrir depois.`, "Cancelar trabalho")) mudar("status", "cancelado");
+        };
+        const secaoEtapa =
+            t.status === "cancelado"
+                ? secao("Etapa", {}, h("div", { class: "cancelado-aviso" }, h("p", null, "Este trabalho está cancelado."), botao("Reabrir como orçamento", () => mudar("status", "orcamento"))))
+                : secao(
+                      "Etapa",
+                      { nota: "clique numa etapa pra mudar", acoes: [botao("Cancelar trabalho", cancelar)] },
+                      h(
+                          "ol",
+                          { class: "etapas" },
+                          ORDEM.map((v, i) =>
+                              h(
+                                  "li",
+                                  { class: i < posicao ? "feita" : i === posicao ? "atual" : null },
+                                  h(
+                                      "button",
+                                      { type: "button", class: "etapa", "aria-current": i === posicao ? "step" : null, "data-foco": `escolha|status|${v}`, onclick: () => t.status !== v && mudar("status", v) },
+                                      h("span", { class: "etapa-num", "aria-hidden": "true" }, i < posicao ? "✓" : String(i + 1)),
+                                      h("span", null, STATUS[v]),
+                                      i < posicao ? escondido(" (feita)") : null,
+                                  ),
+                              ),
+                          ),
+                      ),
+                  );
+        // quanto do valor já entrou, numa barra
+        let barraRecebido = null;
+        if (t.valor > 0) {
+            const parte = Math.min(100, Math.round((recebido / t.valor) * 100));
+            const cheio = h("span");
+            cheio.style.width = parte + "%";
+            barraRecebido = h("div", { class: "progresso", role: "img", "aria-label": `${parte}% recebido: ${dinheiro(recebido)} de ${dinheiro(t.valor)}` }, cheio);
+        }
+
+        const principal = h(
+            "div",
+            { class: "trabalho-principal" },
+            faixaPasso,
+            secaoEtapa,
             secao(
                 "Pagamentos",
                 {
@@ -1365,6 +1505,7 @@
                     ],
                 },
                 pagamentos.length ? h("ul", { class: "lista" }, linhasPagamento) : vazio(t.valor ? "Nenhum pagamento ainda." : "Coloque o valor do trabalho em Editar pra controlar os pagamentos."),
+                barraRecebido,
                 t.valor || pagamentos.length
                     ? h(
                           "p",
@@ -1391,6 +1532,40 @@
             ),
             secaoCompromissos(compromissos, { trabalhoId: t.id }),
             secaoDocumentos(documentos, { clienteId: c.id, trabalhoId: t.id }),
+        );
+
+        const lateral = h(
+            "aside",
+            { class: "trabalho-lateral" },
+            secao(
+                "Dados",
+                { acoes: [botao("Editar", () => formTrabalho(t), undefined, "trabalho")] },
+                ficha([
+                    ["Cliente", h("span", { class: "contatos" }, h("a", { class: "link", href: "#/clientes/" + c.id }, c.nome), zap ? externo(zap, "WhatsApp") : null), true],
+                    ["Quando", t.data ? juntar(primeiraMaiuscula(dataLonga(t.data)), t.hora) : null, true],
+                    ["Local", t.local, true],
+                    ["Pacote", juntar(t.tipo, t.pacote), true],
+                    ["Valor", t.valor ? dinheiro(t.valor) : null],
+                    ["Falta receber", t.valor ? h("span", { class: "numero" }, dinheiro(falta)) : null],
+                    ["Prazo de entrega", prazoTexto],
+                    ["Entregue em", t.entregue_em ? dataMedia(t.entregue_em) : null],
+                    ["Galeria", galeria, true],
+                    t.observacoes ? ["Observações", t.observacoes, true] : null,
+                ]),
+            ),
+            secao("Contrato", { acoes: [h("a", { class: "botao leve pequeno", href: `#/trabalhos/${t.id}/contrato` }, "Contrato em PDF")] }, escolhas("contrato", "Contrato", CONTRATO_CURTO)),
+            secao("Autorização de imagem", {}, escolhas("autorizacao", "Autorização de imagem", AUTORIZACAO)),
+        );
+
+        return pagina(
+            cabeca({
+                voltar: ["#/", "Trabalhos"],
+                rotulo: c.nome,
+                titulo: nomeTrabalho(t),
+                meta: t.data ? juntar(primeiraMaiuscula(dataLonga(t.data)), t.hora, t.local) : juntar("Sem data", t.local),
+                acoes: [seloStatus(t.status)],
+            }),
+            h("div", { class: "trabalho" }, principal, lateral),
             h("div", { class: "rodape" }, h("button", { type: "button", class: "link perigo", onclick: apagarTrabalho }, "Apagar trabalho")),
         );
     }
@@ -1463,12 +1638,15 @@
                 h("p", { class: "texto-janela nota-janela" }, "Vão só nos contratos que o painel monta. Ficam guardados aqui no painel, atrás da senha: não aparecem no site nem no GitHub."),
                 campos(
                     [
+                        { grupo: "Quem é você no contrato" },
                         { nome: "nome", rotulo: "Seu nome no contrato", inteira: true, attrs: { maxlength: 120 }, ajuda: "Pode ser o nome completo. " + padrao("nome") },
                         { nome: "documento", rotulo: "CPF ou CNPJ", attrs: { inputmode: "numeric", maxlength: 30 } },
                         { nome: "telefone", rotulo: "Telefone", tipo: "tel", attrs: { inputmode: "tel", maxlength: 30 }, ajuda: padrao("telefone") },
                         { nome: "endereco", rotulo: "Endereço", inteira: true, attrs: { maxlength: 300, placeholder: "Rua, número, bairro, Ribeirão Preto, SP" } },
+                        { grupo: "Pagamento e deslocamento" },
                         { nome: "forma", rotulo: "Formas de pagamento", inteira: true, attrs: { maxlength: 120 }, ajuda: "Cláusula 3. " + padrao("forma") },
                         { nome: "deslocamento", rotulo: "Deslocamento para outras cidades", inteira: true, attrs: { maxlength: 160 }, ajuda: "Cláusula 7, “o contratante paga …”. " + padrao("deslocamento") },
+                        { grupo: "Prazos, em dias" },
                         { nome: "dias_roteiro", rotulo: "Roteiro do dia: dias antes", ...dias, ajuda: "Cláusula 6. " + padrao("dias_roteiro") },
                         { nome: "dias_hora_adicional", rotulo: "Pagar hora adicional: dias depois", ...dias, ajuda: "Cláusula 7. " + padrao("dias_hora_adicional") },
                         { nome: "dias_remarcacao", rotulo: "Avisar remarcação: dias antes", ...dias, ajuda: "Cláusula 10. " + padrao("dias_remarcacao") },
@@ -1809,7 +1987,7 @@
             voltar: ["#/trabalhos/" + t.id, nomeTrabalho(t)],
             rotulo: "Contrato",
             titulo: c.nome,
-            meta: juntar(t.pacote || t.tipo, t.data ? dataMedia(t.data) : "sem data", CONTRATO[t.contrato]),
+            meta: h("span", { class: "contatos" }, juntar(t.pacote || t.tipo, t.data ? dataMedia(t.data) : "sem data"), selo(CONTRATO[t.contrato], t.contrato === "assinado" ? "st-confirmado" : t.contrato === "enviado" ? "st-orcamento" : "")),
             acoes: [
                 h("button", { type: "button", class: "botao", "data-foco": "baixar-pdf", onclick: () => window.print() }, "Baixar PDF"),
                 botao("Ajustar contrato", ACOES.contrato[1], "botao leve"),
@@ -2003,7 +2181,7 @@
             ),
             h(
                 "div",
-                null,
+                { class: r.totais.vencido ? "alerta" : null },
                 h("span", { class: "rotulo" }, "A receber"),
                 h("strong", null, dinheiro(r.totais.aberto)),
                 r.totais.vencido ? h("small", { class: "atrasado" }, `${dinheiro(r.totais.vencido)} vencido`) : h("small", null, "somando todos os anos"),
@@ -2089,13 +2267,11 @@
         );
 
         return pagina(
-            cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null] }),
-            nav,
+            cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null, nav] }),
             numeros,
             grafico,
             h("div", { class: "duas" }, tipos, origens),
-            recebimentos,
-            terceiros,
+            h("div", { class: "duas" }, recebimentos, terceiros),
         );
     }
 
@@ -2204,7 +2380,7 @@
                           ),
                       ),
                   )
-                : [vazio("Nada marcado neste mês.")]),
+                : [h("div", { class: "vazio-grande" }, h("h2", null, "Nada marcado neste mês"), h("p", null, "Trabalhos, prazos de entrega, vencimentos e aniversários aparecem aqui sozinhos. Compromissos você marca."), h("button", { type: "button", class: "botao leve", onclick: () => formCompromisso(null) }, "Novo compromisso"))]),
         );
 
         const titulo = primeiraMaiuscula(fMes.format(paraData(de)));
@@ -2218,24 +2394,33 @@
 
         if (mes === h0.slice(0, 7) && porDia[h0]) requestAnimationFrame(() => document.getElementById("dia-" + h0)?.classList.add("destaque"));
 
+        const noMes = dias.reduce((soma, dia) => soma + porDia[dia].length, 0);
         return pagina(
             cabeca({
                 titulo: "Agenda",
-                acoes: [mes !== h0.slice(0, 7) ? h("a", { class: "botao leve", href: "#/agenda" }, "Hoje") : null, h("button", { type: "button", class: "botao", "data-foco": "novo-compromisso", onclick: () => formCompromisso(null) }, "Novo compromisso")],
+                acoes: [h("button", { type: "button", class: "botao leve", "data-foco": "novo-compromisso", onclick: () => formCompromisso(null) }, "Novo compromisso")],
             }),
-            nav,
             h(
                 "div",
-                { class: "legenda", "aria-hidden": "true" },
-                h("span", null, h("span", { class: "ponto" }), "Trabalho"),
-                h("span", null, h("span", { class: "ponto compromisso" }), "Compromisso"),
-                h("span", null, h("span", { class: "ponto entrega" }), "Entrega"),
-                h("span", null, h("span", { class: "ponto pagamento" }), "Pagamento"),
-                h("span", null, h("span", { class: "ponto aniversario" }), "Aniversário"),
-                h("span", null, h("span", { class: "ponto vencido" }), "Atrasado"),
+                { class: "agenda" },
+                h(
+                    "div",
+                    { class: "secao agenda-mes" },
+                    h("div", { class: "agenda-barra" }, nav, mes !== h0.slice(0, 7) ? h("a", { class: "botao leve pequeno", href: "#/agenda" }, "Hoje") : null),
+                    grade,
+                    h(
+                        "div",
+                        { class: "legenda", "aria-hidden": "true" },
+                        h("span", null, h("span", { class: "ponto" }), "Trabalho"),
+                        h("span", null, h("span", { class: "ponto compromisso" }), "Compromisso"),
+                        h("span", null, h("span", { class: "ponto entrega" }), "Entrega"),
+                        h("span", null, h("span", { class: "ponto pagamento" }), "Pagamento"),
+                        h("span", null, h("span", { class: "ponto aniversario" }), "Aniversário"),
+                        h("span", null, h("span", { class: "ponto vencido" }), "Atrasado"),
+                    ),
+                ),
+                h("div", { class: "agenda-lista" }, dias.length ? h("p", { class: "rotulo" }, `${noMes} ${noMes === 1 ? "item" : "itens"} em ${titulo.toLowerCase()}`) : null, listaDias),
             ),
-            grade,
-            listaDias,
         );
     }
 
@@ -2245,8 +2430,8 @@
         [/^$/, () => paginaInicio(), "inicio"],
         [/^clientes$/, () => paginaClientes(), "clientes"],
         [/^clientes\/([0-9a-f-]{36})$/, (m) => paginaCliente(m[1]), "clientes"],
-        [/^trabalhos\/([0-9a-f-]{36})$/, (m) => paginaTrabalho(m[1]), "clientes"],
-        [/^trabalhos\/([0-9a-f-]{36})\/contrato$/, (m) => paginaContrato(m[1]), "clientes"],
+        [/^trabalhos\/([0-9a-f-]{36})$/, (m) => paginaTrabalho(m[1]), "inicio"],
+        [/^trabalhos\/([0-9a-f-]{36})\/contrato$/, (m) => paginaContrato(m[1]), "inicio"],
         [/^agenda(?:\/(\d{4}-\d{2}))?$/, (m) => paginaAgenda(m[1]), "agenda"],
         [/^financeiro(?:\/(\d{4}))?$/, (m) => paginaFinanceiro(m[1]), "financeiro"],
     ];
@@ -2278,7 +2463,7 @@
         // demorou: na primeira abertura aparece "Carregando…"; depois, a página atual fica (meio apagada)
         // até a nova chegar, em vez de sumir e fazer tudo pular
         const lento = setTimeout(() => {
-            if (!app.querySelector(".pagina:not(.carregando)")) app.replaceChildren(h("p", { class: "carregando pagina", role: "status" }, "Carregando…"));
+            if (!app.querySelector(".pagina:not(.carregando)")) app.replaceChildren(esqueleto());
             else document.documentElement.classList.add("carregando");
             app.setAttribute("aria-busy", "true");
         }, 250);
@@ -2379,8 +2564,93 @@
         telaEntrar();
     }
 
+    // Busca do topo: acha trabalho ou cliente de qualquer tela. "/" leva o cursor pra ela.
+    function buscaGeral() {
+        const entrada = $("#busca-geral");
+        const caixa = $("#busca-resultados");
+        let vez = 0;
+        let espera;
+        const fechar = () => {
+            caixa.hidden = true;
+            caixa.replaceChildren();
+        };
+        const linha = (href, titulo, info, lado) => h("a", { class: "resultado", href, onclick: () => { entrada.value = ""; fechar(); } }, h("span", { class: "item-corpo" }, h("strong", null, titulo), info ? h("span", { class: "item-info" }, info) : null), lado);
+        async function buscar() {
+            const q = entrada.value.trim();
+            const minha = ++vez;
+            if (q.length < 2) return fechar();
+            const [trabalhos, { clientes }] = await Promise.all([todosTrabalhos(), api("clientes", { params: { q, hoje: hoje() } })]);
+            if (minha !== vez) return;
+            const termo = simples(q);
+            const achados = trabalhos.filter((t) => simples([t.titulo, t.tipo, t.pacote, t.cliente, t.local].join(" ")).includes(termo)).slice(0, 8);
+            const grupo = (nome, linhas) => (linhas.length ? [h("p", { class: "rotulo" }, nome), ...linhas] : []);
+            caixa.replaceChildren(
+                ...grupo("Trabalhos", achados.map((t) => linha("#/trabalhos/" + t.id, nomeTrabalho(t), juntar(t.cliente, dataMedia(t.data), t.local), seloStatus(t.status)))),
+                ...grupo("Clientes", clientes.slice(0, 8).map((c) => linha("#/clientes/" + c.id, c.nome, juntar(telefoneBonito(c.telefone), c.cidade)))),
+            );
+            if (!caixa.children.length) caixa.replaceChildren(h("p", { class: "vazio" }, `Nada encontrado com “${q}”.`));
+            caixa.hidden = false;
+        }
+        entrada.addEventListener("input", () => {
+            clearTimeout(espera);
+            espera = setTimeout(() => buscar().catch((e) => e.status !== 401 && aviso(e.message, true)), 180);
+        });
+        entrada.addEventListener("focus", () => entrada.value.trim().length >= 2 && buscar().catch(() => {}));
+        entrada.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                entrada.value = "";
+                fechar();
+                entrada.blur();
+            }
+            if (e.key === "Enter") caixa.querySelector("a")?.click();
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                caixa.querySelector("a")?.focus();
+            }
+        });
+        caixa.addEventListener("keydown", (e) => {
+            if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+            e.preventDefault();
+            const links = [...caixa.querySelectorAll("a")];
+            (links[links.indexOf(document.activeElement) + (e.key === "ArrowDown" ? 1 : -1)] || entrada).focus();
+        });
+        document.addEventListener("click", (e) => !e.target.closest(".busca-geral") && fechar());
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "/" && !e.target.closest("input, textarea, select, dialog")) {
+                e.preventDefault();
+                entrada.focus();
+            }
+        });
+    }
+
     async function iniciar() {
         $("#sair").addEventListener("click", sair);
+        $("#novo-trabalho").addEventListener("click", () => formTrabalho(null).catch((e) => e.status !== 401 && aviso(e.message, true)));
+        $("#seus-dados").addEventListener("click", () => formAjustes().catch((e) => e.status !== 401 && aviso(e.message, true)));
+        buscaGeral();
+        // lateral recolhível: fica só com os ícones, e o painel lembra da escolha neste aparelho
+        const recolher = $("#recolher");
+        const aplicarLado = (fechado) => {
+            document.documentElement.classList.toggle("lado-fechado", fechado);
+            recolher.setAttribute("aria-expanded", String(!fechado));
+            recolher.setAttribute("aria-label", fechado ? "Abrir o menu" : "Recolher o menu");
+        };
+        let ladoFechado = false;
+        try {
+            ladoFechado = localStorage.getItem("painel-lado") === "fechado";
+        } catch {
+            /* sem armazenamento: começa aberto */
+        }
+        aplicarLado(ladoFechado);
+        recolher.addEventListener("click", () => {
+            ladoFechado = !ladoFechado;
+            aplicarLado(ladoFechado);
+            try {
+                localStorage.setItem("painel-lado", ladoFechado ? "fechado" : "aberto");
+            } catch {
+                /* segue sem lembrar */
+            }
+        });
         window.addEventListener(
             "scroll",
             () => {
