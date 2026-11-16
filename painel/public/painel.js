@@ -677,6 +677,62 @@
         });
     }
 
+    // Terceiros: quem você contrata ou indica pro trabalho e quanto repassa pra cada um
+    const SERVICOS_TERCEIRO = ["Vídeo / stories", "Segundo fotógrafo", "Assistente", "Edição", "Maquiagem"];
+    function formTerceiro(terceiro, trabalhoId) {
+        const extra = terceiro
+            ? h("button", {
+                  type: "button",
+                  class: "link perigo apagar-na-janela",
+                  onclick: async () => {
+                      $("#janela").close();
+                      if (await confirmar("Apagar terceiro", `Apagar ${terceiro.nome} (${dinheiro(terceiro.valor)}) deste trabalho?`)) {
+                          await api("terceiros/" + terceiro.id, { metodo: "DELETE" });
+                          aviso("Terceiro apagado.");
+                          recarregar();
+                      }
+                  },
+              }, "Apagar")
+            : null;
+        abrirJanela({
+            titulo: terceiro ? "Editar terceiro" : "Novo terceiro",
+            extra,
+            corpo: campos(
+                [
+                    { nome: "nome", rotulo: "Nome", obrigatorio: true, attrs: { maxlength: 120, placeholder: "Ex.: Amanda Cálita" } },
+                    { nome: "servico", rotulo: "Serviço", lista: SERVICOS_TERCEIRO, attrs: { maxlength: 80 } },
+                    { nome: "valor", rotulo: "Valor que você repassa (R$)", tipo: "dinheiro", obrigatorio: true },
+                    { nome: "forma", rotulo: "Forma", lista: FORMAS, attrs: { maxlength: 30 } },
+                    { nome: "vencimento", rotulo: "Pagar até", tipo: "date" },
+                    { nome: "pago_em", rotulo: "Pago em", tipo: "date", ajuda: "Quando você pagou. Deixe vazio enquanto não pagar." },
+                    { nome: "observacoes", rotulo: "Observações", tipo: "textarea", inteira: true, attrs: { maxlength: 2000 } },
+                ],
+                terceiro || {},
+            ),
+            aoEnviar: async (form) => {
+                const dados = lerCampos(form);
+                if (terceiro) await api("terceiros/" + terceiro.id, { metodo: "PUT", corpo: dados });
+                else await api("terceiros", { metodo: "POST", corpo: { ...dados, trabalho_id: trabalhoId } });
+                aviso("Terceiro salvo.");
+                recarregar();
+            },
+        });
+    }
+
+    async function marcarRepassado(r) {
+        try {
+            await api("terceiros/" + r.id, { metodo: "PUT", corpo: { pago_em: hoje() } });
+            aviso(`${dinheiro(r.valor)} pago a ${r.nome}.`, false, async () => {
+                await api("terceiros/" + r.id, { metodo: "PUT", corpo: { pago_em: "" } });
+                aviso("Voltou pra a pagar.");
+                recarregar();
+            });
+            recarregar();
+        } catch (e) {
+            if (e.status !== 401) aviso(e.message, true);
+        }
+    }
+
     async function formCompromisso(compromisso, { clienteId, trabalhoId, data } = {}) {
         const lista = [
             { nome: "titulo", rotulo: "O quê", obrigatorio: true, inteira: true, lista: ["Reunião", "Enviar contrato", "Cobrar o sinal", "Visita ao local", "Enviar prévia", "Ligar"], attrs: { maxlength: 120 } },
@@ -1179,12 +1235,14 @@
     // ---------- Trabalho ----------
 
     async function paginaTrabalho(id) {
-        const { trabalho: t, cliente: c, pagamentos, documentos, compromissos } = await api("trabalhos/" + id);
+        const { trabalho: t, cliente: c, pagamentos, terceiros = [], documentos, compromissos } = await api("trabalhos/" + id);
         const h0 = hoje();
         document.title = `${nomeTrabalho(t)} · Painel`;
         const recebido = pagamentos.filter((p) => p.pago_em).reduce((s, p) => s + p.valor, 0);
         const previsto = pagamentos.reduce((s, p) => s + p.valor, 0);
         const falta = Math.max(0, t.valor - recebido);
+        const totalTerceiros = terceiros.reduce((s, r) => s + r.valor, 0);
+        const repassado = terceiros.filter((r) => r.pago_em).reduce((s, r) => s + r.valor, 0);
 
         async function mudar(campo, valor) {
             const corpo = { [campo]: valor };
@@ -1229,6 +1287,21 @@
                     h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(p.pago_em ? `pago em ${dataMedia(p.pago_em)}` : p.vencimento ? `vence em ${dataMedia(p.vencimento)} (${relativo(p.vencimento)})` : "sem vencimento", p.forma)),
                 ),
                 h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(p.valor) }), !p.pago_em ? botao("Recebi", () => marcarPago(p), undefined, `${p.descricao}, ${dinheiro(p.valor)}`) : null, botao("Editar", () => formPagamento(p), undefined, `pagamento ${p.descricao}`)),
+            );
+        });
+
+        const linhasTerceiro = terceiros.map((r) => {
+            const vencido = !r.pago_em && r.vencimento && r.vencimento < h0;
+            return h(
+                "li",
+                { class: "linha-acao" },
+                h(
+                    "div",
+                    { class: "item-corpo" },
+                    h("span", { class: "item-titulo" }, juntar(r.nome, r.servico), " ", r.pago_em ? selo("Pago", "apagado") : vencido ? selo("Vencido", "alerta") : null),
+                    h("span", { class: "item-info" + (vencido ? " atrasado" : "") }, juntar(r.pago_em ? `pago em ${dataMedia(r.pago_em)}` : r.vencimento ? `pagar até ${dataMedia(r.vencimento)} (${relativo(r.vencimento)})` : "a pagar", r.forma, r.observacoes)),
+                ),
+                h("div", { class: "acoes" }, h("span", { class: "numero valor-pagamento", text: dinheiro(r.valor) }), !r.pago_em ? botao("Paguei", () => marcarRepassado(r), undefined, `${r.nome}, ${dinheiro(r.valor)}`) : null, botao("Editar", () => formTerceiro(r), undefined, `terceiro ${r.nome}`)),
             );
         });
 
@@ -1299,6 +1372,20 @@
                           h("span", null, "Recebido ", h("strong", { class: "numero" }, dinheiro(recebido))),
                           h("span", null, "Falta ", h("strong", { class: "numero" }, dinheiro(falta))),
                           previsto !== t.valor && pagamentos.length ? h("span", null, `Os pagamentos somam ${dinheiro(previsto)} e o valor do trabalho é ${dinheiro(t.valor)}.`) : null,
+                      )
+                    : null,
+            ),
+            secao(
+                "Terceiros",
+                { nota: "quem você contrata ou indica pra este trabalho", acoes: [botao("Novo terceiro", () => formTerceiro(null, t.id))] },
+                terceiros.length ? h("ul", { class: "lista" }, linhasTerceiro) : vazio("Ninguém de fora neste trabalho."),
+                terceiros.length
+                    ? h(
+                          "p",
+                          { class: "saldo" },
+                          h("span", null, "Repassado ", h("strong", { class: "numero" }, dinheiro(repassado))),
+                          h("span", null, "Falta repassar ", h("strong", { class: "numero" }, dinheiro(totalTerceiros - repassado))),
+                          t.valor ? h("span", null, "Fica com você ", h("strong", { class: "numero" }, dinheiro(t.valor - totalTerceiros))) : null,
                       )
                     : null,
             ),
@@ -1900,6 +1987,9 @@
         const totalAno = recebido.reduce((a, b) => a + b, 0);
         const fechados = r.por_tipo.reduce((s, l) => ({ quantos: s.quantos + l.quantos, valor: s.valor + l.valor }), { quantos: 0, valor: 0 });
         const anterior = Number(ano) - 1;
+        const repassados = r.repassados || [];
+        const totalRepassado = repassados.reduce((s, x) => s + x.valor, 0);
+        const aPagar = r.repasses?.a_pagar || 0;
 
         const numeros = h(
             "div",
@@ -1969,6 +2059,35 @@
                 : vazio(`Nenhum pagamento recebido em ${ano}.`),
         );
 
+        const terceiros = secao(
+            "Terceiros",
+            { nota: "o que você repassa pra quem trabalha com você" },
+            totalRepassado || aPagar
+                ? h(
+                      "p",
+                      { class: "saldo" },
+                      h("span", null, `Recebido em ${ano} `, h("strong", { class: "numero" }, dinheiro(totalAno))),
+                      h("span", null, "Repassado ", h("strong", { class: "numero" }, dinheiro(totalRepassado))),
+                      h("span", null, "Fica com você ", h("strong", { class: "numero" }, dinheiro(totalAno - totalRepassado))),
+                      aPagar ? h("span", null, "Falta repassar ", h("strong", { class: "numero" }, dinheiro(aPagar))) : null,
+                  )
+                : null,
+            repassados.length
+                ? listaLimitada(
+                      repassados,
+                      (x) =>
+                          item({
+                              href: "#/trabalhos/" + x.trabalho_id,
+                              dia: x.pago_em,
+                              titulo: `${juntar(x.nome, x.servico)} · ${x.cliente}`,
+                              info: juntar(nomeTrabalho(x), x.forma),
+                              lado: h("span", { class: "numero", text: dinheiro(x.valor) }),
+                          }),
+                      6,
+                  )
+                : vazio(aPagar ? `Nada repassado em ${ano} ainda.` : `Nenhum terceiro em ${ano}.`),
+        );
+
         return pagina(
             cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null] }),
             nav,
@@ -1976,6 +2095,7 @@
             grafico,
             h("div", { class: "duas" }, tipos, origens),
             recebimentos,
+            terceiros,
         );
     }
 
