@@ -437,6 +437,12 @@
 
     // ---------- Peças das páginas ----------
 
+    // o desenho da página enquanto ela carrega (em vez de um "Carregando…" solto)
+    function esqueleto() {
+        const s = (classe) => h("span", { class: classe });
+        return h("div", { class: "pagina carregando esqueleto", role: "status" }, escondido("Carregando…"), s("e-titulo"), s("e-linha"), h("div", { class: "e-grade" }, s(), s(), s(), s()), s("e-bloco"));
+    }
+
     function pagina(...filhos) {
         return h("div", { class: "pagina" }, filhos);
     }
@@ -2338,7 +2344,7 @@
         // demorou: na primeira abertura aparece "Carregando…"; depois, a página atual fica (meio apagada)
         // até a nova chegar, em vez de sumir e fazer tudo pular
         const lento = setTimeout(() => {
-            if (!app.querySelector(".pagina:not(.carregando)")) app.replaceChildren(h("p", { class: "carregando pagina", role: "status" }, "Carregando…"));
+            if (!app.querySelector(".pagina:not(.carregando)")) app.replaceChildren(esqueleto());
             else document.documentElement.classList.add("carregando");
             app.setAttribute("aria-busy", "true");
         }, 250);
@@ -2503,6 +2509,29 @@
         $("#novo-trabalho").addEventListener("click", () => formTrabalho(null).catch((e) => e.status !== 401 && aviso(e.message, true)));
         $("#seus-dados").addEventListener("click", () => formAjustes().catch((e) => e.status !== 401 && aviso(e.message, true)));
         buscaGeral();
+        // lateral recolhível: fica só com os ícones, e o painel lembra da escolha neste aparelho
+        const recolher = $("#recolher");
+        const aplicarLado = (fechado) => {
+            document.documentElement.classList.toggle("lado-fechado", fechado);
+            recolher.setAttribute("aria-expanded", String(!fechado));
+            recolher.setAttribute("aria-label", fechado ? "Abrir o menu" : "Recolher o menu");
+        };
+        let ladoFechado = false;
+        try {
+            ladoFechado = localStorage.getItem("painel-lado") === "fechado";
+        } catch {
+            /* sem armazenamento: começa aberto */
+        }
+        aplicarLado(ladoFechado);
+        recolher.addEventListener("click", () => {
+            ladoFechado = !ladoFechado;
+            aplicarLado(ladoFechado);
+            try {
+                localStorage.setItem("painel-lado", ladoFechado ? "fechado" : "aberto");
+            } catch {
+                /* segue sem lembrar */
+            }
+        });
         window.addEventListener(
             "scroll",
             () => {

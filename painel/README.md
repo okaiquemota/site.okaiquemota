@@ -73,7 +73,7 @@ painel/
 ├── src/worker.js           a API: login, cadastros, arquivos, agenda, financeiro, planilha e backup
 ├── public/
 │   ├── index.html
-│   ├── painel.css          blocos brancos, letra de sistema, uma cor por situação; Tinos só nos títulos e no contrato
+│   ├── painel.css          o sistema de design: tokens (cor, tipo, espaço), peças, estrutura e telas
 │   ├── painel.js           as telas
 │   ├── assinatura.svg      ícone da aba e da tela de entrar
 │   ├── icone-*.png         ícone do app no celular
