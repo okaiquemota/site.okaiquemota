@@ -2181,7 +2181,7 @@
             ),
             h(
                 "div",
-                null,
+                { class: r.totais.vencido ? "alerta" : null },
                 h("span", { class: "rotulo" }, "A receber"),
                 h("strong", null, dinheiro(r.totais.aberto)),
                 r.totais.vencido ? h("small", { class: "atrasado" }, `${dinheiro(r.totais.vencido)} vencido`) : h("small", null, "somando todos os anos"),
@@ -2267,13 +2267,11 @@
         );
 
         return pagina(
-            cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null] }),
-            nav,
+            cabeca({ titulo: "Financeiro", acoes: [!anoAtual ? h("a", { class: "botao leve", href: "#/financeiro" }, "Este ano") : null, nav] }),
             numeros,
             grafico,
             h("div", { class: "duas" }, tipos, origens),
-            recebimentos,
-            terceiros,
+            h("div", { class: "duas" }, recebimentos, terceiros),
         );
     }
 
@@ -2382,7 +2380,7 @@
                           ),
                       ),
                   )
-                : [vazio("Nada marcado neste mês.")]),
+                : [h("div", { class: "vazio-grande" }, h("h2", null, "Nada marcado neste mês"), h("p", null, "Trabalhos, prazos de entrega, vencimentos e aniversários aparecem aqui sozinhos. Compromissos você marca."), h("button", { type: "button", class: "botao leve", onclick: () => formCompromisso(null) }, "Novo compromisso"))]),
         );
 
         const titulo = primeiraMaiuscula(fMes.format(paraData(de)));
@@ -2396,24 +2394,33 @@
 
         if (mes === h0.slice(0, 7) && porDia[h0]) requestAnimationFrame(() => document.getElementById("dia-" + h0)?.classList.add("destaque"));
 
+        const noMes = dias.reduce((soma, dia) => soma + porDia[dia].length, 0);
         return pagina(
             cabeca({
                 titulo: "Agenda",
-                acoes: [mes !== h0.slice(0, 7) ? h("a", { class: "botao leve", href: "#/agenda" }, "Hoje") : null, h("button", { type: "button", class: "botao", "data-foco": "novo-compromisso", onclick: () => formCompromisso(null) }, "Novo compromisso")],
+                acoes: [h("button", { type: "button", class: "botao leve", "data-foco": "novo-compromisso", onclick: () => formCompromisso(null) }, "Novo compromisso")],
             }),
-            nav,
             h(
                 "div",
-                { class: "legenda", "aria-hidden": "true" },
-                h("span", null, h("span", { class: "ponto" }), "Trabalho"),
-                h("span", null, h("span", { class: "ponto compromisso" }), "Compromisso"),
-                h("span", null, h("span", { class: "ponto entrega" }), "Entrega"),
-                h("span", null, h("span", { class: "ponto pagamento" }), "Pagamento"),
-                h("span", null, h("span", { class: "ponto aniversario" }), "Aniversário"),
-                h("span", null, h("span", { class: "ponto vencido" }), "Atrasado"),
+                { class: "agenda" },
+                h(
+                    "div",
+                    { class: "secao agenda-mes" },
+                    h("div", { class: "agenda-barra" }, nav, mes !== h0.slice(0, 7) ? h("a", { class: "botao leve pequeno", href: "#/agenda" }, "Hoje") : null),
+                    grade,
+                    h(
+                        "div",
+                        { class: "legenda", "aria-hidden": "true" },
+                        h("span", null, h("span", { class: "ponto" }), "Trabalho"),
+                        h("span", null, h("span", { class: "ponto compromisso" }), "Compromisso"),
+                        h("span", null, h("span", { class: "ponto entrega" }), "Entrega"),
+                        h("span", null, h("span", { class: "ponto pagamento" }), "Pagamento"),
+                        h("span", null, h("span", { class: "ponto aniversario" }), "Aniversário"),
+                        h("span", null, h("span", { class: "ponto vencido" }), "Atrasado"),
+                    ),
+                ),
+                h("div", { class: "agenda-lista" }, dias.length ? h("p", { class: "rotulo" }, `${noMes} ${noMes === 1 ? "item" : "itens"} em ${titulo.toLowerCase()}`) : null, listaDias),
             ),
-            grade,
-            listaDias,
         );
     }
 
