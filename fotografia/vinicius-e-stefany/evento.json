@@ -1,0 +1,184 @@
+{
+    "versao": 1,
+    "slug": "vinicius-e-stefany",
+    "tipo": "Casamento",
+    "titulo": "Vinícius & Stefany",
+    "nomes": ["Vinícius", "Stefany"],
+    "data": "2026-11-14",
+    "local": "Ribeirão Preto, SP",
+    "epigrafe": "Algumas horas que vão durar a vida inteira.",
+
+    "tema": {
+        "modo": "claro",
+        "cores": {}
+    },
+
+    "capa": {
+        "layout": "editorial",
+        "foto": {
+            "src": "../img/vs-08-1080.jpg",
+            "mini": "../img/vs-08-720.jpg",
+            "largura": 1080,
+            "altura": 1350,
+            "miniLargura": 720,
+            "foco": "60% 40%",
+            "alt": "Vinícius e Stefany abraçados na luz do fim da tarde, ele beija a testa dela"
+        }
+    },
+
+    "trilha": {
+        "src": "trilha-exemplo.mp3",
+        "titulo": "Trilha de exemplo",
+        "autor": "Instrumental"
+    },
+
+    "carta": {
+        "titulo": "Vinícius e Stefany,",
+        "paragrafos": [
+            "Antes de qualquer foto, obrigado pela confiança. Vocês me deixaram entrar no dia mais importante da história de vocês, e eu tentei estar lá do jeito que vocês são: sem pressa, sem pose, com atenção ao que acontece quando ninguém está olhando.",
+            "Tudo começou bem antes do sim, numa tarde de luz dourada entre as árvores, no ensaio que virou a primeira página desta história. Depois veio a manhã do casamento: o vestido esperando na janela, as mãos que tremiam um pouco, os abraços que diziam mais do que qualquer conselho.",
+            "E então, o sim. A entrada, os olhares, as alianças, o silêncio antes do beijo. E a festa, onde tudo o que estava guardado finalmente pôde dançar.",
+            "Organizei as fotos na ordem em que o dia aconteceu, em quatro capítulos. Vejam com calma, de preferência juntos. Marquem com um coração as que mais tocarem vocês: é com elas que a gente monta o álbum."
+        ],
+        "assinatura": "Kaique"
+    },
+
+    "midia": {
+        "web": "fotos/web/",
+        "mini": "fotos/mini/",
+        "original": "fotos/web/",
+        "ladoMaiorWeb": 1600,
+        "ladoMaiorMini": 800
+    },
+
+    "capitulos": [
+        {
+            "id": "inicio",
+            "numero": "I",
+            "titulo": "O Início",
+            "subtitulo": "Pré-wedding",
+            "texto": "Uma tarde entre árvores, antes de tudo. O jeito como ela ri quando ele não está olhando, e o jeito como ele olha quando ela ri.",
+            "blocos": [
+                { "layout": "panoramica", "fotos": [
+                    { "id": "inicio-01", "arquivo": "inicio-01.jpg", "largura": 1600, "altura": 1067, "alt": "Os dois caminhando de mãos dadas entre as árvores, de costas" }
+                ] },
+                { "layout": "dupla", "fotos": [
+                    { "id": "vs-16", "src": "../img/vs-16-1080.jpg", "mini": "../img/vs-16-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Stefany encostada no ombro do Vinícius, de olhos fechados" },
+                    { "id": "vs-08", "src": "../img/vs-08-1080.jpg", "mini": "../img/vs-08-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Abraçados na luz do fim da tarde, ele beija a testa dela" }
+                ] },
+                { "layout": "citacao", "texto": "Antes do sim, já era um nós." },
+                { "layout": "mosaico", "fotos": [
+                    { "id": "vs-11", "src": "../img/vs-11-1080.jpg", "mini": "../img/vs-11-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "foco": "50% 60%", "alt": "Os dois correndo de mãos dadas na grama, rindo" },
+                    { "id": "vs-03", "src": "../img/vs-03-1080.jpg", "mini": "../img/vs-03-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Detalhe de flores cor-de-rosa num galho, com a luz atrás" },
+                    { "id": "inicio-02", "arquivo": "inicio-02.jpg", "largura": 1600, "altura": 1067, "alt": "Os dois sentados na grama, conversando de frente um para o outro" }
+                ] }
+            ]
+        },
+        {
+            "id": "preparo",
+            "numero": "II",
+            "titulo": "O Preparo",
+            "subtitulo": "Making of",
+            "privado": true,
+            "texto": "As horas antes do sim têm um silêncio próprio. Os detalhes escolhidos com cuidado, as mãos de quem ajuda, o último olhar no espelho.",
+            "blocos": [
+                { "layout": "unica", "alinhamento": "direita", "legenda": "O vestido esperando na janela, com a luz da manhã.", "fotos": [
+                    { "id": "preparo-01", "arquivo": "preparo-01.jpg", "largura": 1067, "altura": 1600, "alt": "O vestido de noiva pendurado na janela, contra a luz da manhã" }
+                ] },
+                { "layout": "dupla", "fotos": [
+                    { "id": "preparo-02", "arquivo": "preparo-02.jpg", "largura": 1280, "altura": 1600, "alt": "As alianças sobre o convite do casamento" },
+                    { "id": "preparo-03", "arquivo": "preparo-03.jpg", "largura": 1280, "altura": 1600, "alt": "Perfume e brincos sobre a penteadeira" }
+                ] },
+                { "layout": "panoramica", "fotos": [
+                    { "id": "preparo-04", "arquivo": "preparo-04.jpg", "largura": 1600, "altura": 1067, "alt": "Stefany diante do espelho enquanto a mãe fecha os botões do vestido" }
+                ] },
+                { "layout": "mosaico", "fotos": [
+                    { "id": "preparo-05", "arquivo": "preparo-05.jpg", "largura": 1067, "altura": 1600, "alt": "Vinícius ajustando a gravata com a ajuda do pai" },
+                    { "id": "preparo-06", "arquivo": "preparo-06.jpg", "largura": 1600, "altura": 1067, "alt": "Os sapatos da noiva lado a lado no chão de madeira" },
+                    { "id": "preparo-07", "arquivo": "preparo-07.jpg", "largura": 1280, "altura": 1600, "alt": "O buquê de flores rosadas sobre a mesa" }
+                ] }
+            ]
+        },
+        {
+            "id": "sim",
+            "numero": "III",
+            "titulo": "O Sim",
+            "subtitulo": "Cerimônia",
+            "texto": "A porta se abre e o tempo muda de velocidade. Uma caminhada, um olhar, duas alianças e uma promessa dita em voz baixa.",
+            "blocos": [
+                { "layout": "panoramica", "fotos": [
+                    { "id": "sim-01", "arquivo": "sim-01.jpg", "largura": 1600, "altura": 1067, "alt": "O altar decorado, com os convidados de pé esperando a entrada da noiva" }
+                ] },
+                { "layout": "unica", "alinhamento": "esquerda", "legenda": "A entrada, de braço dado com o pai.", "fotos": [
+                    { "id": "sim-02", "arquivo": "sim-02.jpg", "largura": 1067, "altura": 1600, "alt": "Stefany entrando de braço dado com o pai" }
+                ] },
+                { "layout": "dupla", "fotos": [
+                    { "id": "sim-03", "arquivo": "sim-03.jpg", "largura": 1280, "altura": 1600, "alt": "Vinícius emocionado ao ver Stefany entrar" },
+                    { "id": "sim-04", "arquivo": "sim-04.jpg", "largura": 1280, "altura": 1600, "alt": "Stefany sorrindo com os olhos marejados" }
+                ] },
+                { "layout": "citacao", "texto": "Prometo escolher você em todos os dias comuns.", "autor": "Dos votos" },
+                { "layout": "trio", "fotos": [
+                    { "id": "sim-05", "arquivo": "sim-05.jpg", "largura": 1067, "altura": 1600, "alt": "As mãos dos dois na troca das alianças" },
+                    { "id": "sim-06", "arquivo": "sim-06.jpg", "largura": 1067, "altura": 1600, "alt": "Vinícius lendo os votos em voz baixa" },
+                    { "id": "sim-07", "arquivo": "sim-07.jpg", "largura": 1067, "altura": 1600, "alt": "O primeiro beijo como casados" }
+                ] },
+                { "layout": "panoramica", "fotos": [
+                    { "id": "sim-08", "arquivo": "sim-08.jpg", "largura": 1600, "altura": 1067, "alt": "A saída da cerimônia sob uma chuva de pétalas" }
+                ] }
+            ]
+        },
+        {
+            "id": "celebracao",
+            "numero": "IV",
+            "titulo": "A Celebração",
+            "subtitulo": "Festa e retratos",
+            "tom": "escuro",
+            "texto": "Depois do sim, a leveza. Os retratos na última luz do dia, os brindes, os abraços e uma pista que não quis esvaziar.",
+            "blocos": [
+                { "layout": "dupla", "variante": "deslocada", "fotos": [
+                    { "id": "festa-01", "arquivo": "festa-01.jpg", "largura": 1280, "altura": 1600, "alt": "Retrato do casal no jardim ao entardecer" },
+                    { "id": "festa-02", "arquivo": "festa-02.jpg", "largura": 1067, "altura": 1600, "alt": "Retrato de Stefany com o véu ao vento" }
+                ] },
+                { "layout": "panoramica", "fotos": [
+                    { "id": "festa-03", "arquivo": "festa-03.jpg", "largura": 1600, "altura": 1067, "alt": "O casal de longe, pequeno na paisagem, na luz dourada do fim da tarde" }
+                ] },
+                { "layout": "mosaico", "fotos": [
+                    { "id": "festa-04", "arquivo": "festa-04.jpg", "largura": 1280, "altura": 1600, "alt": "Detalhe da mesa posta com flores e velas" },
+                    { "id": "festa-05", "arquivo": "festa-05.jpg", "largura": 1600, "altura": 1067, "alt": "O brinde com os padrinhos" },
+                    { "id": "festa-06", "arquivo": "festa-06.jpg", "largura": 1280, "altura": 1600, "alt": "O bolo e as flores na mesa principal" }
+                ] },
+                { "layout": "unica", "alinhamento": "centro", "legenda": "A primeira dança.", "fotos": [
+                    { "id": "festa-07", "arquivo": "festa-07.jpg", "largura": 1067, "altura": 1600, "alt": "A primeira dança do casal, com luzes ao fundo" }
+                ] },
+                { "layout": "mosaico", "fotos": [
+                    { "id": "festa-08", "arquivo": "festa-08.jpg", "largura": 1600, "altura": 1067, "alt": "A pista cheia, todo mundo com os braços para cima" },
+                    { "id": "festa-09", "arquivo": "festa-09.jpg", "largura": 1280, "altura": 1600, "alt": "Os avós dançando juntos" },
+                    { "id": "festa-10", "arquivo": "festa-10.jpg", "largura": 1280, "altura": 1600, "alt": "Vinícius e Stefany rindo no meio da pista" },
+                    { "id": "festa-11", "arquivo": "festa-11.jpg", "largura": 1600, "altura": 1067, "alt": "A saída da festa entre estrelinhas acesas" }
+                ] }
+            ]
+        }
+    ],
+
+    "selecao": {
+        "ativa": true,
+        "limite": 40
+    },
+
+    "downloads": {
+        "completo": { "url": "", "tamanho": "" },
+        "convidados": { "url": "", "tamanho": "" },
+        "validade": "2027-02-14"
+    },
+
+    "convidados": {
+        "carta": false
+    },
+
+    "creditos": [
+        { "papel": "Fotografia", "nome": "Kaique Mota" },
+        { "papel": "Cerimonial", "nome": "" },
+        { "papel": "Decoração", "nome": "" },
+        { "papel": "Local", "nome": "" }
+    ]
+}
