@@ -53,17 +53,16 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | Campo | O que é |
 |---|---|
 | `slug` | o nome da pasta; também separa as favoritas de um trabalho das de outro |
-| `tipo` | "Casamento", "15 anos", "Ensaio"… (aparece pequeno na capa e no stories) |
+| `tipo` | "Casamento", "15 anos", "Ensaio"… (aparece pequeno na imagem do stories) |
 | `titulo` | o título inteiro, "Vinícius & Stefany" |
 | `nomes` | os nomes separados, para a capa em pilha: `["Vinícius", "Stefany"]` ou `["Helena"]` |
 | `monograma` | opcional; sem ele vira "V & S" (iniciais) |
-| `data` | `AAAA-MM-DD` |
-| `local`, `epigrafe` | a cidade e a frase curta da capa |
+| `data` | `AAAA-MM-DD` (vai no stories e nos créditos do rodapé; a capa mostra só os nomes) |
 | `tema.modo` | `"claro"` (papel quente) ou `"escuro"` (o trabalho inteiro no escuro) |
 | `tema.cores` | opcional: troca qualquer token do CSS, ex. `{ "destaque": "#7a5c3e" }` |
 | `capa.layout` | `"editorial"` (texto de um lado, foto em pé do outro) ou `"tela-cheia"` (foto deitada de fundo) |
 | `capa.foto` | a foto da capa (mesmos campos de uma foto) |
-| `trilha` | `{ "src", "titulo", "autor" }`; sem ele, sem música |
+| `trilha` | `{ "src", "titulo" }`; vira só um ícone de som (na capa e no índice). Sem ele, sem música |
 | `carta` | `{ "titulo", "paragrafos": [...], "assinatura" }`; sem ele, sem carta |
 | `midia` | as pastas das versões (`web`, `mini`, `original`) e o lado maior de cada uma |
 | `capitulos` | a história (abaixo) |

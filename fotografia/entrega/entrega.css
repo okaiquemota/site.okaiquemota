@@ -41,7 +41,10 @@
     --largura: 1320px;
     --alto: 100vh;
     --suave: cubic-bezier(0.22, 1, 0.36, 1);
-    --respiro: clamp(64px, 9vw, 150px);
+    --respiro: clamp(64px, min(9vw, 14svh), 150px);
+    /* a maior altura que uma foto pode ter e ainda caber inteira (desconta o índice e um respiro) */
+    --cabe: max(200px, calc(var(--alto) - 140px));
+    --cabe-tela: max(200px, calc(var(--alto) - 72px));
     color-scheme: light;
 }
 @supports (height: 100svh) { :root { --alto: 100svh; } }
@@ -99,7 +102,6 @@ main:focus, section:focus { outline: none; }
     .botao-linha:hover span { background-size: 100% 1px, 100% 1px; }
     .botao-linha:hover .ic { transform: translateY(2px); }
     a.botao-linha:hover .ic { transform: translateX(3px); }
-    .capa-acoes a.botao-linha:hover .ic { transform: translateY(3px); }
 }
 
 /* a assinatura do Kaique: o traço do lápis, pintado com a tinta */
@@ -139,12 +141,25 @@ main:focus, section:focus { outline: none; }
 .indice-atual { display: none; font-family: var(--serif); font-size: 18px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .indice > :last-child { justify-self: end; }
 
-.gatilho-som { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0; border: 0; background: none; font-family: var(--sans); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; color: inherit; }
-.gatilho-som .ic { width: 20px; height: 20px; }
-.gatilho-som .gatilho-texto { background: linear-gradient(var(--linha), var(--linha)) 0 100% / 100% 1px no-repeat; padding-bottom: 3px; }
-.gatilho-som[aria-pressed="true"] .ic { color: var(--destaque); }
-.gatilho-indice { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tinta-suave); }
-.gatilho-indice .gatilho-texto { background: none; padding: 0; }
+.som { position: relative; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; color: inherit; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+.som .ic { width: 21px; height: 21px; transition: opacity 0.35s, transform 0.5s var(--suave); }
+.som-ondas { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 3px; opacity: 0; transition: opacity 0.35s; }
+.som-ondas i { display: block; width: 2px; height: 34%; border-radius: 1px; background: currentColor; }
+.som[aria-pressed="true"] .ic { opacity: 0; transform: scale(0.6); }
+.som[aria-pressed="true"] .som-ondas { opacity: 1; }
+.som[aria-pressed="true"] .som-ondas i { animation: onda 1.1s ease-in-out infinite; }
+.som[aria-pressed="true"] .som-ondas i:nth-child(2) { animation-delay: -0.35s; }
+.som[aria-pressed="true"] .som-ondas i:nth-child(3) { animation-delay: -0.7s; }
+.som[aria-pressed="true"] .som-ondas i:nth-child(4) { animation-delay: -0.2s; }
+@keyframes onda { 0%, 100% { height: 22%; } 50% { height: 52%; } }
+.som-indice { color: var(--tinta-suave); }
+.som-indice[aria-pressed="true"] { color: var(--destaque); }
+.som-capa { width: 48px; height: 48px; border: 1px solid var(--linha); }
+.som-capa[aria-pressed="true"] { color: var(--destaque); border-color: currentColor; }
+@media (hover: hover) and (pointer: fine) {
+    .som:hover { background: color-mix(in srgb, var(--tinta) 7%, transparent); color: var(--tinta); }
+    .som-capa:hover { border-color: var(--tinta); }
+}
 
 /* ---------- Capa editorial: texto de um lado, a foto do outro ---------- */
 .capa { position: relative; }
@@ -152,35 +167,37 @@ main:focus, section:focus { outline: none; }
     display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
     min-height: var(--alto);
 }
-.capa-editorial .capa-foto { grid-column: 2; grid-row: 1; position: relative; height: var(--alto); min-height: 560px; overflow: hidden; background: var(--papel-2); }
-.capa-foto img { width: 100%; height: 100%; object-fit: cover; animation: capa-foto 2.2s var(--suave) both; }
-.capa-editorial .capa-texto {
-    grid-column: 1; grid-row: 1; align-self: center;
-    display: flex; flex-direction: column; align-items: flex-start; gap: 22px;
-    padding: 96px clamp(28px, 5vw, 88px) 72px var(--margem);
-}
-.capa-nomes { display: flex; flex-direction: column; font-family: var(--serif); font-weight: 300; font-size: clamp(60px, 7.2vw, 128px); line-height: 0.96; letter-spacing: -0.015em; margin: 6px 0 4px; }
-.capa-linha { display: block; white-space: nowrap; }
-.capa-e { margin-right: 0.16em; font-style: italic; font-weight: 300; font-size: 0.8em; color: var(--destaque); }
-.capa-epigrafe { max-width: 22em; font-family: var(--serif); font-size: clamp(21px, 1.7vw, 26px); font-style: italic; line-height: 1.35; text-wrap: balance; }
-.capa-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 32px; margin-top: 18px; }
-.capa-texto > * { animation: sobe 1.2s var(--suave) both; }
-.capa-texto > :nth-child(1) { animation-delay: 0.5s; }
-.capa-texto > :nth-child(2) { animation-delay: 0.62s; }
-.capa-texto > :nth-child(3) { animation-delay: 0.8s; }
-.capa-texto > :nth-child(4) { animation-delay: 0.9s; }
-.capa-texto > :nth-child(5) { animation-delay: 1.02s; }
+.capa-editorial .capa-foto { grid-column: 2; grid-row: 1 / span 2; position: relative; height: var(--alto); overflow: hidden; background: var(--papel-2); }
+.capa-foto img { width: 100%; height: 100%; object-fit: cover; transform-origin: 60% 40%; animation: capa-foto 2.2s var(--suave) both, capa-respira 26s ease-in-out 2.2s infinite alternate; }
+.capa-editorial .capa-texto { grid-column: 1; grid-row: 1 / span 2; align-self: center; padding: 72px clamp(24px, 4vw, 72px) 72px var(--margem); }
+.capa-nomes { display: flex; flex-direction: column; font-family: var(--serif); font-weight: 300; font-size: clamp(56px, min(8vw, 17svh), 150px); line-height: 0.98; letter-spacing: -0.015em; }
+.capa-linha { display: block; white-space: nowrap; animation: linha 1.5s var(--suave) both; }
+.capa-linha:nth-child(1) { animation-delay: 0.55s; }
+.capa-linha:nth-child(2) { animation-delay: 0.8s; }
+.capa-linha:nth-child(3) { animation-delay: 1.05s; }
+.capa-e { display: inline-block; margin-right: 0.16em; font-style: italic; font-weight: 300; font-size: 0.8em; color: var(--destaque); animation: e-gira 1.8s var(--suave) 1s both; }
+/* embaixo: a linha que convida a descer e o ícone de som */
+.capa-acoes { grid-column: 1; grid-row: 2; align-self: end; display: flex; align-items: center; gap: 22px; padding: 0 0 clamp(24px, 5svh, 48px) var(--margem); animation: aparece 1.2s ease 1.6s both; }
+.capa-descer { position: relative; display: block; width: 44px; height: 64px; }
+.capa-descer-linha { position: absolute; left: 50%; top: 4px; bottom: 4px; width: 1px; background: var(--linha); overflow: hidden; }
+.capa-descer-linha::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 40%; background: var(--tinta); animation: desce 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+@media (hover: hover) and (pointer: fine) { .capa-descer:hover .capa-descer-linha { background: var(--tinta-suave); } }
 @keyframes capa-foto { from { clip-path: inset(100% 0 0 0); transform: scale(1.08); } 60% { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 0 0 0); transform: none; } }
+@keyframes capa-respira { from { transform: none; } to { transform: scale(1.06); } }
+@keyframes linha { from { clip-path: inset(-30% -5% 100% -5%); transform: translateY(0.45em); } to { clip-path: inset(-30% -5% -30% -5%); transform: none; } }
+@keyframes e-gira { from { opacity: 0; transform: rotate(-14deg) scale(0.7); } to { opacity: 1; transform: none; } }
+@keyframes desce { from { transform: translateY(-100%); } to { transform: translateY(250%); } }
 @keyframes sobe { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
 /* Capa tela cheia: para fotos deitadas (capa.layout = "tela-cheia") */
 .capa-tela-cheia { display: flex; align-items: flex-end; min-height: var(--alto); color: #f6f2ea; }
 .capa-tela-cheia .capa-foto { position: absolute; inset: 0; background: #222; }
 .capa-tela-cheia .capa-foto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10, 9, 8, 0.72) 0%, rgba(10, 9, 8, 0.25) 45%, rgba(10, 9, 8, 0.05) 70%); }
-.capa-tela-cheia .capa-texto { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto; padding: 120px var(--margem) clamp(48px, 7vw, 96px); }
-.capa-tela-cheia .rotulo, .capa-tela-cheia .capa-e { color: rgba(246, 242, 234, 0.82); }
+.capa-tela-cheia { flex-direction: column; justify-content: flex-end; }
+.capa-tela-cheia .capa-texto { position: relative; width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto; padding: 120px var(--margem) 8px; }
+.capa-tela-cheia .capa-acoes { position: relative; width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto; padding-right: var(--margem); --linha: rgba(246, 242, 234, 0.4); --tinta: #f6f2ea; }
+.capa-tela-cheia .capa-e { color: rgba(246, 242, 234, 0.82); }
 .capa-tela-cheia .capa-nomes { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 0.18em; }
-.capa-tela-cheia .botao-linha span, .capa-tela-cheia .gatilho-texto { --linha: rgba(246, 242, 234, 0.4); }
 
 /* ---------- Carta aos noivos ---------- */
 .carta { max-width: calc(680px + 2 * var(--margem)); margin-inline: auto; padding: clamp(110px, 15vw, 210px) var(--margem) clamp(40px, 6vw, 80px); text-align: left; }
@@ -193,14 +210,12 @@ main:focus, section:focus { outline: none; }
 .carta-de { padding-bottom: 14px; font-family: var(--serif); font-size: 22px; font-style: italic; color: var(--tinta-suave); }
 
 /* ---------- Capítulos ---------- */
-.capitulo { --abre-topo: clamp(130px, 18vw, 250px); position: relative; padding-bottom: var(--respiro); background: var(--papel); color: var(--tinta); }
-.capitulo-abre { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: var(--abre-topo) var(--margem) clamp(64px, 9vw, 130px); text-align: center; }
+.capitulo { --abre-topo: clamp(110px, min(18vw, 30svh), 250px); position: relative; padding-bottom: var(--respiro); background: var(--papel); color: var(--tinta); }
+.capitulo-abre { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: var(--abre-topo) var(--margem) clamp(56px, min(9vw, 14svh), 130px); text-align: center; }
 .capitulo-numeral { position: absolute; z-index: -1; top: calc(var(--abre-topo) * 0.42); left: 50%; transform: translateX(-50%); font-family: var(--serif); font-size: clamp(220px, 34vw, 520px); font-weight: 300; line-height: 0.8; color: var(--tinta); opacity: 0.045; pointer-events: none; user-select: none; white-space: nowrap; }
-.capitulo-titulo { font-family: var(--serif); font-size: clamp(54px, 8.4vw, 124px); font-weight: 300; line-height: 0.95; letter-spacing: -0.015em; }
+.capitulo-titulo { font-family: var(--serif); font-size: clamp(50px, min(8.4vw, 16svh), 124px); font-weight: 300; line-height: 0.95; letter-spacing: -0.015em; }
 .capitulo-sub { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tinta-suave); }
 .capitulo-sub::before, .capitulo-sub::after { content: ""; width: 36px; height: 1px; background: var(--linha); }
-.capitulo-conta { font-family: var(--serif); font-size: 15px; font-style: italic; letter-spacing: 0.02em; text-transform: none; }
-.capitulo-conta::before { content: "·"; margin-right: 16px; font-style: normal; }
 .capitulo-texto { max-width: 31em; margin-top: 10px; font-family: var(--serif); font-size: clamp(21px, 1.9vw, 27px); font-style: italic; line-height: 1.45; text-wrap: balance; }
 
 /* o capítulo que anoitece (tom: "escuro"): a página escurece aos poucos e volta a clarear no fim */
@@ -263,32 +278,40 @@ main:focus, section:focus { outline: none; }
 /* panorâmica: de ponta a ponta */
 .bloco-panoramica { width: min(100vw, 1760px); margin-inline: calc(50% - min(50vw, 880px)); }
 .bloco-panoramica-empe { width: auto; margin-inline: 0; }
-.bloco-panoramica-empe .foto { height: min(92vh, 1180px); width: auto; margin-inline: auto; }
+/* nenhuma foto passa da altura da tela: se a tela é baixa, a foto estreita e centraliza */
+.bloco-panoramica .foto { width: min(100%, calc(var(--cabe-tela) * var(--r))); margin-inline: auto; }
 
 /* única, deslocada para um lado com a nota ao lado */
 .bloco-unica { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); align-items: end; }
-.bloco-unica .foto { grid-row: 1; }
+.bloco-unica .foto { grid-row: 1; width: min(100%, calc(var(--cabe) * var(--r))); }
 .bloco-unica .bloco-nota { grid-row: 1; padding-bottom: 8px; max-width: 18em; }
-.bloco-unica-esquerda .foto { grid-column: 2 / span 5; }
+.bloco-unica-esquerda .foto { grid-column: 2 / span 5; justify-self: end; }
 .bloco-unica-esquerda .bloco-nota { grid-column: 8 / span 4; }
-.bloco-unica-direita .foto { grid-column: 7 / span 5; }
+.bloco-unica-direita .foto { grid-column: 7 / span 5; justify-self: start; }
 .bloco-unica-direita .bloco-nota { grid-column: 2 / span 4; justify-self: end; text-align: right; }
-.bloco-unica-centro .foto { grid-column: 4 / span 6; }
+.bloco-unica-centro .foto { grid-column: 4 / span 6; justify-self: center; }
 .bloco-unica-centro .bloco-nota { grid-row: 2; grid-column: 1 / -1; justify-self: center; margin-top: 16px; text-align: center; }
 .bloco-unica .foto-deitada { grid-column: 2 / span 10; }
 
 /* dupla e trio: mesma altura, sem corte (cada foto cresce na proporção dela) */
-.bloco-fileira { display: flex; gap: clamp(10px, 1.6vw, 24px); flex-wrap: wrap; }
+.bloco-fileira {
+    --gap: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-wrap: wrap; gap: var(--gap);
+    /* a fileira toda cabe na altura da tela: largura máxima = altura que cabe × soma das proporções */
+    width: 100%; margin-inline: auto;
+    max-width: min(100%, var(--teto, 100%), calc(var(--cabe) * var(--soma, 2) + (var(--n, 2) - 1) * var(--gap)));
+}
 .bloco-fileira > .foto { flex: var(--r, 1) 1 0; min-width: 0; }
 .bloco-fileira > .bloco-legenda { flex-basis: 100%; }
-.bloco-dupla:not(.bloco-empilha):not(.bloco-deslocada) { max-width: 1120px; margin-inline: auto; width: 100%; }
+.bloco-dupla { --teto: 1120px; }
 /* dupla deslocada: larguras iguais, a segunda desce, como numa página de revista */
-.bloco-deslocada { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); }
-.bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 6; }
-.bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 4; margin-top: 30%; }
+.bloco-deslocada { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); max-width: none; }
+.bloco-deslocada > .foto { width: min(100%, calc(var(--cabe) * var(--r))); }
+.bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 6; justify-self: end; }
+.bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 4; justify-self: start; margin-top: min(30%, 18svh); }
 
 /* mosaico: uma grande e as outras em volta (estas cortam pelo `foco`) */
-.bloco-mosaico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(10px, 1.6vw, 24px); grid-auto-rows: clamp(200px, 27vw, 430px); }
+.bloco-mosaico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(10px, 1.6vw, 24px); grid-auto-rows: clamp(150px, min(27vw, calc((var(--alto) - 150px) / 2)), 430px); }
 .bloco-mosaico > .foto { grid-column: span 6; }
 .bloco-mosaico-3 > :nth-child(1) { grid-column: 1 / 8; grid-row: span 2; }
 .bloco-mosaico-3 > :nth-child(2), .bloco-mosaico-3 > :nth-child(3) { grid-column: 8 / 13; }
@@ -388,30 +411,6 @@ main:focus, section:focus { outline: none; }
 }
 .barra :focus-visible { outline-color: var(--claro-papel); outline-offset: 2px; }
 
-/* ---------- Tocador (experiência sonora) ---------- */
-.tocador {
-    position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 65;
-    display: flex; align-items: center; gap: 12px; padding: 5px 18px 5px 5px;
-    border: 1px solid var(--linha); border-radius: 999px;
-    background: color-mix(in srgb, var(--papel) 88%, transparent); color: var(--tinta);
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    opacity: 0; transform: translateY(12px); transition: opacity 0.6s, transform 0.6s var(--suave), bottom 0.5s var(--suave);
-}
-.tocador.visivel { opacity: 1; transform: none; }
-/* na capa o botão "Pausar a trilha" já mostra que está tocando: o tocador só aparece depois dela */
-html:not(.passou-capa) .tocador.visivel { opacity: 0; transform: translateY(12px); pointer-events: none; }
-.tocador-botao { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: var(--tinta); color: var(--papel); }
-.tocador-ondas { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
-.tocador-ondas i { display: block; width: 2px; height: 30%; background: currentColor; border-radius: 1px; transition: height 0.4s; }
-.tocador.tocando .tocador-ondas i { animation: onda 1.1s ease-in-out infinite; }
-.tocador.tocando .tocador-ondas i:nth-child(2) { animation-delay: -0.35s; }
-.tocador.tocando .tocador-ondas i:nth-child(3) { animation-delay: -0.7s; }
-.tocador.tocando .tocador-ondas i:nth-child(4) { animation-delay: -0.2s; }
-@keyframes onda { 0%, 100% { height: 25%; } 50% { height: 100%; } }
-.tocador-titulo { display: flex; flex-direction: column; line-height: 1.2; }
-.tocador-nome { font-family: var(--serif); font-size: 16px; font-style: italic; }
-.tocador-autor { font-size: 10.5px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tinta-suave); }
-
 /* ---------- Aviso curto ---------- */
 .aviso { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 300; max-width: calc(100vw - 32px); padding: 12px 20px; border-radius: 999px; background: var(--claro-tinta); color: var(--claro-papel); font-size: 14px; text-align: center; opacity: 0; transform: translate(-50%, 10px); transition: opacity 0.35s, transform 0.5s var(--suave); pointer-events: none; }
 .aviso.aviso-on { opacity: 1; transform: translate(-50%, 0); }
@@ -455,26 +454,72 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
 @media (hover: hover) and (pointer: fine) { .js .foto[data-revela].visivel:hover img { transform: scale(1.025); transition-delay: 0ms; transition-duration: 1.6s, 0.7s; } }
 .capitulo-numeral { transition: opacity 2s ease; }
 
+/* ---------- Mais movimento (sutil) ---------- */
+/* título do capítulo sobe de trás de uma linha, como numa revista */
+.js .capitulo-titulo[data-revela] { opacity: 1; transform: none; }
+.js .capitulo-titulo[data-revela] > span { display: inline-block; clip-path: inset(-20% -6% 100% -6%); transform: translateY(0.5em); transition: clip-path 1.4s var(--suave) 0.1s, transform 1.4s var(--suave) 0.1s; }
+.js .capitulo-titulo[data-revela].visivel > span { clip-path: inset(-20% -6% -30% -6%); transform: none; }
+/* os fios do subtítulo se estendem para os lados */
+.js .capitulo-sub::before { transform-origin: right; }
+.js .capitulo-sub::after { transform-origin: left; }
+.js .capitulo-sub::before, .js .capitulo-sub::after { transform: scaleX(0); transition: transform 1.2s var(--suave) 0.45s; }
+.js .capitulo-sub.visivel::before, .js .capitulo-sub.visivel::after { transform: none; }
+/* citações e votos: palavra por palavra */
+.js [data-revela] .palavras > span[aria-hidden] { display: inline-block; opacity: 0; transform: translateY(0.45em); filter: blur(5px); transition: opacity 0.9s ease, transform 1.1s var(--suave), filter 0.9s ease; transition-delay: calc(var(--i) * 55ms + var(--atraso, 0ms) + 150ms); }
+.js [data-revela].visivel .palavras > span[aria-hidden] { opacity: 1; transform: none; filter: none; }
+/* a assinatura se escreve da esquerda para a direita */
+.js .carta-assina[data-revela] .assinatura, .js .rodape-assina[data-revela] .assinatura { clip-path: inset(0 100% 0 0); transition: clip-path 1.8s ease-in-out 0.3s; }
+.js .carta-assina[data-revela].visivel .assinatura, .js .rodape-assina[data-revela].visivel .assinatura { clip-path: inset(0 0 0 0); }
+/* o visor desliza para o lado da foto que chega */
+.visor-img.trocando { transform: translateX(var(--dx, 0px)) scale(0.985); }
+
+/* rolagem: só onde o navegador sabe animar pela rolagem (o resto fica parado, sem prejuízo) */
+@supports (animation-timeline: view()) {
+    /* o algarismo romano do capítulo atravessa a tela mais devagar que o texto */
+    .capitulo-numeral { animation: numeral linear both; animation-timeline: view(); animation-range: cover; }
+    @keyframes numeral { from { transform: translate(-50%, 30%); } to { transform: translate(-50%, -30%); } }
+    /* panorâmicas e fotos únicas: a imagem desliza um pouco dentro da moldura (paralaxe) */
+    .bloco-panoramica .foto-abrir, .bloco-unica .foto-abrir { animation: paralaxe linear both; animation-timeline: view(); animation-range: cover; }
+    @keyframes paralaxe { from { transform: scale(1.1) translateY(-4%); } to { transform: scale(1.1) translateY(4%); } }
+    /* a capa sobe e esmaece enquanto a página começa */
+    .capa-texto, .capa-acoes { animation-name: capa-sai; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: scroll(root); animation-range: 0 90svh; animation-duration: auto; animation-delay: 0s; }
+    @keyframes capa-sai { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-14svh); } }
+    /* a linha de progresso embaixo do índice */
+    .indice::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--destaque); transform-origin: left; animation: progresso linear both; animation-timeline: scroll(root); }
+    @keyframes progresso { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
 /* ---------- Tablet e celular ---------- */
 @media (max-width: 960px) {
     .indice-links { display: none; }
     .indice-atual { display: block; justify-self: center; }
-    .gatilho-indice .gatilho-texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
-@media (max-width: 860px) {
-    .capa-editorial { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-    .capa-editorial .capa-foto { grid-column: 1; grid-row: 1; height: min(62svh, 125vw); min-height: 0; }
-    .capa-editorial .capa-texto { grid-column: 1; grid-row: 2; padding: 40px var(--margem) 24px; gap: 18px; }
-    .capa-nomes { font-size: clamp(54px, 15.5vw, 104px); }
+/* celular e tablet em pé: a foto em cima, os nomes embaixo, tudo numa tela só */
+@media (max-width: 860px) and (max-aspect-ratio: 1/1) {
+    .capa-editorial { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; min-height: var(--alto); align-content: start; }
+    .capa-editorial .capa-foto { grid-column: 1 / -1; grid-row: 1; height: max(48svh, calc(var(--alto) - 44vw - 70px)); }
+    .capa-editorial .capa-texto { grid-column: 1; grid-row: 2; align-self: center; padding: clamp(20px, 4svh, 36px) 0 clamp(20px, 4svh, 36px) var(--margem); }
+    .capa-nomes { font-size: clamp(50px, 15vw, 104px); }
+    .capa-editorial .capa-acoes { grid-column: 2; grid-row: 2; align-self: end; flex-direction: column-reverse; gap: 4px; padding: 0 calc(var(--margem) - 6px) clamp(18px, 4svh, 34px) 12px; }
+}
+/* tela deitada e baixa (celular na horizontal): os nomes pela altura */
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+    :root { --cabe: max(200px, calc(var(--alto) - 84px)); --cabe-tela: max(200px, calc(var(--alto) - 56px)); }
+    .indice { height: 46px; }
+    .capa-editorial .capa-texto { padding-block: 24px 96px; }
+    .capa-nomes { font-size: clamp(40px, min(8vw, 19svh), 120px); }
+    .visor-topo { height: 48px; }
+    .visor-palco { inset: calc(48px + env(safe-area-inset-top, 0px)) clamp(56px, 8vw, 120px) calc(60px + env(safe-area-inset-bottom, 0px)); }
+    .visor-acoes { padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+    .visor-acao { min-height: 44px; }
 }
 @media (max-width: 720px) {
     :root { --respiro: 72px; }
     body { font-size: 15.5px; }
     .bloco-panoramica { width: 100vw; margin-inline: calc(-1 * var(--margem)); }
     .bloco-panoramica-empe { width: auto; margin-inline: 0; }
-    .bloco-panoramica-empe .foto { height: auto; width: 100%; }
     .bloco-unica { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-    .bloco-unica .foto { width: 88%; }
+    .bloco-unica .foto { width: min(88%, calc(var(--cabe) * var(--r))); }
     .bloco-unica-direita .foto { align-self: flex-end; }
     .bloco-unica-centro .foto { align-self: center; }
     .bloco-unica .bloco-nota, .bloco-unica-direita .bloco-nota { align-self: stretch; max-width: none; text-align: left; padding: 0; }
@@ -482,14 +527,16 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
     .bloco-unica-centro .bloco-nota { text-align: center; margin: 0; }
     .bloco-fileira { gap: 8px; }
     .bloco-empilha { flex-direction: column; }
-    .bloco-empilha > .foto { flex: none; width: 100%; }
+    .bloco-empilha { max-width: none; align-items: center; }
+    .bloco-empilha > .foto { flex: none; width: min(100%, calc(var(--cabe) * var(--r))); }
     .bloco-trio > .foto:nth-child(3) { flex-basis: 100%; }
     .bloco-trio:not(.bloco-empilha) { display: grid; grid-template-columns: 1fr 1fr; }
     .bloco-trio:not(.bloco-empilha) > .foto:nth-child(3) { grid-column: 1 / -1; width: 66%; justify-self: center; }
     .bloco-deslocada { column-gap: 10px; }
     .bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 7; }
     .bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 5; margin-top: 45%; }
-    .bloco-mosaico { grid-template-columns: 1fr 1fr; grid-auto-rows: 58vw; gap: 8px; }
+    .bloco-deslocada > .foto { justify-self: stretch; }
+    .bloco-mosaico { grid-template-columns: 1fr 1fr; grid-auto-rows: min(58vw, calc((var(--alto) - 120px) / 2)); gap: 8px; }
     .bloco-mosaico > .foto, .bloco-mosaico-5 > :nth-child(n + 3) { grid-column: span 1; grid-row: span 1; }
     .bloco-mosaico > .foto:first-child { grid-column: 1 / -1; grid-row: span 1; }
     .bloco-mosaico-3 > .foto:first-child { grid-row: span 1; }
@@ -507,9 +554,6 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
     .visor-acao { flex-direction: column; gap: 4px; min-height: 56px; padding: 4px 16px; font-size: 11.5px; }
     .barra { left: 12px; right: 12px; justify-content: space-between; transform: translateY(calc(100% + 40px)); }
     .barra.visivel { transform: none; }
-    .tocador { padding-right: 5px; }
-    .tocador-titulo { display: none; }
-    html:has(.barra.visivel) .tocador { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
     html:has(.barra.visivel) .aviso { bottom: calc(146px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 400px) {
@@ -524,5 +568,7 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; transition-delay: 0ms !important; }
-    .js [data-revela], .js .foto[data-revela], .js .foto[data-revela] img { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+    .js [data-revela], .js .foto[data-revela], .js .foto[data-revela] img, .js .capitulo-titulo[data-revela] > span, .js .capitulo-sub::before, .js .capitulo-sub::after, .js [data-revela] .palavras > span[aria-hidden], .js [data-revela] .assinatura, .capa-linha { opacity: 1 !important; transform: none !important; clip-path: none !important; filter: none !important; }
+    .capitulo-numeral, .foto-abrir, .capa-texto, .capa-acoes, .capa-foto img, .capa-e { animation: none !important; }
+    .indice::after { display: none; }
 }

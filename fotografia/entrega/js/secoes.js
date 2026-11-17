@@ -27,14 +27,11 @@ export function capa(ev, ctx) {
 
     return h('header', { class: 'capa capa-' + layout },
         foto,
-        h('div', { class: 'capa-texto' },
-            h('p', { class: 'rotulo capa-tipo' }, ev.tipo, ev.tipo && ev.dataTexto ? h('span', { class: 'ponto', 'aria-hidden': 'true', text: '·' }) : null, ev.dataTexto && h('time', { datetime: ev.data, text: ev.dataTexto })),
-            titulo,
-            ev.epigrafe && h('p', { class: 'capa-epigrafe', text: ev.epigrafe }),
-            ev.local && h('p', { class: 'rotulo capa-local', text: ev.local }),
-            h('div', { class: 'capa-acoes' },
-                h('a', { class: 'botao-linha', href: '#historia' }, h('span', { text: 'Começar a história' }), icone('baixo')),
-                ctx.trilha && ctx.trilha.gatilho())));
+        // a capa é só o nome; o resto da página conta a história
+        h('div', { class: 'capa-texto' }, titulo),
+        h('div', { class: 'capa-acoes' },
+            h('a', { class: 'capa-descer', href: '#historia', 'aria-label': 'Ir para as fotos' }, h('span', { class: 'capa-descer-linha', 'aria-hidden': 'true' })),
+            ctx.trilha && ctx.trilha.botao('som-capa')));
 }
 
 /* ---------- Carta aos noivos ---------- */
@@ -52,13 +49,12 @@ export function carta(ev) {
 /* ---------- Um capítulo: a abertura e os blocos de fotos ---------- */
 export function capitulo(c, ctx) {
     const id = 'cap-' + c.id;
-    const n = c.blocos.reduce((s, b) => s + (b.fotos ? b.fotos.length : 0), 0);
     return h('section', { class: 'capitulo' + (c.tom === 'escuro' ? ' tom-escuro' : ''), id, 'aria-labelledby': id + '-titulo', data: { capitulo: c.id } },
         h('header', { class: 'capitulo-abre' },
             h('span', { class: 'capitulo-numeral', 'aria-hidden': 'true', text: c.numero }),
             h('p', { class: 'rotulo', 'data-revela': '', text: 'Capítulo ' + c.numero }),
-            h('h2', { class: 'capitulo-titulo', id: id + '-titulo', 'data-revela': '', text: c.titulo }),
-            c.subtitulo && h('p', { class: 'capitulo-sub', 'data-revela': '' }, h('span', { text: c.subtitulo }), h('span', { class: 'capitulo-conta', text: n + (n === 1 ? ' foto' : ' fotos') })),
+            h('h2', { class: 'capitulo-titulo', id: id + '-titulo', 'data-revela': '' }, h('span', { text: c.titulo })),
+            c.subtitulo && h('p', { class: 'capitulo-sub', 'data-revela': '', text: c.subtitulo }),
             c.texto && h('p', { class: 'capitulo-texto', 'data-revela': '', text: c.texto })),
         h('div', { class: 'capitulo-blocos' }, c.blocos.map((b) => desenharBloco(b, ctx))));
 }

@@ -35,8 +35,9 @@ export function criarVisor(evento, ctx) {
         vivo);
     document.body.append(dialogo);
 
-    function mostra(k) {
+    function mostra(k, dir) {
         atual = (k + lista.length) % lista.length;
+        img.style.setProperty('--dx', (dir || 0) * 36 + 'px');
         const f = lista[atual];
         const este = ++pedido;
         img.classList.add('trocando');
@@ -72,7 +73,7 @@ export function criarVisor(evento, ctx) {
         [1, -1].forEach((d) => { new Image().src = lista[(atual + d + lista.length) % lista.length].src; });
     }
 
-    function ir(d) { if (lista.length > 1) mostra(atual + d); }
+    function ir(d) { if (lista.length > 1) mostra(atual + d, d); }
 
     function marcaFav() {
         const on = ctx.favoritas.tem(lista[atual].id);
