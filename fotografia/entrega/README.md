@@ -74,7 +74,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
 | `downloads.completo` | `{ "url" }`: o link da pasta com todas as fotos (Google Drive). A página avisa que a pasta tem senha; **nunca coloque a senha aqui** (o repositório é público): mande pelo WhatsApp. Se a pasta não tiver senha, use `"senha": false`. Sem `url`, o cartão não aparece |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
-| `creditos` | `[{ "papel": "Cerimonial", "nome": "…" }]`; os sem nome não aparecem |
+| `creditos` | `[{ "papel": "Cerimonial", "nome": "…" }]`: os outros fornecedores do dia. Os sem nome não aparecem, e o fotógrafo não entra (a assinatura já está em cima). Sem nenhum, o bloco some |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |
 
 ### Capítulos

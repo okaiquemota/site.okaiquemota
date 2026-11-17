@@ -110,7 +110,8 @@ function cartao(titulo, texto, acao, nota) {
 /* ---------- Assinatura do fotógrafo, créditos e o convite discreto ---------- */
 export function rodape(ev) {
     const fot = ev.fotografo;
-    const creditos = (ev.creditos || []).filter((c) => c && c.nome);
+    // a assinatura logo acima já diz quem fotografou: nos créditos entram só os outros fornecedores
+    const creditos = (ev.creditos || []).filter((c) => c && c.nome && c.nome !== fot.nome);
     const msg = 'Oi, ' + fot.nome.split(' ')[0] + '! Vi as fotos de ' + ev.titulo + ' e queria um orçamento.';
     return h('footer', { class: 'rodape' },
         h('div', { class: 'rodape-assina', 'data-revela': '' },
