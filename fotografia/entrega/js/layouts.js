@@ -30,6 +30,8 @@ export function figuraFoto(foto, ctx, opcoes = {}) {
     }, img);
 
     const fig = h('figure', { class: 'foto' + (foto.deitada ? ' foto-deitada' : ' foto-empe'), data: { id: foto.id } }, abrir);
+    // a proporção vai para o CSS: é com ela que a foto nunca passa da altura da tela
+    fig.style.setProperty('--r', foto.proporcao.toFixed(4));
     // a moldura reserva o espaço da foto antes dela chegar (sem pulos na página)
     if (!opcoes.recorte) fig.style.aspectRatio = foto.largura + ' / ' + foto.altura;
 
@@ -82,7 +84,7 @@ export const LAYOUTS = {
 
     citacao(b) {
         return revela(h('blockquote', { class: 'bloco bloco-citacao' },
-            h('p', { text: b.texto }),
+            palavras(b.texto),
             b.autor && h('footer', { text: b.autor })));
     },
 
@@ -91,7 +93,7 @@ export const LAYOUTS = {
         return h('div', { class: 'bloco bloco-votos' },
             b.titulo && revela(h('p', { class: 'rotulo bloco-votos-titulo', text: b.titulo })),
             h('div', { class: 'votos' }, (b.trechos || []).map((t, i) => revela(h('blockquote', { class: 'voto' },
-                h('p', { text: t.texto }),
+                palavras(t.texto),
                 t.autor && h('footer', { text: t.autor })), i * 160))));
     },
 
@@ -100,15 +102,28 @@ export const LAYOUTS = {
     }
 };
 
+/* o texto entra palavra por palavra (cada uma com seu atraso); o leitor de tela lê a frase inteira */
+function palavras(texto) {
+    const p = h('p', { class: 'palavras' }, h('span', { class: 'visualmente-escondido', text: texto }));
+    texto.split(/\s+/).forEach((w, i) => {
+        const s = h('span', { 'aria-hidden': 'true', text: w });
+        s.style.setProperty('--i', String(i));
+        p.append(s, ' ');
+    });
+    return p;
+}
+
 function fileira(b, ctx, tipo) {
     const deslocada = b.variante === 'deslocada';
     const temDeitada = b.fotos.some((f) => f.deitada);
     const el = h('div', { class: 'bloco bloco-fileira bloco-' + tipo + (deslocada ? ' bloco-deslocada' : '') + (temDeitada ? ' bloco-empilha' : '') });
+    // soma das proporções: a fileira inteira cabe na altura da tela sem cortar nada
+    el.style.setProperty('--soma', b.fotos.reduce((s, f) => s + f.proporcao, 0).toFixed(4));
+    el.style.setProperty('--n', String(b.fotos.length));
     const largura = Math.round(100 / b.fotos.length);
     b.fotos.forEach((f, i) => {
         const fig = revela(figuraFoto(f, ctx, { sizes: '(max-width: 720px) ' + (temDeitada ? 100 : largura) + 'vw, ' + largura + 'vw' }), i * 110);
         // cada foto cresce na proporção dela: as alturas ficam iguais sem corte
-        fig.style.setProperty('--r', f.proporcao.toFixed(4));
         el.append(fig);
     });
     if (b.legenda) el.append(h('p', { class: 'bloco-legenda', text: b.legenda }));

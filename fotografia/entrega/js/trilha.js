@@ -1,6 +1,7 @@
 /* Entrega · experiência sonora
-   Nada toca sozinho: a música só começa quando alguém aperta o botão.
-   Entra e sai devagar (fade) e fica num tocador pequeno no canto. */
+   Nada toca sozinho: a música só começa quando alguém toca no ícone de som.
+   Só ícone, sem texto: parado mostra o alto-falante; tocando, as ondinhas
+   se mexem. Entra e sai devagar (fade). */
 import { h, icone } from './dom.js';
 
 export function criarTrilha(trilha) {
@@ -12,7 +13,7 @@ export function criarTrilha(trilha) {
 
     const VOLUME = 0.55;
     let fade = 0;
-    const gatilhos = new Set();
+    const botoes = new Set();
 
     function rampa(alvo, ms, depois) {
         cancelAnimationFrame(fade);
@@ -26,43 +27,34 @@ export function criarTrilha(trilha) {
         fade = requestAnimationFrame(passo);
     }
 
-    const rotulo = h('span', { class: 'tocador-titulo' },
-        h('span', { class: 'tocador-nome', text: trilha.titulo || 'Trilha' }),
-        trilha.autor && h('span', { class: 'tocador-autor', text: trilha.autor }));
-    const ondas = h('span', { class: 'tocador-ondas', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'));
-    const botao = h('button', { class: 'tocador-botao', type: 'button', 'aria-label': 'Pausar a trilha', onclick: () => alternar() }, ondas);
-    const tocador = h('div', { class: 'tocador', role: 'region', 'aria-label': 'Trilha sonora', hidden: true }, botao, rotulo);
-
     function estado() {
         const tocando = !audio.paused;
-        tocador.classList.toggle('tocando', tocando);
-        botao.setAttribute('aria-label', tocando ? 'Pausar a trilha' : 'Tocar a trilha');
-        gatilhos.forEach((b) => {
+        botoes.forEach((b) => {
             b.setAttribute('aria-pressed', tocando ? 'true' : 'false');
-            const t = b.querySelector('.gatilho-texto');
-            if (t) t.textContent = tocando ? 'Pausar a trilha' : 'Ouvir enquanto vê';
+            b.setAttribute('aria-label', tocando ? 'Pausar a música' : 'Tocar a música');
         });
     }
     audio.addEventListener('play', estado);
     audio.addEventListener('pause', estado);
 
     async function tocar() {
-        tocador.hidden = false;
-        requestAnimationFrame(() => tocador.classList.add('visivel'));
-        try { await audio.play(); rampa(VOLUME, 2200); }
-        catch (e) { tocador.hidden = true; }
+        try { await audio.play(); rampa(VOLUME, 2200); } catch (e) { /* o navegador recusou: fica parado */ }
     }
     function pausar() { rampa(0, 700, () => audio.pause()); }
     function alternar() { if (audio.paused) tocar(); else pausar(); }
 
     return {
-        tocador,
         alternar,
-        /** um botão "Ouvir enquanto vê" em qualquer lugar da página */
-        gatilho(classe) {
-            const b = h('button', { class: 'gatilho-som ' + (classe || ''), type: 'button', 'aria-pressed': 'false', onclick: alternar },
-                icone('som'), h('span', { class: 'gatilho-texto', text: 'Ouvir enquanto vê' }));
-            gatilhos.add(b);
+        /** o ícone de som, em qualquer lugar da página (todos ficam em sincronia) */
+        botao(classe) {
+            const b = h('button', {
+                class: 'som ' + (classe || ''), type: 'button',
+                'aria-pressed': 'false', 'aria-label': 'Tocar a música',
+                title: trilha.titulo || 'Música', onclick: alternar
+            },
+                icone('som', 'som-parado'),
+                h('span', { class: 'som-ondas', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i')));
+            botoes.add(b);
             return b;
         }
     };

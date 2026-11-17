@@ -48,7 +48,6 @@ async function iniciar() {
         vistaFav && vistaFav.el,
         secoes.levar(ev, ctx),
         secoes.rodape(ev));
-    if (ctx.trilha) document.body.append(ctx.trilha.tocador);
     if (ctx.favoritas) {
         document.body.append(barraFavoritas(ev, ctx, vistaFav));
         ctx.favoritas.aoMudar(() => marcarCoracoes(ctx));
@@ -84,7 +83,7 @@ function indice(ev, ctx) {
         h('a', { class: 'indice-marca', href: '#', 'aria-label': ev.titulo + ', voltar ao início', text: ev.monograma }),
         h('div', { class: 'indice-links' }, links),
         h('p', { class: 'indice-atual', 'aria-hidden': 'true' }),
-        ctx.trilha ? ctx.trilha.gatilho('gatilho-indice') : h('span'));
+        ctx.trilha ? ctx.trilha.botao('som-indice') : h('span'));
 }
 
 function acompanharCapitulos() {
