@@ -17,6 +17,8 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
 │   ├── fotografia.css
 │   ├── fotografia.js      abas dos pacotes, visor de fotos, formulário e o aparecer ao rolar
 │   ├── fontes/            Tinos (woff2, licença SIL OFL 1.1), usada também pela página inicial
+│   ├── entrega/           o motor das páginas de entrega de fotos (veja fotografia/entrega/README.md)
+│   ├── vinicius-e-stefany/  a entrega do casamento de Vinícius & Stefany (evento.json + fotos)
 │   └── img/               fotos dos trabalhos (NOME-1080.jpg e NOME-720.jpg, 4:5), o retrato da capa, kaique-*.jpg,
 │                          e compartilhar.jpg (a prévia quando o link é mandado no WhatsApp, 1200×630)
 ├── painel/                o painel de clientes (Cloudflare, veja painel/README.md)
@@ -30,6 +32,8 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
         ├── icone-180.png      o ícone quando alguém salva o site na tela inicial do iPhone
         └── compartilhar.jpg   a prévia da página inicial no WhatsApp e nas redes (1200×630)
 ```
+
+Em `/fotografia/<trabalho>/` ficam as **páginas de entrega**: a revista de cada casal (ou 15 anos, ou ensaio) com as fotos prontas, capítulos, visor, favoritas para o álbum, stories e link para os convidados (`/convidados/`). Cada trabalho é só uma pasta com um `evento.json` e as fotos; o motor é o mesmo para todos. O passo a passo para criar uma está em [`fotografia/entrega/README.md`](fotografia/entrega/README.md). A primeira é https://okaiquemota.com.br/fotografia/vinicius-e-stefany/. Elas têm `noindex` e não entram no `sitemap.xml`.
 
 O site não tem build nem dependência. Pra rodar no computador: `python3 -m http.server 8000`.
 

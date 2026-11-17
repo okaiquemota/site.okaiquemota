@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <!-- Só o que vem do próprio site. Se as fotos forem para outro endereço (R2, Supabase), libere em img-src e connect-src -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'">
+    <!-- Página de entrega: privada, fora do Google -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Vinícius &amp; Stefany · Kaique Mota Fotografia</title>
+    <meta name="description" content="As fotos do casamento de Vinícius &amp; Stefany, por Kaique Mota Fotografia.">
+    <meta name="theme-color" content="#faf9f6">
+    <!-- A prévia no WhatsApp (o robô do WhatsApp não roda JavaScript: estes campos ficam aqui) -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="Vinícius &amp; Stefany">
+    <meta property="og:description" content="Algumas horas que vão durar a vida inteira. As fotos do casamento, por Kaique Mota Fotografia.">
+    <meta property="og:image" content="https://okaiquemota.com.br/fotografia/img/vs-08-1080.jpg">
+    <meta property="og:image:alt" content="Vinícius e Stefany abraçados na luz do fim da tarde">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="../../assets/img/assinatura.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../../assets/img/icone-180.png">
+    <link rel="preload" href="evento.json" as="fetch" type="application/json" crossorigin="anonymous">
+    <link rel="preload" href="../entrega/fontes/cormorant-garamond-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../entrega/fontes/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../img/vs-08-1080.jpg" as="image" fetchpriority="high">
+    <link rel="stylesheet" href="../entrega/entrega.css">
+    <script type="module" src="../entrega/js/principal.js"></script>
+</head>
+<body>
+    <!-- Tudo o que aparece vem do evento.json (textos, capítulos e fotos). Para outro trabalho, veja fotografia/entrega/README.md -->
+    <div id="entrega" data-evento="evento.json" data-modo="casal" aria-busy="true">
+        <p class="entrega-espera">Vinícius &amp; Stefany</p>
+    </div>
+    <noscript>
+        <p class="falhou">Para ver as fotos, ative o JavaScript do navegador.</p>
+    </noscript>
+</body>
+</html>
