@@ -205,9 +205,8 @@ main:focus, section:focus { outline: none; }
 .carta-titulo { margin-bottom: clamp(28px, 4vw, 44px); font-family: var(--serif); font-size: clamp(40px, 5vw, 64px); font-style: italic; font-weight: 300; line-height: 1.05; }
 .carta-texto { display: flex; flex-direction: column; gap: 1.1em; font-family: var(--serif); font-size: clamp(20px, 1.65vw, 23.5px); line-height: 1.62; text-wrap: pretty; hanging-punctuation: first; }
 .carta-texto p:first-child::first-letter { float: left; margin: 0.06em 0.1em 0 -0.02em; font-size: 4.1em; line-height: 0.78; font-weight: 300; color: var(--destaque); }
-.carta-assina { display: flex; align-items: flex-end; gap: 18px; margin-top: 40px; }
-.carta-assina .assinatura { width: 120px; transform: rotate(-4deg); }
-.carta-de { padding-bottom: 14px; font-family: var(--serif); font-size: 22px; font-style: italic; color: var(--tinta-suave); }
+.carta-assina { margin-top: 36px; }
+.carta-assina .assinatura { width: 150px; transform: rotate(-4deg); }
 
 /* ---------- Capítulos ---------- */
 .capitulo { --abre-topo: clamp(110px, min(18vw, 30svh), 250px); position: relative; padding-bottom: var(--respiro); background: var(--papel); color: var(--tinta); }
