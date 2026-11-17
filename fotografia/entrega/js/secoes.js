@@ -109,29 +109,64 @@ function cartao(titulo, texto, acao, nota) {
 
 /* ---------- Assinatura do fotógrafo, créditos e o convite discreto ---------- */
 export function rodape(ev) {
+    const t = ev.trilha;
     const fot = ev.fotografo;
-    const creditos = (ev.creditos || []).filter((c) => c && c.nome);
     const msg = 'Oi, ' + fot.nome.split(' ')[0] + '! Vi as fotos de ' + ev.titulo + ' e queria um orçamento.';
     return h('footer', { class: 'rodape' },
+        colofao(ev),
         h('div', { class: 'rodape-assina', 'data-revela': '' },
-            h('span', { class: 'assinatura', role: 'img', 'aria-label': 'Assinatura de ' + fot.nome }),
-            h('p', { class: 'rodape-marca', text: fot.marca }),
+            h('span', { class: 'assinatura', role: 'img', 'aria-label': 'Assinatura de ' + fot.nome + ', ' + fot.marca }),
             h('a', { class: 'link', href: fot.site, text: fot.siteRotulo || fot.site })),
-        creditos.length > 0 && h('dl', { class: 'creditos', 'data-revela': '' },
-            h('p', { class: 'rotulo creditos-titulo', text: ev.titulo + ' · ' + formatarData(ev.data, true) }),
-            creditos.map((c) => {
-                // com "instagram", o nome vira link para o perfil (o @ não aparece na página)
-                const ig = c.instagram && String(c.instagram).replace(/^@/, '').trim();
-                const nome = ig
-                    ? h('a', { href: 'https://www.instagram.com/' + encodeURIComponent(ig) + '/', target: '_blank', rel: 'noopener' }, c.nome, h('span', { class: 'visualmente-escondido', text: ' (Instagram, abre em nova aba)' }))
-                    : c.nome;
-                return h('div', { class: 'credito' }, h('dt', { text: c.papel }), h('dd', null, nome));
-            })),
         h('div', { class: 'rodape-cta', 'data-revela': '' },
             h('p', { class: 'rodape-cta-titulo', text: 'Gostou do que viu?' }),
             h('p', { class: 'rodape-cta-texto', text: 'Se a sua história também merece ser contada assim, vamos conversar.' }),
             h('div', { class: 'rodape-cta-acoes' },
                 h('button', { class: 'botao botao-claro', type: 'button', onclick: () => abrirWhatsApp(fot.whatsapp, msg) }, h('span', { text: 'Pedir orçamento' })),
                 h('a', { class: 'botao-linha', href: fot.site }, h('span', { text: 'Conhecer o trabalho' }), icone('dir')))),
-        h('p', { class: 'rodape-fim' }, '© ' + new Date().getFullYear() + ' ' + fot.nome + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'));
+        h('p', { class: 'rodape-fim' }, '© ' + new Date().getFullYear() + ' ' + fot.nome + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'),
+        // música com licença Creative Commons: o crédito tem que ficar visível
+        t && t.licenca && h('p', { class: 'rodape-fim rodape-musica' },
+            'Música: “' + (t.titulo || '') + '”' + (t.autor ? ', de ' + t.autor : ''),
+            t.fonte ? [' (', h('a', { class: 'link', href: t.fonte, target: '_blank', rel: 'noopener', text: t.fonte.replace(/^https?:\/\/(www\.)?/, '') }), ')'] : null,
+            ', licença ',
+            t.licencaUrl ? h('a', { class: 'link', href: t.licencaUrl, target: '_blank', rel: 'license noopener', text: t.licenca }) : t.licenca,
+            '.'));
+}
+
+/* ---------- O fecho, como numa revista: "Vinícius & Stefany, por Kaique Mota, com …" ----------
+   Sai dos créditos: o de "Fotografia" é o "por"; as outras funções de fotografia
+   (segunda fotografia, assistente) são o "com"; o resto (cerimonial, decoração)
+   vai numa linha pequena embaixo. */
+function colofao(ev) {
+    const fot = ev.fotografo;
+    const creditos = (ev.creditos || []).filter((c) => c && c.nome);
+    const ehFoto = (c) => /fotogra/i.test(c.papel || '');
+    const principal = creditos.find((c) => /^fotografia$/i.test((c.papel || '').trim())) || { nome: fot.nome, instagram: fot.instagram };
+    const equipe = creditos.filter((c) => c !== principal && ehFoto(c));
+    const outros = creditos.filter((c) => c !== principal && !ehFoto(c));
+
+    return h('div', { class: 'colofao', 'data-revela': '' },
+        h('p', { class: 'colofao-titulo', text: ev.titulo }),
+        h('p', { class: 'colofao-por' }, 'por ', nomeCredito(principal)),
+        equipe.length > 0 && h('p', { class: 'colofao-com' }, 'com ', juntar(equipe.map(nomeCredito))),
+        outros.length > 0 && h('p', { class: 'colofao-outros' }, juntar(outros.map((c) => [c.papel + ' ', nomeCredito(c)]), ' · ')),
+        ev.data && h('p', { class: 'rotulo colofao-data' }, h('time', { datetime: ev.data, text: formatarData(ev.data) })));
+}
+
+/* com "instagram", o nome vira link para o perfil (o @ não aparece na página) */
+function nomeCredito(c) {
+    const ig = c.instagram && String(c.instagram).replace(/^@/, '').trim();
+    if (!ig) return c.nome;
+    return h('a', { href: 'https://www.instagram.com/' + encodeURIComponent(ig) + '/', target: '_blank', rel: 'noopener' },
+        c.nome, h('span', { class: 'visualmente-escondido', text: ' (Instagram, abre em nova aba)' }));
+}
+
+/* "A", "A e B", "A, B e C" (ou com outro separador) */
+function juntar(itens, sep) {
+    const out = [];
+    itens.forEach((it, k) => {
+        if (k > 0) out.push(sep || (k === itens.length - 1 ? ' e ' : ', '));
+        out.push(it);
+    });
+    return out;
 }

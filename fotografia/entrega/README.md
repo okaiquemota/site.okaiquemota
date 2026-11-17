@@ -26,7 +26,7 @@ fotografia/
 └── vinicius-e-stefany/      um trabalho
     ├── index.html           a página do casal (só os metadados da prévia no WhatsApp)
     ├── evento.json          TUDO o que aparece: textos, capítulos, fotos, créditos
-    ├── trilha-exemplo.mp3   a música (troque pela de verdade)
+    ├── trilha.mp3           a música ("There is Romance", Kevin MacLeod, CC BY 4.0)
     └── fotos/
         ├── web/             a versão da tela (lado maior 2048px; os exemplos de agora têm 1600)
         └── mini/            a versão leve da página (lado maior 800px)
@@ -51,7 +51,7 @@ Sem build e sem dependência, como o resto do site: é só publicar. Para ver no
 - **Só para os noivos:** `"selecao": { "ativa": true, "limite": 40 }`, `downloads.completo.url` com a pasta do Drive e `downloads.validade`. Na `index.html`, `<meta name="robots" content="noindex, nofollow">`, e a página fica fora do `sitemap.xml`.
 - **Portfólio (aberta no site):** `"selecao": { "ativa": false }` e `"downloads": {}`. Assim somem os corações, a barra, o "Leve com vocês" e o aviso de validade. Na `index.html`, sem `noindex` e com `canonical`; a página entra no `sitemap.xml` e ganha o link "Ver a história" em Trabalhos (`fotografia/index.html`). Antes, confirme com o casal o que pode ficar público (carta, votos, making of). Vinícius & Stefany está assim.
 
-Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
+Para trocar a música: coloque o `.mp3` na pasta (comprimido em 128 kbps) e mude `trilha.src`. A de Vinícius & Stefany é "There is Romance", de Kevin MacLeod (incompetech.com, CC BY 4.0, com crédito no rodapé). Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
 
 ## O evento.json
 
@@ -67,14 +67,14 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `tema.cores` | opcional: troca qualquer token do CSS, ex. `{ "destaque": "#7a5c3e" }` |
 | `capa.layout` | `"editorial"` (texto de um lado, foto em pé do outro) ou `"tela-cheia"` (foto deitada de fundo) |
 | `capa.foto` | a foto da capa (mesmos campos de uma foto) |
-| `trilha` | `{ "src", "titulo" }`; vira só um ícone de som (na capa e no índice). Sem ele, sem música |
+| `trilha` | `{ "src", "titulo", "autor", "fonte", "licenca", "licencaUrl" }`: vira só um ícone de som (na capa e no índice). Com `licenca`, o crédito da música aparece no fim da página (obrigatório em Creative Commons). Sem `trilha`, sem música |
 | `carta` | `{ "titulo", "paragrafos": [...], "assinatura" }`; sem ele, sem carta |
 | `midia` | as pastas das versões (`web`, `mini`, `original`) e o lado maior de cada uma |
 | `capitulos` | a história (abaixo) |
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
 | `downloads.completo` | `{ "url" }`: o link da pasta com todas as fotos (Google Drive). A página avisa que a pasta tem senha; **nunca coloque a senha aqui** (o repositório é público): mande pelo WhatsApp. Se a pasta não tiver senha, use `"senha": false`. Sem `url`, o cartão não aparece |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
-| `creditos` | `[{ "papel": "Segunda fotografia", "nome": "…", "instagram": "perfil" }]`: quem trabalhou no dia. Com `instagram`, o nome vira link para o perfil (o @ não aparece). Os sem nome não aparecem; sem nenhum, o bloco some |
+| `creditos` | `[{ "papel": "Fotografia", "nome": "…", "instagram": "perfil" }, …]`: viram o fecho da página, "Vinícius & Stefany / por Kaique Mota / com Letícia Moreira e Eduardo Rufino". O papel "Fotografia" é o "por"; os outros papéis de fotografia ("Segunda fotografia", "Assistente de fotografia") são o "com"; os demais (cerimonial, decoração) vão numa linha pequena embaixo. Com `instagram`, o nome vira link (o @ não aparece). Os sem nome não aparecem |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |
 
 ### Capítulos
