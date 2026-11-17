@@ -89,6 +89,7 @@ export function levar(ev, ctx) {
             h('div', { class: 'cartao-acoes' }, enviar, conta)));
     }
 
+    if (!cartoes.length && !ev.downloads.validade) return null;
     return h('section', { class: 'levar', id: 'levar', 'aria-labelledby': 'levar-titulo' },
         h('div', { class: 'levar-cabeca', 'data-revela': '' },
             h('p', { class: 'rotulo', text: 'Para guardar' }),

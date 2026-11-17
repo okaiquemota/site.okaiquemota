@@ -33,7 +33,7 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
         └── compartilhar.jpg   a prévia da página inicial no WhatsApp e nas redes (1200×630)
 ```
 
-Em `/fotografia/<trabalho>/` ficam as **páginas de entrega**: a revista de cada casal (ou 15 anos, ou ensaio) com as fotos prontas, capítulos, visor, favoritas para o álbum e stories. Cada trabalho é só uma pasta com um `evento.json` e as fotos; o motor é o mesmo para todos. O passo a passo para criar uma está em [`fotografia/entrega/README.md`](fotografia/entrega/README.md). A primeira é https://okaiquemota.com.br/fotografia/vinicius-e-stefany/. Elas têm `noindex` e não entram no `sitemap.xml`.
+Em `/fotografia/<trabalho>/` ficam as **páginas de entrega**: a revista de cada casal (ou 15 anos, ou ensaio) com as fotos prontas, capítulos, visor, favoritas para o álbum e stories. Cada trabalho é só uma pasta com um `evento.json` e as fotos; o motor é o mesmo para todos. O passo a passo para criar uma está em [`fotografia/entrega/README.md`](fotografia/entrega/README.md). A primeira é https://okaiquemota.com.br/fotografia/vinicius-e-stefany/, que virou a página de portfólio do casal: está ligada em "Trabalhos" ("Ver a história"), entra no Google e não tem as partes de cliente (seleção para o álbum e pasta para baixar). Uma entrega só para os noivos leva `<meta name="robots" content="noindex, nofollow">` e fica fora do `sitemap.xml`.
 
 O site não tem build nem dependência. Pra rodar no computador: `python3 -m http.server 8000`.
 

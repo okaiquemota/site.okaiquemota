@@ -36,7 +36,7 @@
             "Antes de qualquer foto, obrigado pela confiança. Vocês me deixaram entrar no dia mais importante da história de vocês, e eu tentei estar lá do jeito que vocês são: sem pressa, sem pose, com atenção ao que acontece quando ninguém está olhando.",
             "Tudo começou bem antes do sim, numa tarde de luz dourada entre as árvores, no ensaio que virou a primeira página desta história. Depois veio a manhã do casamento: o vestido esperando na janela, as mãos que tremiam um pouco, os abraços que diziam mais do que qualquer conselho.",
             "E então, o sim. A entrada, os olhares, as alianças, o silêncio antes do beijo. E a festa, onde tudo o que estava guardado finalmente pôde dançar.",
-            "Organizei as fotos na ordem em que o dia aconteceu, em quatro capítulos. Vejam com calma, de preferência juntos. Marquem com um coração as que mais tocarem vocês: é com elas que a gente monta o álbum."
+            "Organizei as fotos na ordem em que o dia aconteceu, em quatro capítulos. Vejam com calma, de preferência juntos."
         ],
         "assinatura": "Kaique"
     },
@@ -163,14 +163,10 @@
     ],
 
     "selecao": {
-        "ativa": true,
-        "limite": 40
+        "ativa": false
     },
 
-    "downloads": {
-        "completo": { "url": "" },
-        "validade": "2027-02-14"
-    },
+    "downloads": {},
 
     "creditos": [
         { "papel": "Fotografia", "nome": "Kaique Mota" },
