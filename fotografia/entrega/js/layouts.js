@@ -86,6 +86,15 @@ export const LAYOUTS = {
             b.autor && h('footer', { text: b.autor })));
     },
 
+    /* trechos dos votos, lado a lado (um embaixo do outro no celular) */
+    votos(b) {
+        return h('div', { class: 'bloco bloco-votos' },
+            b.titulo && revela(h('p', { class: 'rotulo bloco-votos-titulo', text: b.titulo })),
+            h('div', { class: 'votos' }, (b.trechos || []).map((t, i) => revela(h('blockquote', { class: 'voto' },
+                h('p', { text: t.texto }),
+                t.autor && h('footer', { text: t.autor })), i * 160))));
+    },
+
     texto(b) {
         return revela(h('p', { class: 'bloco bloco-texto', text: b.texto }));
     }
@@ -109,6 +118,7 @@ function fileira(b, ctx, tipo) {
 export function desenharBloco(b, ctx) {
     const fn = LAYOUTS[b.layout] || LAYOUTS.mosaico;
     if (!LAYOUTS[b.layout]) console.warn('Layout desconhecido, usando mosaico:', b.layout);
-    if (fn !== LAYOUTS.citacao && fn !== LAYOUTS.texto && !(b.fotos && b.fotos.length)) return null;
+    const semFoto = fn === LAYOUTS.citacao || fn === LAYOUTS.texto || fn === LAYOUTS.votos;
+    if (!semFoto && !(b.fotos && b.fotos.length)) return null;
     return fn(b, ctx);
 }

@@ -1,6 +1,6 @@
 /* Entrega · as seções da página, na ordem da história:
    capa → carta → capítulos → para guardar → assinatura do fotógrafo. */
-import { h, icone, avisar, copiar, abrirWhatsApp } from './dom.js';
+import { h, icone, abrirWhatsApp } from './dom.js';
 import { desenharBloco } from './layouts.js';
 import { formatarData } from './dados.js';
 
@@ -10,11 +10,10 @@ export function capa(ev, ctx) {
     const layout = (ev.capa && ev.capa.layout) === 'tela-cheia' ? 'tela-cheia' : 'editorial';
     const nomes = ev.nomes && ev.nomes.length ? ev.nomes : [ev.titulo];
 
-    const titulo = h('h1', { class: 'capa-nomes', 'aria-label': ev.titulo });
-    nomes.forEach((n, i) => {
-        if (i > 0) titulo.append(h('span', { class: 'capa-e', 'aria-hidden': 'true', text: '&' }));
-        titulo.append(h('span', { class: 'capa-nome', 'aria-hidden': 'true', text: n }));
-    });
+    // "Vinícius" em cima, "& Stefany" embaixo: o & entra na linha do segundo nome
+    const titulo = h('h1', { class: 'capa-nomes', 'aria-label': ev.titulo },
+        nomes.map((n, i) => h('span', { class: 'capa-linha', 'aria-hidden': 'true' },
+            i > 0 && h('span', { class: 'capa-e', text: '&' }), n)));
 
     const foto = f && h('div', { class: 'capa-foto' },
         h('img', {
@@ -64,32 +63,18 @@ export function capitulo(c, ctx) {
         h('div', { class: 'capitulo-blocos' }, c.blocos.map((b) => desenharBloco(b, ctx))));
 }
 
-/* ---------- Para guardar: pacote completo, link dos convidados e seleção ---------- */
+/* ---------- Para guardar: o pacote completo e a seleção para o álbum ---------- */
 export function levar(ev, ctx) {
-    const casal = ev.modo === 'casal';
     const p = ev.downloads.pacote || {};
     const cartoes = [];
 
     cartoes.push(cartao(
-        casal ? 'Todas as fotos' : 'As fotos do dia',
+        'Todas as fotos',
         ev.fotos.length + ' fotos em alta resolução, num arquivo só.' + (p.tamanho ? ' (' + p.tamanho + ')' : ''),
         p.url
             ? h('a', { class: 'botao', href: p.url, target: '_blank', rel: 'noopener' }, icone('baixar'), h('span', { text: 'Baixar tudo' }))
             : h('span', { class: 'botao botao-off', 'aria-disabled': 'true' }, h('span', { text: 'Disponível em breve' })),
         'Uma foto só? Abra a foto e use o botão Baixar.'));
-
-    if (casal) {
-        const privados = (ev.capitulosOriginais || []).filter((c) => c.privado).map((c) => (c.subtitulo || c.titulo).toLowerCase());
-        const urlConvidados = new URL('convidados/', location.href.split('#')[0].split('?')[0]).href;
-        const acoes = h('div', { class: 'cartao-acoes' },
-            h('button', { class: 'botao botao-claro', type: 'button', onclick: async () => avisar((await copiar(urlConvidados)) ? 'Link dos convidados copiado' : urlConvidados) }, icone('link'), h('span', { text: 'Copiar link' })));
-        if (navigator.share) {
-            acoes.append(h('button', { class: 'botao-linha', type: 'button', onclick: () => navigator.share({ title: ev.titulo, text: 'As fotos de ' + ev.titulo, url: urlConvidados }).catch(() => {}) }, h('span', { text: 'Compartilhar' })));
-        }
-        cartoes.push(cartao('Para os convidados',
-            'Um link para mandar no grupo da família e dos amigos' + (privados.length ? ', sem o ' + privados.join(' e o ') + ' e sem a carta.' : '.'),
-            acoes));
-    }
 
     if (ev.selecao.ativa && ctx.favoritas) {
         const conta = h('span', { class: 'cartao-conta' });
