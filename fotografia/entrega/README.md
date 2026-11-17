@@ -44,7 +44,12 @@ Sem build e sem dependência, como o resto do site: é só publicar. Para ver no
 3. **Edite o `evento.json`**: confira `midia.ladoMaiorWeb` (2048 se exportou assim), textos, data, capítulos e a lista de fotos (veja os campos abaixo). Para cada foto basta `id`, `arquivo`, `largura`, `altura` e `alt`.
 4. **Edite a `index.html`**: título, `og:description` e `og:image` (a foto da prévia no WhatsApp, com endereço completo `https://…`) e o `preload` da foto da capa. É o único lugar fora do JSON, porque o WhatsApp não roda JavaScript.
 5. **Teste** no computador e no celular. Abra uma foto, marque um coração, gere um stories.
-6. **Publique** e mande o link. Não entra no `sitemap.xml`: a página tem `noindex` e fica fora do Google.
+6. **Publique** e mande o link.
+
+**Entrega só para os noivos ou página de portfólio?** O motor é o mesmo; muda o `evento.json` e a `index.html`:
+
+- **Só para os noivos:** `"selecao": { "ativa": true, "limite": 40 }`, `downloads.completo.url` com a pasta do Drive e `downloads.validade`. Na `index.html`, `<meta name="robots" content="noindex, nofollow">`, e a página fica fora do `sitemap.xml`.
+- **Portfólio (aberta no site):** `"selecao": { "ativa": false }` e `"downloads": {}`. Assim somem os corações, a barra, o "Leve com vocês" e o aviso de validade. Na `index.html`, sem `noindex` e com `canonical`; a página entra no `sitemap.xml` e ganha o link "Ver a história" em Trabalhos (`fotografia/index.html`). Antes, confirme com o casal o que pode ficar público (carta, votos, making of). Vinícius & Stefany está assim.
 
 Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
 
@@ -67,7 +72,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `midia` | as pastas das versões (`web`, `mini`, `original`) e o lado maior de cada uma |
 | `capitulos` | a história (abaixo) |
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
-| `downloads.completo` | `{ "url", "tamanho" }`: o pacote com tudo (link do Drive, por exemplo). Vazio mostra "Disponível em breve" |
+| `downloads.completo` | `{ "url" }`: o link da pasta com todas as fotos (Google Drive). A página avisa que a pasta tem senha; **nunca coloque a senha aqui** (o repositório é público): mande pelo WhatsApp. Se a pasta não tiver senha, use `"senha": false`. Sem `url`, o cartão não aparece |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
 | `creditos` | `[{ "papel": "Cerimonial", "nome": "…" }]`; os sem nome não aparecem |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |

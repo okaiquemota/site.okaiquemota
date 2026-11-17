@@ -64,13 +64,15 @@ export function levar(ev, ctx) {
     const p = ev.downloads.pacote || {};
     const cartoes = [];
 
-    cartoes.push(cartao(
-        'Todas as fotos',
-        ev.fotos.length + ' fotos em alta resolução, num arquivo só.' + (p.tamanho ? ' (' + p.tamanho + ')' : ''),
-        p.url
-            ? h('a', { class: 'botao', href: p.url, target: '_blank', rel: 'noopener' }, icone('baixar'), h('span', { text: 'Baixar tudo' }))
-            : h('span', { class: 'botao botao-off', 'aria-disabled': 'true' }, h('span', { text: 'Disponível em breve' })),
-        'Uma foto só? Abra a foto e use o botão Baixar.'));
+    // a pasta com tudo (Google Drive com senha). Sem link, o cartão nem aparece.
+    // A senha nunca vai na página nem no evento.json: o repositório é público.
+    if (p.url) {
+        cartoes.push(cartao(
+            'Todas as fotos',
+            'As ' + ev.fotos.length + ' fotos em alta resolução, numa pasta do Google Drive.',
+            h('a', { class: 'botao', href: p.url, target: '_blank', rel: 'noopener' }, icone('baixar'), h('span', { text: 'Abrir a pasta' }), h('span', { class: 'visualmente-escondido', text: ' (abre o Google Drive em nova aba)' })),
+            p.senha === false ? null : 'A pasta tem senha: é a que o ' + ev.fotografo.nome.split(' ')[0] + ' mandou junto com o link.'));
+    }
 
     if (ev.selecao.ativa && ctx.favoritas) {
         const conta = h('span', { class: 'cartao-conta' });
@@ -87,6 +89,7 @@ export function levar(ev, ctx) {
             h('div', { class: 'cartao-acoes' }, enviar, conta)));
     }
 
+    if (!cartoes.length && !ev.downloads.validade) return null;
     return h('section', { class: 'levar', id: 'levar', 'aria-labelledby': 'levar-titulo' },
         h('div', { class: 'levar-cabeca', 'data-revela': '' },
             h('p', { class: 'rotulo', text: 'Para guardar' }),

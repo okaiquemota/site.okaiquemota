@@ -40,14 +40,14 @@ async function iniciar() {
         ev.capitulos.map((c) => secoes.capitulo(c, ctx)));
     const vistaFav = ctx.favoritas ? criarVistaFavoritas(ev, ctx, visor) : null;
 
-    raiz.replaceChildren(
+    raiz.replaceChildren(...[
         h('a', { class: 'pular', href: '#historia', text: 'Pular para as fotos' }),
         indice(ev, ctx),
         secoes.capa(ev, ctx),
         historia,
         vistaFav && vistaFav.el,
         secoes.levar(ev, ctx),
-        secoes.rodape(ev));
+        secoes.rodape(ev)].filter(Boolean));
     if (ctx.favoritas) {
         document.body.append(barraFavoritas(ev, ctx, vistaFav));
         ctx.favoritas.aoMudar(() => marcarCoracoes(ctx));

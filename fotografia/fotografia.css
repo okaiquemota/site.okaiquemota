@@ -131,6 +131,10 @@ main:focus { outline: none; }
 @media (hover: hover) and (pointer: fine) { .quadro:hover img { transform: scale(1.03); } }
 .legenda { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 20px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--linha); }
 .legenda h3 { font-size: 22px; line-height: 1.2; }
+/* "Ver a história": o nome à esquerda, o tipo e o link à direita */
+.legenda h3 { margin-right: auto; }
+.legenda-ver { font-size: 15px; }
+@media (hover: hover) and (pointer: fine) { .trabalho:hover .legenda-ver { background-size: 100% 1px, 100% 1px; } }
 
 /* ---------- Pacotes ---------- */
 .abas { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 26px; margin: -8px auto 36px; }
