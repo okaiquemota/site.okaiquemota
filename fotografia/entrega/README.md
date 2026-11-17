@@ -74,7 +74,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
 | `downloads.completo` | `{ "url" }`: o link da pasta com todas as fotos (Google Drive). A página avisa que a pasta tem senha; **nunca coloque a senha aqui** (o repositório é público): mande pelo WhatsApp. Se a pasta não tiver senha, use `"senha": false`. Sem `url`, o cartão não aparece |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
-| `creditos` | `[{ "papel": "Segunda fotografia", "nome": "…", "instagram": "perfil" }]`: quem trabalhou no dia. Com `instagram`, o nome vira link para o perfil (o @ não aparece). Os sem nome não aparecem; sem nenhum, o bloco some |
+| `creditos` | `[{ "papel": "Fotografia", "nome": "…", "instagram": "perfil" }, …]`: viram o fecho da página, "Vinícius & Stefany / por Kaique Mota / com Letícia Moreira e Eduardo Rufino". O papel "Fotografia" é o "por"; os outros papéis de fotografia ("Segunda fotografia", "Assistente de fotografia") são o "com"; os demais (cerimonial, decoração) vão numa linha pequena embaixo. Com `instagram`, o nome vira link (o @ não aparece). Os sem nome não aparecem |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |
 
 ### Capítulos

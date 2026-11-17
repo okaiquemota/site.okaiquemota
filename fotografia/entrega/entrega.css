@@ -373,17 +373,16 @@ main:focus, section:focus { outline: none; }
 .rodape { display: flex; flex-direction: column; align-items: center; gap: clamp(56px, 7vw, 88px); max-width: calc(var(--largura) + 2 * var(--margem)); margin: var(--respiro) auto 0; padding: var(--respiro) var(--margem) calc(36px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--linha); text-align: center; }
 .rodape-assina { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .rodape-assina .assinatura { width: 170px; margin-bottom: 4px; transform: rotate(-4deg); }
-.rodape-marca { font-size: 12px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; }
 .rodape-assina .link { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--tinta-suave); }
-.creditos { display: flex; flex-direction: column; align-items: center; gap: 22px; }
-.creditos > div:first-of-type { margin-top: 0; }
-.creditos { flex-flow: row wrap; justify-content: center; column-gap: clamp(32px, 5vw, 64px); }
-.creditos-titulo { flex-basis: 100%; }
-.credito { display: flex; flex-direction: column; gap: 4px; }
-.credito dt { font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tinta-suave); }
-.credito dd { font-family: var(--serif); font-size: 21px; }
-.credito dd a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; padding-bottom: 2px; transition: background-size 0.5s var(--suave); }
-@media (hover: hover) and (pointer: fine) { .credito dd a:hover { background-size: 100% 1px; } }
+/* o fecho: centralizado, uma frase só, como o crédito de uma revista */
+.colofao { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 34em; text-align: center; text-wrap: balance; }
+.colofao-titulo { font-family: var(--serif); font-size: clamp(36px, 4.4vw, 56px); font-weight: 300; line-height: 1.05; }
+.colofao-por { font-family: var(--serif); font-size: clamp(22px, 2.2vw, 28px); font-style: italic; line-height: 1.3; }
+.colofao-com { font-family: var(--serif); font-size: clamp(19px, 1.7vw, 22px); font-style: italic; line-height: 1.4; color: var(--tinta-suave); }
+.colofao-outros { margin-top: 6px; font-size: 13px; line-height: 1.6; color: var(--tinta-suave); }
+.colofao-data { margin-top: 18px; }
+.colofao a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; padding-bottom: 1px; transition: background-size 0.5s var(--suave); }
+@media (hover: hover) and (pointer: fine) { .colofao a:hover { background-size: 100% 1px; } }
 .rodape-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 30em; }
 .rodape-cta-titulo { font-family: var(--serif); font-size: clamp(32px, 3.6vw, 44px); font-style: italic; font-weight: 300; line-height: 1.1; }
 .rodape-cta-texto { color: var(--tinta-suave); font-size: 15px; }
