@@ -1,7 +1,7 @@
 /* Entrega · dados
    Lê o evento (hoje um evento.json ao lado da página; amanhã a API do painel
    ou o Supabase) e devolve tudo pronto pra desenhar: endereços resolvidos,
-   fotos numeradas e capítulos filtrados pelo modo (casal ou convidados).
+   fotos numeradas e o layout automático dos capítulos sem curadoria.
    Os componentes só conhecem o formato que sai daqui. */
 
 /**
@@ -18,15 +18,15 @@
  * @property {string} [foco]        ponto que não pode ser cortado no mosaico, "50% 30%"
  *
  * @typedef {Object} Bloco
- * @property {'panoramica'|'unica'|'dupla'|'trio'|'mosaico'|'citacao'|'texto'} layout
+ * @property {'panoramica'|'unica'|'dupla'|'trio'|'mosaico'|'citacao'|'votos'|'texto'} layout
  * @property {Foto[]} [fotos]
- * @property {string} [texto] @property {string} [autor] @property {string} [legenda]
+ * @property {string} [texto] @property {string} [autor] @property {string} [legenda] @property {string} [titulo]
+ * @property {{texto: string, autor: string}[]} [trechos]   no layout 'votos'
  * @property {'esquerda'|'direita'|'centro'} [alinhamento] @property {'deslocada'} [variante]
  *
  * @typedef {Object} Capitulo
  * @property {string} id @property {string} numero @property {string} titulo
  * @property {string} [subtitulo] @property {string} [texto]
- * @property {boolean} [privado]   some no link dos convidados (making of)
  * @property {'escuro'} [tom]      o capítulo anoitece
  * @property {Bloco[]} [blocos]    curadoria manual; sem ela, use `fotos` e o layout é automático
  * @property {Foto[]} [fotos]
@@ -45,7 +45,6 @@ const PADRAO = {
     tema: { modo: 'claro', cores: {} },
     selecao: { ativa: true, limite: 0 },
     downloads: {},
-    convidados: { carta: false },
     creditos: []
 };
 
@@ -62,14 +61,13 @@ const FONTES = {
     // supabase: async (slug) => { ...select * from entregas where slug = ... }
 };
 
-export async function carregarEvento(origem, modo) {
+export async function carregarEvento(origem) {
     const { bruto, base } = await FONTES.json(origem);
-    return normalizar(bruto, base, modo);
+    return normalizar(bruto, base);
 }
 
-export function normalizar(bruto, base, modo) {
+export function normalizar(bruto, base) {
     const ev = mesclar(PADRAO, bruto);
-    ev.modo = modo === 'convidados' ? 'convidados' : 'casal';
     const resolve = (u) => (u ? new URL(u, base).href : '');
     const m = ev.midia;
 
@@ -93,9 +91,7 @@ export function normalizar(bruto, base, modo) {
         return foto;
     };
 
-    // o link dos convidados não leva os capítulos privados (o making of)
-    ev.capitulosOriginais = ev.capitulos || [];
-    ev.capitulos = ev.capitulosOriginais.filter((c) => !(ev.modo === 'convidados' && c.privado));
+    ev.capitulos = ev.capitulos || [];
 
     ev.fotos = [];
     ev.capitulos.forEach((c) => {
@@ -118,11 +114,10 @@ export function normalizar(bruto, base, modo) {
     else ev.trilha = null;
 
     const dl = ev.downloads;
-    ev.downloads.pacote = ev.modo === 'convidados' ? dl.convidados || {} : dl.completo || {};
+    ev.downloads.pacote = dl.completo || {};
     if (ev.downloads.pacote.url) ev.downloads.pacote.url = resolve(ev.downloads.pacote.url);
 
-    ev.mostrarCarta = !!ev.carta && (ev.modo === 'casal' || ev.convidados.carta);
-    ev.selecao.ativa = ev.selecao.ativa && ev.modo === 'casal';
+    ev.mostrarCarta = !!ev.carta;
     ev.dataTexto = formatarData(ev.data);
     ev.monograma = ev.monograma || (ev.nomes || []).map((n) => n.trim()[0]).join(' & ') || ev.titulo;
     return ev;

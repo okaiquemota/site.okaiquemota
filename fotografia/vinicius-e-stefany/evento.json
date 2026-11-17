@@ -66,7 +66,7 @@
                     { "id": "vs-16", "src": "../img/vs-16-1080.jpg", "mini": "../img/vs-16-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Stefany encostada no ombro do Vinícius, de olhos fechados" },
                     { "id": "vs-08", "src": "../img/vs-08-1080.jpg", "mini": "../img/vs-08-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Abraçados na luz do fim da tarde, ele beija a testa dela" }
                 ] },
-                { "layout": "citacao", "texto": "Antes do sim, já era um nós." },
+                { "layout": "citacao", "texto": "Duas pessoas que se conheceram na infância… e que nem imaginavam o que Deus já tinha preparado para cada um de nós.", "autor": "Dos votos de Stefany" },
                 { "layout": "mosaico", "fotos": [
                     { "id": "vs-11", "src": "../img/vs-11-1080.jpg", "mini": "../img/vs-11-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "foco": "50% 60%", "alt": "Os dois correndo de mãos dadas na grama, rindo" },
                     { "id": "vs-03", "src": "../img/vs-03-1080.jpg", "mini": "../img/vs-03-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Detalhe de flores cor-de-rosa num galho, com a luz atrás" },
@@ -79,7 +79,6 @@
             "numero": "II",
             "titulo": "O Preparo",
             "subtitulo": "Making of",
-            "privado": true,
             "texto": "As horas antes do sim têm um silêncio próprio. Os detalhes escolhidos com cuidado, as mãos de quem ajuda, o último olhar no espelho.",
             "blocos": [
                 { "layout": "unica", "alinhamento": "direita", "legenda": "O vestido esperando na janela, com a luz da manhã.", "fotos": [
@@ -116,7 +115,10 @@
                     { "id": "sim-03", "arquivo": "sim-03.jpg", "largura": 1280, "altura": 1600, "alt": "Vinícius emocionado ao ver Stefany entrar" },
                     { "id": "sim-04", "arquivo": "sim-04.jpg", "largura": 1280, "altura": 1600, "alt": "Stefany sorrindo com os olhos marejados" }
                 ] },
-                { "layout": "citacao", "texto": "Prometo escolher você em todos os dias comuns.", "autor": "Dos votos" },
+                { "layout": "votos", "titulo": "Os votos", "trechos": [
+                    { "texto": "Eu prometo ser alguém em quem você possa sempre confiar, se inspirar e saber que estará ao seu lado, não importam as circunstâncias.", "autor": "Vinícius" },
+                    { "texto": "Prometo escolher você… todos os dias da minha vida. Nos dias bons… e, principalmente, nos dias difíceis.", "autor": "Stefany" }
+                ] },
                 { "layout": "trio", "fotos": [
                     { "id": "sim-05", "arquivo": "sim-05.jpg", "largura": 1067, "altura": 1600, "alt": "As mãos dos dois na troca das alianças" },
                     { "id": "sim-06", "arquivo": "sim-06.jpg", "largura": 1067, "altura": 1600, "alt": "Vinícius lendo os votos em voz baixa" },
@@ -150,12 +152,14 @@
                 { "layout": "unica", "alinhamento": "centro", "legenda": "A primeira dança.", "fotos": [
                     { "id": "festa-07", "arquivo": "festa-07.jpg", "largura": 1067, "altura": 1600, "alt": "A primeira dança do casal, com luzes ao fundo" }
                 ] },
+                { "layout": "citacao", "texto": "Esse lindo lugar me remete ao céu, porque com você, eu me sinto nas alturas.", "autor": "Dos votos de Vinícius" },
                 { "layout": "mosaico", "fotos": [
                     { "id": "festa-08", "arquivo": "festa-08.jpg", "largura": 1600, "altura": 1067, "alt": "A pista cheia, todo mundo com os braços para cima" },
                     { "id": "festa-09", "arquivo": "festa-09.jpg", "largura": 1280, "altura": 1600, "alt": "Os avós dançando juntos" },
                     { "id": "festa-10", "arquivo": "festa-10.jpg", "largura": 1280, "altura": 1600, "alt": "Vinícius e Stefany rindo no meio da pista" },
                     { "id": "festa-11", "arquivo": "festa-11.jpg", "largura": 1600, "altura": 1067, "alt": "A saída da festa entre estrelinhas acesas" }
-                ] }
+                ] },
+                { "layout": "citacao", "texto": "Não estamos chegando ao fim de uma história. Estamos apenas começando o primeiro capítulo do livro que o Senhor escreveu para nós.", "autor": "Dos votos de Stefany" }
             ]
         }
     ],
@@ -167,12 +171,7 @@
 
     "downloads": {
         "completo": { "url": "", "tamanho": "" },
-        "convidados": { "url": "", "tamanho": "" },
         "validade": "2027-02-14"
-    },
-
-    "convidados": {
-        "carta": false
     },
 
     "creditos": [

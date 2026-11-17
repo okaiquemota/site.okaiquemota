@@ -1,6 +1,6 @@
 /* Entrega · o motor da página de entrega de fotos
    A página (index.html) só diz onde estão os dados:
-     <div id="entrega" data-evento="evento.json" data-modo="casal">
+     <div id="entrega" data-evento="evento.json">
    Daqui pra frente é tudo igual para qualquer casamento, ensaio ou 15 anos. */
 import { h, icone, avisar, poucoMovimento, copiar, abrirWhatsApp } from './dom.js';
 import { carregarEvento } from './dados.js';
@@ -22,9 +22,9 @@ iniciar().catch((erro) => {
 });
 
 async function iniciar() {
-    const ev = await carregarEvento(raiz.dataset.evento || 'evento.json', raiz.dataset.modo);
+    const ev = await carregarEvento(raiz.dataset.evento || 'evento.json');
     aplicarTema(ev);
-    document.title = ev.titulo + (ev.modo === 'convidados' ? ' · Fotos' : '') + ' · ' + ev.fotografo.marca;
+    document.title = ev.titulo + ' · ' + ev.fotografo.marca;
 
     const ctx = {
         favoritas: ev.selecao.ativa ? criarFavoritas(ev.slug) : null,
@@ -71,7 +71,6 @@ async function iniciar() {
 function aplicarTema(ev) {
     const el = document.documentElement;
     el.dataset.tema = ev.tema.modo === 'escuro' ? 'escuro' : 'claro';
-    el.dataset.modo = ev.modo;
     Object.entries(ev.tema.cores || {}).forEach(([k, v]) => el.style.setProperty('--' + k, v));
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = getComputedStyle(el).getPropertyValue('--papel').trim() || meta.content;

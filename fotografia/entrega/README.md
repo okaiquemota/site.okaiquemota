@@ -1,8 +1,8 @@
 # Entrega de fotos
 
-A página que o casal (ou a debutante, ou a família) recebe com as fotos prontas. Uma revista por trabalho: capa, carta, capítulos com layouts variados, visor em tela cheia, favoritas para o álbum, imagem pronta para os stories, link para os convidados e a assinatura no fim.
+A página que o casal (ou a debutante, ou a família) recebe com as fotos prontas. Uma revista por trabalho: capa, carta, capítulos com layouts variados, visor em tela cheia, favoritas para o álbum, imagem pronta para os stories e a assinatura no fim.
 
-O primeiro é o de Vinícius & Stefany: https://okaiquemota.com.br/fotografia/vinicius-e-stefany/ (e `/convidados/`).
+O primeiro é o de Vinícius & Stefany: https://okaiquemota.com.br/fotografia/vinicius-e-stefany/.
 
 ## Como é montada
 
@@ -15,9 +15,9 @@ fotografia/
 │   ├── fontes/              Cormorant Garamond e Inter (woff2, licença SIL OFL 1.1)
 │   └── js/
 │       ├── principal.js     liga tudo: lê o evento, monta a página, índice, barra das favoritas
-│       ├── dados.js         lê o evento.json e deixa pronto (endereços, numeração, modo convidados, layout automático)
+│       ├── dados.js         lê o evento.json e deixa pronto (endereços, numeração, layout automático)
 │       ├── secoes.js        capa, carta, capítulo, "Leve com vocês" e rodapé
-│       ├── layouts.js       os layouts de foto: panoramica, unica, dupla, trio, mosaico, citacao, texto
+│       ├── layouts.js       os layouts: panoramica, unica, dupla, trio, mosaico, citacao, votos, texto
 │       ├── visor.js         a foto em tela cheia (teclado, arrastar, favoritar, baixar, stories)
 │       ├── favoritas.js     o coração (guardado no aparelho) e a mensagem da seleção
 │       ├── stories.js       a imagem 9:16 com moldura, nomes e data
@@ -25,7 +25,6 @@ fotografia/
 │       └── dom.js           peças pequenas (montar elementos, ícones, avisos)
 └── vinicius-e-stefany/      um trabalho
     ├── index.html           a página do casal (só os metadados da prévia no WhatsApp)
-    ├── convidados/index.html  a mesma página, sem os capítulos privados nem a carta
     ├── evento.json          TUDO o que aparece: textos, capítulos, fotos, créditos
     ├── trilha-exemplo.mp3   a música (troque pela de verdade)
     └── fotos/
@@ -43,8 +42,8 @@ Sem build e sem dependência, como o resto do site: é só publicar. Para ver no
    - `fotos/mini/`: lado maior 800px, qualidade 75.
    - Metadados: "Somente direitos autorais" (tira o GPS). O nome do arquivo é o que chega na seleção do casal, então mantenha o mesmo nome que está no seu catálogo.
 3. **Edite o `evento.json`**: confira `midia.ladoMaiorWeb` (2048 se exportou assim), textos, data, capítulos e a lista de fotos (veja os campos abaixo). Para cada foto basta `id`, `arquivo`, `largura`, `altura` e `alt`.
-4. **Edite as duas `index.html`** (a do casal e a de `convidados/`): título, `og:description` e `og:image` (a foto da prévia no WhatsApp, com endereço completo `https://…`) e o `preload` da foto da capa. É o único lugar fora do JSON, porque o WhatsApp não roda JavaScript.
-5. **Teste** no computador, no celular e no link dos convidados. Abra uma foto, marque um coração, gere um stories.
+4. **Edite a `index.html`**: título, `og:description` e `og:image` (a foto da prévia no WhatsApp, com endereço completo `https://…`) e o `preload` da foto da capa. É o único lugar fora do JSON, porque o WhatsApp não roda JavaScript.
+5. **Teste** no computador e no celular. Abra uma foto, marque um coração, gere um stories.
 6. **Publique** e mande o link. Não entra no `sitemap.xml`: a página tem `noindex` e fica fora do Google.
 
 Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
@@ -70,9 +69,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `capitulos` | a história (abaixo) |
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
 | `downloads.completo` | `{ "url", "tamanho" }`: o pacote com tudo (link do Drive, por exemplo). Vazio mostra "Disponível em breve" |
-| `downloads.convidados` | o mesmo, para o link dos convidados (sem o making of) |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
-| `convidados.carta` | `true` para mostrar a carta também no link dos convidados |
 | `creditos` | `[{ "papel": "Cerimonial", "nome": "…" }]`; os sem nome não aparecem |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |
 
@@ -82,13 +79,11 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 {
   "id": "preparo", "numero": "II", "titulo": "O Preparo", "subtitulo": "Making of",
   "texto": "A frase de abertura do capítulo.",
-  "privado": true,
   "tom": "escuro",
   "blocos": [ ... ]
 }
 ```
 
-- `privado: true` tira o capítulo do link dos convidados (bom para o making of).
 - `tom: "escuro"`: o capítulo "anoitece" (a página escurece aos poucos e volta a clarear). Fica bonito na festa.
 - **Curadoria manual** com `blocos`, cada um com um `layout`:
   - `panoramica`: uma foto de ponta a ponta (deitada) ou alta e centralizada (em pé);
@@ -96,6 +91,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
   - `dupla` e `trio`: lado a lado, mesma altura, sem cortar. `"variante": "deslocada"` desce a segunda, como numa revista;
   - `mosaico`: de 3 a 5 fotos, uma grande e as outras em volta. Aqui a foto é cortada: use `"foco": "50% 30%"` para dizer o que não pode sair;
   - `citacao`: `{ "texto", "autor" }` entre as fotos (um trecho dos votos, por exemplo);
+  - `votos`: `{ "titulo": "Os votos", "trechos": [{ "texto", "autor" }, …] }`, um trecho de cada um, lado a lado;
   - `texto`: um parágrafo solto.
 - **Layout automático**: em vez de `blocos`, ponha só `"fotos": [ ... ]` no capítulo, na ordem. O motor alterna panorâmica, dupla e mosaico sozinho, sem repetir. Bom para começar rápido e depois lapidar.
 
@@ -112,12 +108,10 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 - **Visor**: clique (ou Enter) numa foto. Setas ←/→, arrastar no celular (para baixo fecha), Esc. `F` favorita, `B` baixa, `S` faz o stories. O endereço vira `…/#foto=sim-03`: dá para mandar o link de uma foto só.
 - **Favoritas**: o coração fica guardado no aparelho (por trabalho). A barra de baixo mostra quantas são, filtra "só as favoritas" e manda a lista pelo WhatsApp, com o nome de cada arquivo, separado por capítulo.
 - **Stories**: no celular abre o compartilhar (direto para o Instagram); no computador baixa a imagem 1080×1920.
-- **Convidados**: `…/convidados/` mostra a mesma história sem os capítulos `privado`, sem a carta, sem os corações.
 - **Acessibilidade**: tudo pelo teclado, foco preso no visor e devolvido à foto ao fechar, `alt` em cada foto, contraste AA (texto suave 5,5:1 no claro e 7:1 no escuro) e respeito a "reduzir movimento".
 
 ## Limites que vale saber
 
-- **O link dos convidados esconde, mas não protege.** As fotos privadas continuam no `evento.json` e na pasta. Quem souber o endereço do arquivo consegue abrir. Para making of sensível de verdade, use um `evento-convidados.json` à parte (aponte o `data-evento` da página de convidados para ele) e não publique as fotos privadas no site.
 - **As favoritas ficam no aparelho.** Se o noivo marca no celular dele e a noiva no dela, são duas listas. Cada um pode mandar a sua (a mensagem diz de qual capítulo é cada foto). Juntar as duas pede o banco de dados (abaixo).
 - O GitHub Pages é público: qualquer pasta publicada pode ser aberta por quem tiver o link.
 
@@ -130,4 +124,4 @@ Os componentes só conhecem o formato que sai do `dados.js`. Para o painel gerar
 3. no `dados.js`, ensinar a fonte `painel` em `FONTES` (já tem o lugar comentado);
 4. a seleção do casal vira `POST /api/entregas/:slug/selecao` em vez do WhatsApp, e as favoritas passam a valer em todos os aparelhos.
 
-Se as fotos forem para outro domínio, libere esse endereço em `img-src` e `connect-src` na Content-Security-Policy das duas `index.html`.
+Se as fotos forem para outro domínio, libere esse endereço em `img-src` e `connect-src` na Content-Security-Policy da `index.html`.
