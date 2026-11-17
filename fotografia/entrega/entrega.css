@@ -388,6 +388,7 @@ main:focus, section:focus { outline: none; }
 .rodape-cta-texto { color: var(--tinta-suave); font-size: 15px; }
 .rodape-cta-acoes { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 28px; margin-top: 14px; }
 .rodape-fim { max-width: 40em; font-size: 12px; line-height: 1.6; color: var(--tinta-suave); }
+.rodape-musica { margin-top: calc(-1 * clamp(56px, 7vw, 88px) + 6px); }
 
 /* ---------- Barra das favoritas (flutuante) ---------- */
 .barra {

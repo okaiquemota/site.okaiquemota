@@ -109,6 +109,7 @@ function cartao(titulo, texto, acao, nota) {
 
 /* ---------- Assinatura do fotógrafo, créditos e o convite discreto ---------- */
 export function rodape(ev) {
+    const t = ev.trilha;
     const fot = ev.fotografo;
     const msg = 'Oi, ' + fot.nome.split(' ')[0] + '! Vi as fotos de ' + ev.titulo + ' e queria um orçamento.';
     return h('footer', { class: 'rodape' },
@@ -122,7 +123,14 @@ export function rodape(ev) {
             h('div', { class: 'rodape-cta-acoes' },
                 h('button', { class: 'botao botao-claro', type: 'button', onclick: () => abrirWhatsApp(fot.whatsapp, msg) }, h('span', { text: 'Pedir orçamento' })),
                 h('a', { class: 'botao-linha', href: fot.site }, h('span', { text: 'Conhecer o trabalho' }), icone('dir')))),
-        h('p', { class: 'rodape-fim' }, '© ' + new Date().getFullYear() + ' ' + fot.nome + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'));
+        h('p', { class: 'rodape-fim' }, '© ' + new Date().getFullYear() + ' ' + fot.nome + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'),
+        // música com licença Creative Commons: o crédito tem que ficar visível
+        t && t.licenca && h('p', { class: 'rodape-fim rodape-musica' },
+            'Música: “' + (t.titulo || '') + '”' + (t.autor ? ', de ' + t.autor : ''),
+            t.fonte ? [' (', h('a', { class: 'link', href: t.fonte, target: '_blank', rel: 'noopener', text: t.fonte.replace(/^https?:\/\/(www\.)?/, '') }), ')'] : null,
+            ', licença ',
+            t.licencaUrl ? h('a', { class: 'link', href: t.licencaUrl, target: '_blank', rel: 'license noopener', text: t.licenca }) : t.licenca,
+            '.'));
 }
 
 /* ---------- O fecho, como numa revista: "Vinícius & Stefany, por Kaique Mota, com …" ----------

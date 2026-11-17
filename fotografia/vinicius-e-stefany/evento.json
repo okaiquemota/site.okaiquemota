@@ -25,9 +25,12 @@
     },
 
     "trilha": {
-        "src": "trilha-exemplo.mp3",
-        "titulo": "Trilha de exemplo",
-        "autor": "Instrumental"
+        "src": "trilha.mp3",
+        "titulo": "There is Romance",
+        "autor": "Kevin MacLeod",
+        "fonte": "https://incompetech.com",
+        "licenca": "CC BY 4.0",
+        "licencaUrl": "https://creativecommons.org/licenses/by/4.0/deed.pt-br"
     },
 
     "carta": {
