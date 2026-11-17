@@ -67,7 +67,7 @@ Para trocar a música: coloque o `.mp3` na pasta e mude `trilha.src`. Sem músic
 | `midia` | as pastas das versões (`web`, `mini`, `original`) e o lado maior de cada uma |
 | `capitulos` | a história (abaixo) |
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
-| `downloads.completo` | `{ "url", "tamanho" }`: o pacote com tudo (link do Drive, por exemplo). Vazio mostra "Disponível em breve" |
+| `downloads.completo` | `{ "url" }`: o link da pasta com todas as fotos (Google Drive). A página avisa que a pasta tem senha; **nunca coloque a senha aqui** (o repositório é público): mande pelo WhatsApp. Se a pasta não tiver senha, use `"senha": false`. Sem `url`, o cartão não aparece |
 | `downloads.validade` | até quando a página fica no ar (aparece como aviso) |
 | `creditos` | `[{ "papel": "Cerimonial", "nome": "…" }]`; os sem nome não aparecem |
 | `fotografo` | opcional: só se precisar trocar nome, WhatsApp ou site (o padrão está no `dados.js`) |
