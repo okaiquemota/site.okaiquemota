@@ -382,6 +382,8 @@ main:focus, section:focus { outline: none; }
 .credito { display: flex; flex-direction: column; gap: 4px; }
 .credito dt { font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tinta-suave); }
 .credito dd { font-family: var(--serif); font-size: 21px; }
+.credito dd a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; padding-bottom: 2px; transition: background-size 0.5s var(--suave); }
+@media (hover: hover) and (pointer: fine) { .credito dd a:hover { background-size: 100% 1px; } }
 .rodape-cta { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 30em; }
 .rodape-cta-titulo { font-family: var(--serif); font-size: clamp(32px, 3.6vw, 44px); font-style: italic; font-weight: 300; line-height: 1.1; }
 .rodape-cta-texto { color: var(--tinta-suave); font-size: 15px; }

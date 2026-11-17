@@ -110,8 +110,7 @@ function cartao(titulo, texto, acao, nota) {
 /* ---------- Assinatura do fotógrafo, créditos e o convite discreto ---------- */
 export function rodape(ev) {
     const fot = ev.fotografo;
-    // a assinatura logo acima já diz quem fotografou: nos créditos entram só os outros fornecedores
-    const creditos = (ev.creditos || []).filter((c) => c && c.nome && c.nome !== fot.nome);
+    const creditos = (ev.creditos || []).filter((c) => c && c.nome);
     const msg = 'Oi, ' + fot.nome.split(' ')[0] + '! Vi as fotos de ' + ev.titulo + ' e queria um orçamento.';
     return h('footer', { class: 'rodape' },
         h('div', { class: 'rodape-assina', 'data-revela': '' },
@@ -120,7 +119,14 @@ export function rodape(ev) {
             h('a', { class: 'link', href: fot.site, text: fot.siteRotulo || fot.site })),
         creditos.length > 0 && h('dl', { class: 'creditos', 'data-revela': '' },
             h('p', { class: 'rotulo creditos-titulo', text: ev.titulo + ' · ' + formatarData(ev.data, true) }),
-            creditos.map((c) => h('div', { class: 'credito' }, h('dt', { text: c.papel }), h('dd', { text: c.nome })))),
+            creditos.map((c) => {
+                // com "instagram", o nome vira link para o perfil (o @ não aparece na página)
+                const ig = c.instagram && String(c.instagram).replace(/^@/, '').trim();
+                const nome = ig
+                    ? h('a', { href: 'https://www.instagram.com/' + encodeURIComponent(ig) + '/', target: '_blank', rel: 'noopener' }, c.nome, h('span', { class: 'visualmente-escondido', text: ' (Instagram, abre em nova aba)' }))
+                    : c.nome;
+                return h('div', { class: 'credito' }, h('dt', { text: c.papel }), h('dd', null, nome));
+            })),
         h('div', { class: 'rodape-cta', 'data-revela': '' },
             h('p', { class: 'rodape-cta-titulo', text: 'Gostou do que viu?' }),
             h('p', { class: 'rodape-cta-texto', text: 'Se a sua história também merece ser contada assim, vamos conversar.' }),
