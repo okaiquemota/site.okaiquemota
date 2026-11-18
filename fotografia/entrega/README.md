@@ -68,7 +68,7 @@ Para trocar a música: coloque o `.mp3` na pasta (comprimido em 128 kbps) e mude
 | `capa.layout` | `"editorial"` (texto de um lado, foto em pé do outro) ou `"tela-cheia"` (foto deitada de fundo) |
 | `capa.foto` | a foto da capa (mesmos campos de uma foto) |
 | `trilha` | `{ "src", "titulo", "autor", "fonte", "licenca", "licencaUrl" }`: vira só um ícone de som (na capa e no índice). Com `licenca`, o crédito da música aparece no fim da página (obrigatório em Creative Commons). Sem `trilha`, sem música |
-| `carta` | `{ "titulo", "paragrafos": [...] }`: termina com a sua assinatura à mão. Sem ele, sem carta |
+| `carta` | `{ "titulo", "paragrafos": [...], "despedida": "Com carinho," }`: termina com a despedida e a sua assinatura à mão no lugar do nome. Sem ele, sem carta |
 | `midia` | as pastas das versões (`web`, `mini`, `original`) e o lado maior de cada uma |
 | `capitulos` | a história (abaixo) |
 | `selecao` | `{ "ativa": true, "limite": 40 }`: o coração e o envio da seleção para o álbum |
