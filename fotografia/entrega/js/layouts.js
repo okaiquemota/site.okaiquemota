@@ -105,11 +105,16 @@ export const LAYOUTS = {
 /* o texto entra palavra por palavra (cada uma com seu atraso); o leitor de tela lê a frase inteira */
 function palavras(texto) {
     const p = h('p', { class: 'palavras' }, h('span', { class: 'visualmente-escondido', text: texto }));
-    texto.split(/\s+/).forEach((w, i) => {
+    const ws = texto.split(/\s+/);
+    const fim = h('span', { class: 'junto' });
+    ws.forEach((w, i) => {
         const s = h('span', { 'aria-hidden': 'true', text: w });
         s.style.setProperty('--i', String(i));
-        p.append(s, ' ');
+        // as duas últimas palavras ficam na mesma linha (nunca uma palavra sozinha)
+        if (ws.length > 3 && i >= ws.length - 2) { fim.append(s); if (i === ws.length - 2) fim.append(' '); }
+        else p.append(s, ' ');
     });
+    if (fim.childNodes.length) p.append(fim);
     return p;
 }
 

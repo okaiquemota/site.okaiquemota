@@ -1,6 +1,6 @@
 /* Entrega · as seções da página, na ordem da história:
    capa → carta → capítulos → para guardar → assinatura do fotógrafo. */
-import { h, icone, abrirWhatsApp } from './dom.js';
+import { h, icone, abrirWhatsApp, junto } from './dom.js';
 import { desenharBloco } from './layouts.js';
 import { formatarData } from './dados.js';
 
@@ -124,13 +124,13 @@ export function rodape(ev) {
             h('div', { class: 'rodape-cta-acoes' },
                 h('button', { class: 'botao botao-claro', type: 'button', onclick: () => abrirWhatsApp(fot.whatsapp, msg) }, h('span', { text: 'Pedir orçamento' })),
                 h('a', { class: 'botao-linha', href: fot.site }, h('span', { text: 'Conhecer o trabalho' }), icone('dir')))),
-        h('p', { class: 'rodape-fim' }, '© ' + new Date().getFullYear() + ' ' + fot.nome + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'),
+        h('p', { class: 'rodape-fim' }, junto('© ' + new Date().getFullYear() + ' ' + fot.nome) + '. Fotos para uso pessoal; para publicar com fins comerciais, fale com o fotógrafo.'),
         // música com licença Creative Commons: o crédito tem que ficar visível
         t && t.licenca && h('p', { class: 'rodape-fim rodape-musica' },
-            'Música: “' + (t.titulo || '') + '”' + (t.autor ? ', de ' + t.autor : ''),
+            'Música: ', h('span', { class: 'sem-quebra', text: '“' + (t.titulo || '') + '”' }), t.autor ? [', de ', junto(t.autor)] : null,
             t.fonte ? [' (', h('a', { class: 'link', href: t.fonte, target: '_blank', rel: 'noopener', text: t.fonte.replace(/^https?:\/\/(www\.)?/, '') }), ')'] : null,
-            ', licença ',
-            t.licencaUrl ? h('a', { class: 'link', href: t.licencaUrl, target: '_blank', rel: 'license noopener', text: t.licenca }) : t.licenca,
+            ', licença\u00a0',
+            t.licencaUrl ? h('a', { class: 'link', href: t.licencaUrl, target: '_blank', rel: 'license noopener', text: junto(t.licenca) }) : junto(t.licenca),
             '.'));
 }
 

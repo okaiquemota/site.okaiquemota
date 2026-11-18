@@ -2,7 +2,7 @@
    A página (index.html) só diz onde estão os dados:
      <div id="entrega" data-evento="evento.json">
    Daqui pra frente é tudo igual para qualquer casamento, ensaio ou 15 anos. */
-import { h, icone, avisar, poucoMovimento, copiar, abrirWhatsApp } from './dom.js';
+import { h, icone, avisar, poucoMovimento, copiar, abrirWhatsApp, semViuva } from './dom.js';
 import { carregarEvento } from './dados.js';
 import { criarFavoritas, mensagemSelecao } from './favoritas.js';
 import { criarVisor } from './visor.js';
@@ -54,6 +54,8 @@ async function iniciar() {
     }
     raiz.removeAttribute('aria-busy');
 
+    // nenhum parágrafo termina com uma palavra sozinha na linha
+    raiz.querySelectorAll('p, h1, h2, figcaption, dd, blockquote footer').forEach(semViuva);
     revelarAoRolar();
     acompanharCapitulos();
 
@@ -81,16 +83,26 @@ function indice(ev, ctx) {
         h('span', { class: 'indice-num', text: c.numero }), h('span', { class: 'indice-nome', text: c.titulo })));
     return h('nav', { class: 'indice', 'aria-label': 'Capítulos' },
         h('a', { class: 'indice-marca', href: '#', 'aria-label': ev.titulo + ', voltar ao início', text: ev.monograma }),
-        h('div', { class: 'indice-links' }, links),
-        h('p', { class: 'indice-atual', 'aria-hidden': 'true' }),
+        h('div', { class: 'indice-links', id: 'indice-links' }, links),
+        // no celular, o capítulo atual vira um botão que abre a lista dos capítulos
+        h('button', { class: 'indice-atual', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'indice-links' },
+            h('span', { class: 'indice-atual-texto', text: 'Capítulos' }), icone('baixo', 'indice-seta')),
         ctx.trilha ? ctx.trilha.botao('som-indice') : h('span'));
 }
 
 function acompanharCapitulos() {
     const nav = document.querySelector('.indice');
     const capa = document.querySelector('.capa');
-    const atual = nav.querySelector('.indice-atual');
+    const botao = nav.querySelector('.indice-atual');
+    const atual = nav.querySelector('.indice-atual-texto');
     const links = [...nav.querySelectorAll('[data-alvo]')];
+
+    // menu dos capítulos no celular: abre e fecha pelo botão, fecha ao escolher, no Esc e ao tocar fora
+    const menu = (abrir) => { nav.classList.toggle('aberto', abrir); botao.setAttribute('aria-expanded', abrir ? 'true' : 'false'); };
+    botao.addEventListener('click', () => menu(!nav.classList.contains('aberto')));
+    links.forEach((a) => a.addEventListener('click', () => menu(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && nav.classList.contains('aberto')) { menu(false); botao.focus(); } });
+    document.addEventListener('click', (e) => { if (!nav.contains(e.target)) menu(false); });
     if (!('IntersectionObserver' in window)) { nav.classList.add('visivel'); return; }
 
     new IntersectionObserver(([en]) => {
@@ -114,7 +126,7 @@ function acompanharCapitulos() {
     document.querySelectorAll('.capitulo').forEach((c) => vigia.observe(c));
     // fora dos capítulos (carta, rodapé), o índice volta ao tom normal
     const fora = new IntersectionObserver((entradas) => {
-        entradas.forEach((en) => { if (en.isIntersecting) { nav.classList.remove('sobre-escuro'); links.forEach((a) => a.removeAttribute('aria-current')); atual.textContent = ''; } });
+        entradas.forEach((en) => { if (en.isIntersecting) { nav.classList.remove('sobre-escuro'); links.forEach((a) => a.removeAttribute('aria-current')); atual.textContent = 'Capítulos'; } });
     }, { rootMargin: '-50% 0px -50% 0px' });
     document.querySelectorAll('.carta, .levar, .rodape').forEach((s) => fora.observe(s));
 }
