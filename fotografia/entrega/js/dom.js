@@ -92,3 +92,25 @@ export function abrirWhatsApp(numero, texto) {
     if (j) j.opener = null;
     else location.href = url;
 }
+
+/* Nomes e expressões que não podem se partir no fim da linha ("Kevin MacLeod", "CC BY 4.0") */
+export const junto = (texto) => String(texto).replace(/ /g, '\u00a0');
+
+/* Tira a "viúva": a última palavra de um parágrafo nunca fica sozinha numa linha.
+   Troca o último espaço do texto por um espaço que não quebra (só se a última palavra for curta). */
+export function semViuva(el) {
+    if (el.closest('.visualmente-escondido') || el.classList.contains('palavras')) return;
+    const nos = [];
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = w.nextNode())) if (!n.parentElement.closest('.visualmente-escondido')) nos.push(n);
+    if (nos.map((x) => x.data).join('').trim().split(/\s+/).length < 4) return;
+    for (let i = nos.length - 1; i >= 0; i--) {
+        const t = nos[i].data.replace(/\s+$/, '');
+        const k = t.lastIndexOf(' ');
+        if (k < 0) { if (t.length) return; continue; }
+        if (t.length - k > 16) return;
+        nos[i].data = t.slice(0, k) + '\u00a0' + t.slice(k + 1) + nos[i].data.slice(t.length);
+        return;
+    }
+}
