@@ -206,6 +206,7 @@ main:focus, section:focus { outline: none; }
 .carta-texto { display: flex; flex-direction: column; gap: 1.1em; font-family: var(--serif); font-size: clamp(20px, 1.65vw, 23.5px); line-height: 1.62; text-wrap: pretty; hanging-punctuation: first; }
 .carta-texto p:first-child::first-letter { float: left; margin: 0.06em 0.1em 0 -0.02em; font-size: 4.1em; line-height: 0.78; font-weight: 300; color: var(--destaque); }
 .carta-assina { margin-top: 36px; }
+.carta-despedida { margin-bottom: 4px; font-family: var(--serif); font-size: clamp(20px, 1.65vw, 23.5px); font-style: italic; }
 .carta-assina .assinatura { width: 150px; transform: rotate(-4deg); }
 
 /* ---------- Capítulos ---------- */

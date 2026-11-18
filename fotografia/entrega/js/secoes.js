@@ -41,9 +41,10 @@ export function carta(ev) {
         h('p', { class: 'rotulo', 'data-revela': '', text: 'Uma carta' }),
         h('h2', { class: 'carta-titulo', id: 'carta-titulo', 'data-revela': '', text: c.titulo || ev.titulo }),
         h('div', { class: 'carta-texto' }, (c.paragrafos || []).map((p) => h('p', { 'data-revela': '', text: p }))),
-        // a carta termina só com a assinatura à mão (o nome digitado ao lado ficava repetido)
+        // a carta termina com a despedida ("Com carinho,") e a assinatura à mão no lugar do nome
         h('div', { class: 'carta-assina', 'data-revela': '' },
-            h('span', { class: 'assinatura', role: 'img', 'aria-label': 'Assinado, ' + ev.fotografo.nome })));
+            c.despedida && h('p', { class: 'carta-despedida', text: c.despedida }),
+            h('span', { class: 'assinatura', role: 'img', 'aria-label': ev.fotografo.nome })));
 }
 
 /* ---------- Um capítulo: a abertura e os blocos de fotos ---------- */
