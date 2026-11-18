@@ -81,7 +81,7 @@
             "numero": "II",
             "titulo": "O Preparo",
             "subtitulo": "Making of",
-            "texto": "As horas antes do sim têm um silêncio próprio. Os detalhes escolhidos com cuidado, as mãos de quem ajuda, o último olhar no espelho.",
+            "texto": "Entre os últimos preparativos, a presença de pessoas especiais e a ansiedade para o momento que estava por vir.",
             "blocos": [
                 { "layout": "unica", "alinhamento": "direita", "legenda": "O vestido esperando na janela, com a luz da manhã.", "fotos": [
                     { "id": "preparo-01", "arquivo": "preparo-01.jpg", "largura": 1067, "altura": 1600, "alt": "O vestido de noiva pendurado na janela, contra a luz da manhã" }
@@ -105,7 +105,7 @@
             "numero": "III",
             "titulo": "O Sim",
             "subtitulo": "Cerimônia",
-            "texto": "A porta se abre e o tempo muda de velocidade. Uma caminhada, um olhar, duas alianças e uma promessa dita em voz baixa.",
+            "texto": "O momento pelo qual todos estavam esperando. A entrada, a cerimônia, as alianças e o tão esperado sim.",
             "blocos": [
                 { "layout": "panoramica", "fotos": [
                     { "id": "sim-01", "arquivo": "sim-01.jpg", "largura": 1600, "altura": 1067, "alt": "O altar decorado, com os convidados de pé esperando a entrada da noiva" }
@@ -137,7 +137,7 @@
             "titulo": "A Celebração",
             "subtitulo": "Festa e retratos",
             "tom": "escuro",
-            "texto": "Depois do sim, a leveza. Os retratos na última luz do dia, os brindes, os abraços e uma pista que não quis esvaziar.",
+            "texto": "A cerimônia terminou, mas a comemoração estava só começando. Uma noite para aproveitar, celebrar e criar novas lembranças.",
             "blocos": [
                 { "layout": "dupla", "variante": "deslocada", "fotos": [
                     { "id": "festa-01", "arquivo": "festa-01.jpg", "largura": 1280, "altura": 1600, "alt": "Retrato do casal no jardim ao entardecer" },

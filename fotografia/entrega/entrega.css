@@ -370,7 +370,7 @@ main:focus, section:focus { outline: none; }
 .levar-nota { margin-top: clamp(44px, 5vw, 64px); text-align: center; font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--tinta-suave); }
 
 /* ---------- Rodapé: a assinatura do fotógrafo ---------- */
-.rodape { display: flex; flex-direction: column; align-items: center; gap: clamp(56px, 7vw, 88px); max-width: calc(var(--largura) + 2 * var(--margem)); margin: var(--respiro) auto 0; padding: var(--respiro) var(--margem) calc(36px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--linha); text-align: center; }
+.rodape { display: flex; flex-direction: column; align-items: center; gap: clamp(56px, 7vw, 88px); max-width: calc(var(--largura) + 2 * var(--margem)); margin: 0 auto; padding: var(--respiro) var(--margem) calc(36px + env(safe-area-inset-bottom, 0px)); text-align: center; }
 .rodape-assina { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .rodape-assina .assinatura { width: 170px; margin-bottom: 4px; transform: rotate(-4deg); }
 .rodape-assina .link { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--tinta-suave); }
