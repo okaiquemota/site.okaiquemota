@@ -61,18 +61,23 @@
             "subtitulo": "Pré-wedding",
             "texto": "O primeiro capítulo destes registros: uma tarde de ensaio e algumas boas lembranças.",
             "blocos": [
-                { "layout": "panoramica", "fotos": [
-                    { "id": "inicio-01", "arquivo": "inicio-01.jpg", "largura": 1600, "altura": 1067, "alt": "Os dois caminhando de mãos dadas entre as árvores, de costas" }
+                {"layout": "panoramica", "fotos": [
+                    {"id": "vs-11", "src": "../img/vs-11-1080.jpg", "mini": "../img/vs-11-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Os dois correndo de mãos dadas na grama, rindo"}
                 ] },
-                { "layout": "dupla", "fotos": [
-                    { "id": "vs-16", "src": "../img/vs-16-1080.jpg", "mini": "../img/vs-16-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Stefany encostada no ombro do Vinícius, de olhos fechados" },
-                    { "id": "vs-08", "src": "../img/vs-08-1080.jpg", "mini": "../img/vs-08-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Abraçados na luz do fim da tarde, ele beija a testa dela" }
+                {"layout": "dupla", "fotos": [
+                    {"id": "ensaio-02", "arquivo": "ensaio-02.jpg", "largura": 1280, "altura": 1600, "alt": "Os dois olhando para a câmera, ela com o braço apoiado no ombro dele"},
+                    {"id": "ensaio-03", "arquivo": "ensaio-03.jpg", "largura": 1280, "altura": 1600, "alt": "Vinícius abraça Stefany por trás, diante de uma árvore com flores cor-de-rosa"}
                 ] },
-                { "layout": "citacao", "texto": "Duas pessoas que se conheceram na infância… e que nem imaginavam o que Deus já tinha preparado para cada um de nós.", "autor": "Dos votos de Stefany" },
-                { "layout": "mosaico", "fotos": [
-                    { "id": "vs-11", "src": "../img/vs-11-1080.jpg", "mini": "../img/vs-11-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "foco": "50% 60%", "alt": "Os dois correndo de mãos dadas na grama, rindo" },
-                    { "id": "vs-03", "src": "../img/vs-03-1080.jpg", "mini": "../img/vs-03-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Detalhe de flores cor-de-rosa num galho, com a luz atrás" },
-                    { "id": "inicio-02", "arquivo": "inicio-02.jpg", "largura": 1600, "altura": 1067, "alt": "Os dois sentados na grama, conversando de frente um para o outro" }
+                {"layout": "citacao", "texto": "Duas pessoas que se conheceram na infância… e que nem imaginavam o que Deus já tinha preparado para cada um de nós.", "autor": "Dos votos de Stefany"},
+                {"layout": "mosaico", "fotos": [
+                    {"id": "ensaio-04", "arquivo": "ensaio-04.jpg", "largura": 1280, "altura": 1600, "alt": "Nariz com nariz, os dois se olham sorrindo sob flores cor-de-rosa", "foco": "55% 45%"},
+                    {"id": "ensaio-01", "arquivo": "ensaio-01.jpg", "largura": 1280, "altura": 1600, "alt": "Stefany de olhos fechados, com o rosto no ombro do Vinícius, que olha para ela", "foco": "50% 40%"},
+                    {"id": "vs-03", "src": "../img/vs-03-1080.jpg", "mini": "../img/vs-03-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Detalhe de flores cor-de-rosa num galho, com a luz atrás"}
+                ] },
+                {"layout": "trio", "fotos": [
+                    {"id": "ensaio-05", "arquivo": "ensaio-05.jpg", "largura": 1280, "altura": 1600, "alt": "Frente a frente, ela segura o rosto dele com carinho enquanto ele a abraça pela cintura"},
+                    {"id": "vs-16", "src": "../img/vs-16-1080.jpg", "mini": "../img/vs-16-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Stefany encostada no ombro do Vinícius, de olhos fechados"},
+                    {"id": "vs-08", "src": "../img/vs-08-1080.jpg", "mini": "../img/vs-08-720.jpg", "largura": 1080, "altura": 1350, "miniLargura": 720, "alt": "Abraçados na luz do fim da tarde, ele beija a testa dela"}
                 ] }
             ]
         },
