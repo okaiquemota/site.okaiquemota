@@ -333,8 +333,8 @@ main:focus, section:focus { outline: none; }
 .bloco-mosaico-1 > .foto { grid-column: 1 / -1; grid-row: span 2; }
 
 /* citação entre as fotos */
-.bloco-citacao { max-width: 22em; margin: 0 auto; padding-block: clamp(8px, 2vw, 32px); text-align: center; }
-.bloco-citacao p { font-family: var(--serif); font-size: clamp(30px, 3.6vw, 52px); font-style: italic; font-weight: 300; line-height: 1.18; text-wrap: balance; }
+.bloco-citacao { max-width: min(100%, 880px); margin: 0 auto; padding-block: clamp(8px, 2vw, 32px); text-align: center; }
+.bloco-citacao p { max-width: 17em; margin-inline: auto; font-family: var(--serif); font-size: clamp(30px, 3.6vw, 52px); font-style: italic; font-weight: 300; line-height: 1.18; text-wrap: balance; }
 .bloco-citacao p::before { content: "“"; color: var(--destaque); }
 .bloco-citacao p::after { content: "”"; color: var(--destaque); }
 .bloco-citacao footer { margin-top: 18px; font-size: 11.5px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tinta-suave); }
