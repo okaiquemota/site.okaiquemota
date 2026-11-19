@@ -44,7 +44,11 @@
     --respiro: clamp(64px, min(9vw, 14svh), 150px);
     /* a maior altura que uma foto pode ter e ainda caber inteira (desconta o índice e um respiro) */
     --cabe: max(200px, calc(var(--alto) - 140px));
-    --cabe-tela: max(200px, calc(var(--alto) - 72px));
+    /* O GRID DAS FOTOS: toda a história usa a mesma coluna, as mesmas bordas e os mesmos espaços.
+       A coluna encolhe em telas baixas (1,5 × a altura que cabe) para que nenhuma foto passe da tela. */
+    --coluna: min(100%, 1120px, calc(var(--cabe) * 1.5));
+    --gap: clamp(8px, 1.2vw, 16px);        /* entre fotos do mesmo bloco */
+    --entre: clamp(48px, 7vw, 104px);      /* entre um bloco e outro */
     color-scheme: light;
 }
 @supports (height: 100svh) { :root { --alto: 100svh; } }
@@ -252,7 +256,8 @@ main:focus, section:focus { outline: none; }
 .tom-escuro ::selection { background: var(--tinta); color: var(--papel); }
 
 /* ---------- Blocos de fotos ---------- */
-.capitulo-blocos { display: flex; flex-direction: column; gap: var(--respiro); width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto; padding-inline: var(--margem); }
+.capitulo-blocos { display: flex; flex-direction: column; align-items: center; gap: var(--entre); width: 100%; padding-inline: var(--margem); }
+.capitulo-blocos > .bloco { width: var(--coluna); }
 .bloco { position: relative; }
 
 .foto { position: relative; margin: 0; overflow: hidden; background: var(--papel-2); }
@@ -283,45 +288,40 @@ main:focus, section:focus { outline: none; }
 .bloco-legenda, .bloco-nota { font-family: var(--serif); font-size: clamp(18px, 1.4vw, 21px); font-style: italic; line-height: 1.45; color: var(--tinta-suave); text-wrap: balance; }
 .bloco-legenda { margin-top: 14px; text-align: center; }
 
-/* panorâmica: de ponta a ponta */
-.bloco-panoramica { width: min(100vw, 1760px); margin-inline: calc(50% - min(50vw, 880px)); }
-.bloco-panoramica-empe { width: auto; margin-inline: 0; }
-/* nenhuma foto passa da altura da tela: se a tela é baixa, a foto estreita e centraliza */
-.bloco-panoramica .foto { width: min(100%, calc(var(--cabe-tela) * var(--r))); margin-inline: auto; }
+/* panorâmica: a coluna inteira (deitada) ou a largura de meia dupla, centralizada (em pé) */
+.bloco-panoramica .foto { width: 100%; }
+.bloco-panoramica-empe .foto { width: calc((100% - var(--gap)) / 2); margin-inline: auto; }
 
-/* única, deslocada para um lado com a nota ao lado */
-.bloco-unica { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); align-items: end; }
-.bloco-unica .foto { grid-row: 1; width: min(100%, calc(var(--cabe) * var(--r))); }
-.bloco-unica .bloco-nota { grid-row: 1; padding-bottom: 8px; max-width: 18em; }
-.bloco-unica-esquerda .foto { grid-column: 2 / span 5; justify-self: end; }
-.bloco-unica-esquerda .bloco-nota { grid-column: 8 / span 4; }
-.bloco-unica-direita .foto { grid-column: 7 / span 5; justify-self: start; }
-.bloco-unica-direita .bloco-nota { grid-column: 2 / span 4; justify-self: end; text-align: right; }
-.bloco-unica-centro .foto { grid-column: 4 / span 6; justify-self: center; }
-.bloco-unica-centro .bloco-nota { grid-row: 2; grid-column: 1 / -1; justify-self: center; margin-top: 16px; text-align: center; }
-.bloco-unica .foto-deitada { grid-column: 2 / span 10; }
+/* única: a foto em meia coluna (a mesma largura de uma foto da dupla) e a nota na outra metade */
+.bloco-unica { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--gap); row-gap: 14px; align-items: end; }
+.bloco-unica .foto { grid-row: 1; }
+.bloco-unica .bloco-nota { grid-row: 1; max-width: 18em; padding-bottom: 4px; }
+.bloco-unica-esquerda .foto { grid-column: 1; }
+.bloco-unica-esquerda .bloco-nota { grid-column: 2; padding-left: clamp(12px, 3vw, 40px); }
+.bloco-unica-direita .foto { grid-column: 2; }
+.bloco-unica-direita .bloco-nota { grid-column: 1; justify-self: end; padding-right: clamp(12px, 3vw, 40px); text-align: right; }
+.bloco-unica-centro .foto { grid-column: 1 / -1; width: calc((100% - var(--gap)) / 2); justify-self: center; }
+.bloco-unica-centro .bloco-nota, .bloco-unica .foto-deitada ~ .bloco-nota { grid-row: 2; grid-column: 1 / -1; justify-self: center; max-width: 30em; padding: 0; text-align: center; }
+.bloco-unica .foto-deitada { grid-column: 1 / -1; width: 100%; }
 
-/* dupla e trio: mesma altura, sem corte (cada foto cresce na proporção dela) */
-.bloco-fileira {
-    --gap: clamp(10px, 1.6vw, 24px);
-    display: flex; flex-wrap: wrap; gap: var(--gap);
-    /* a fileira toda cabe na altura da tela: largura máxima = altura que cabe × soma das proporções */
-    width: 100%; margin-inline: auto;
-    max-width: min(100%, var(--teto, 100%), calc(var(--cabe) * var(--soma, 2) + (var(--n, 2) - 1) * var(--gap)));
-}
+/* dupla e trio: ocupam a coluna inteira; cada foto cresce na sua proporção (mesma altura, sem corte) */
+.bloco-fileira { display: flex; flex-wrap: wrap; gap: var(--gap); }
 .bloco-fileira > .foto { flex: var(--r, 1) 1 0; min-width: 0; }
 .bloco-fileira > .bloco-legenda { flex-basis: 100%; }
-.bloco-dupla { --teto: 1120px; }
-/* dupla deslocada: larguras iguais, a segunda desce, como numa página de revista */
-.bloco-deslocada { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); max-width: none; }
-.bloco-deslocada > .foto { width: min(100%, calc(var(--cabe) * var(--r))); }
-.bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 6; justify-self: end; }
-.bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 4; justify-self: start; margin-top: min(30%, 18svh); }
+/* dupla deslocada: duas meias colunas, a segunda mais estreita e mais baixa, como numa revista */
+.bloco-deslocada { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: start; }
+.bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 6; }
+.bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 5; margin-top: 22%; }
 
-/* mosaico: uma grande e as outras em volta (estas cortam pelo `foco`) */
-.bloco-mosaico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(10px, 1.6vw, 24px); grid-auto-rows: clamp(150px, min(27vw, calc((var(--alto) - 150px) / 2)), 430px); }
-.bloco-mosaico > .foto { grid-column: span 6; }
-.bloco-mosaico-3 > :nth-child(1) { grid-column: 1 / 8; grid-row: span 2; }
+/* mosaico: a coluna inteira, na proporção 3:2 (a mesma altura de uma foto deitada); as menores cortam pelo `foco` */
+.bloco-mosaico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); aspect-ratio: 3 / 2; }
+.bloco-mosaico > .foto { grid-column: span 6; min-height: 0; }
+/* a foto se ajusta à célula (e não o contrário): a grade manda na altura */
+.bloco-mosaico .foto-abrir { position: absolute; inset: 0; }
+.bloco-mosaico-1 > .foto { grid-column: 1 / -1; grid-row: 1 / -1; }
+.bloco-mosaico-2 > :nth-child(1) { grid-column: 1 / 8; grid-row: 1 / -1; }
+.bloco-mosaico-2 > :nth-child(2) { grid-column: 8 / 13; grid-row: 1 / -1; }
+.bloco-mosaico-3 > :nth-child(1) { grid-column: 1 / 8; grid-row: 1 / -1; }
 .bloco-mosaico-3 > :nth-child(2), .bloco-mosaico-3 > :nth-child(3) { grid-column: 8 / 13; }
 .bloco-mosaico-4 > :nth-child(1) { grid-column: 1 / 8; }
 .bloco-mosaico-4 > :nth-child(2) { grid-column: 8 / 13; }
@@ -330,10 +330,9 @@ main:focus, section:focus { outline: none; }
 .bloco-mosaico-5 > :nth-child(1) { grid-column: 1 / 8; }
 .bloco-mosaico-5 > :nth-child(2) { grid-column: 8 / 13; }
 .bloco-mosaico-5 > :nth-child(n + 3) { grid-column: span 4; }
-.bloco-mosaico-1 > .foto { grid-column: 1 / -1; grid-row: span 2; }
 
 /* citação entre as fotos */
-.bloco-citacao { max-width: min(100%, 880px); margin: 0 auto; padding-block: clamp(8px, 2vw, 32px); text-align: center; }
+.bloco-citacao { margin: 0 auto; text-align: center; }
 .bloco-citacao p { max-width: 17em; margin-inline: auto; font-family: var(--serif); font-size: clamp(30px, 3.6vw, 52px); font-style: italic; font-weight: 300; line-height: 1.18; text-wrap: balance; }
 .bloco-citacao p::before { content: "“"; color: var(--destaque); }
 .bloco-citacao p::after { content: "”"; color: var(--destaque); }
@@ -522,7 +521,7 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
 }
 /* tela deitada e baixa (celular na horizontal): os nomes pela altura */
 @media (max-height: 560px) and (min-aspect-ratio: 1/1) {
-    :root { --cabe: max(200px, calc(var(--alto) - 84px)); --cabe-tela: max(200px, calc(var(--alto) - 56px)); }
+    :root { --cabe: max(200px, calc(var(--alto) - 84px)); }
     .indice { height: 46px; }
     .capa-editorial .capa-texto { padding-block: 24px 96px; }
     .capa-nomes { font-size: clamp(40px, min(8vw, 19svh), 120px); }
@@ -534,32 +533,23 @@ html.visor-aberto .aviso { background: #f3eee6; color: #151311; }
 @media (max-width: 720px) {
     :root { --respiro: 72px; }
     body { font-size: 15.5px; }
-    .bloco-panoramica { width: 100vw; margin-inline: calc(-1 * var(--margem)); }
-    .bloco-panoramica-empe { width: auto; margin-inline: 0; }
-    .bloco-unica { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-    .bloco-unica .foto { width: min(88%, calc(var(--cabe) * var(--r))); }
-    .bloco-unica-direita .foto { align-self: flex-end; }
-    .bloco-unica-centro .foto { align-self: center; }
-    .bloco-unica .bloco-nota, .bloco-unica-direita .bloco-nota { align-self: stretch; max-width: none; text-align: left; padding: 0; }
+    :root { --coluna: 100%; --gap: 8px; --entre: 56px; }
+    .bloco-panoramica-empe .foto, .bloco-unica-centro .foto { width: 100%; }
+    .bloco-unica { grid-template-columns: 1fr; }
+    .bloco-unica .foto { grid-column: 1; width: 100%; }
+    .bloco-unica .bloco-nota { grid-row: 2; grid-column: 1; justify-self: stretch; max-width: none; padding: 0; text-align: left; }
     .bloco-unica-direita .bloco-nota { text-align: right; }
-    .bloco-unica-centro .bloco-nota { text-align: center; margin: 0; }
-    .bloco-fileira { gap: 8px; }
+    .bloco-unica-centro .bloco-nota { text-align: center; }
     .bloco-empilha { flex-direction: column; }
-    .bloco-empilha { max-width: none; align-items: center; }
-    .bloco-empilha > .foto { flex: none; width: min(100%, calc(var(--cabe) * var(--r))); }
-    .bloco-trio > .foto:nth-child(3) { flex-basis: 100%; }
+    .bloco-empilha > .foto { flex: none; width: 100%; }
     .bloco-trio:not(.bloco-empilha) { display: grid; grid-template-columns: 1fr 1fr; }
-    .bloco-trio:not(.bloco-empilha) > .foto:nth-child(3) { grid-column: 1 / -1; width: 66%; justify-self: center; }
-    .bloco-deslocada { column-gap: 10px; }
-    .bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 7; }
-    .bloco-deslocada > .foto:nth-child(2) { grid-column: 8 / span 5; margin-top: 45%; }
-    .bloco-deslocada > .foto { justify-self: stretch; }
-    .bloco-mosaico { grid-template-columns: 1fr 1fr; grid-auto-rows: min(58vw, calc((var(--alto) - 120px) / 2)); gap: 8px; }
+    .bloco-trio:not(.bloco-empilha) > .foto:nth-child(3) { grid-column: 1 / -1; width: calc((100% - var(--gap)) / 2); justify-self: center; }
+    .bloco-deslocada > .foto:nth-child(1) { grid-column: 1 / span 6; }
+    .bloco-deslocada > .foto:nth-child(2) { grid-column: 7 / span 6; margin-top: 30%; }
+    .bloco-mosaico { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: 56vw; aspect-ratio: auto; }
     .bloco-mosaico > .foto, .bloco-mosaico-5 > :nth-child(n + 3) { grid-column: span 1; grid-row: span 1; }
-    .bloco-mosaico > .foto:first-child { grid-column: 1 / -1; grid-row: span 1; }
-    .bloco-mosaico-3 > .foto:first-child { grid-row: span 1; }
-    .bloco-mosaico-4 > :nth-child(4) { grid-column: 1 / -1; }
-    .bloco-mosaico > .foto-deitada:first-child { aspect-ratio: auto; }
+    .bloco-mosaico > .foto:first-child { grid-column: 1 / -1; grid-row: span 2; }
+    .bloco-mosaico-4 > :nth-child(4), .bloco-mosaico-2 > :nth-child(2) { grid-column: 1 / -1; }
     .capitulo-sub::before, .capitulo-sub::after { width: 20px; }
     .votos { grid-template-columns: 1fr; }
     .voto { padding: 0; }

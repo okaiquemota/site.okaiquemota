@@ -122,9 +122,6 @@ function fileira(b, ctx, tipo) {
     const deslocada = b.variante === 'deslocada';
     const temDeitada = b.fotos.some((f) => f.deitada);
     const el = h('div', { class: 'bloco bloco-fileira bloco-' + tipo + (deslocada ? ' bloco-deslocada' : '') + (temDeitada ? ' bloco-empilha' : '') });
-    // soma das proporções: a fileira inteira cabe na altura da tela sem cortar nada
-    el.style.setProperty('--soma', b.fotos.reduce((s, f) => s + f.proporcao, 0).toFixed(4));
-    el.style.setProperty('--n', String(b.fotos.length));
     const largura = Math.round(100 / b.fotos.length);
     b.fotos.forEach((f, i) => {
         const fig = revela(figuraFoto(f, ctx, { sizes: '(max-width: 720px) ' + (temDeitada ? 100 : largura) + 'vw, ' + largura + 'vw' }), i * 110);
