@@ -67,8 +67,8 @@ main:focus { outline: none; }
 
 /* a assinatura é o vetor (assets/img/assinatura.svg) atrás de uma máscara: três traços grossos
    que seguem o caminho da caneta, do jeito que ela é escrita. A caneta levanta só duas vezes:
-   1. o K e o laço: desce a haste, volta subindo pela perna até a ponta do braço, desce até a ponta
-      do laço, à esquerda, e corta tudo para a direita;
+   1. o laço e o K: começa na ponta direita do corte, vem para a esquerda até a ponta do laço, sobe
+      até a ponta do braço, desce pela perna até embaixo e sobe a haste inteira;
    2. o "l": sobe, faz a volta lá em cima e desce até o gancho embaixo;
    3. o "am".
    Cada traço se desenha com o stroke-dashoffset; no fim, o retângulo "fecho" acende tudo, para
@@ -81,14 +81,14 @@ main:focus { outline: none; }
 .assinatura .tracos path:nth-child(2) { --anim: traco-l; --dur: 0.5s; --ini: 1.45s; }
 .assinatura .tracos path:nth-child(3) { --dur: 0.42s; --ini: 1.98s; }
 .assinatura .fecho { --dur: 0.3s; --ini: 2.35s; }
-/* nas curvas fechadas a caneta freia: o traço 1 tem três (embaixo da haste, na ponta do braço e na
-   ponta do laço) e o 2 tem uma (no alto do "l"). Os números são o quanto do caminho já foi feito em
-   cada curva; se os caminhos mudarem no index.html, eles mudam junto. O corte final sai acelerando. */
+/* nas curvas fechadas a caneta freia: o traço 1 tem três (na ponta do laço, na ponta do braço e
+   embaixo da haste) e o 2 tem uma (no alto do "l"). Os números são o quanto do caminho ainda falta em
+   cada curva; se os caminhos mudarem no index.html, eles mudam junto. A haste sobe acelerando. */
 @keyframes traco-k {
     0% { stroke-dashoffset: 1.02; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    30% { stroke-dashoffset: 0.6886; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    52% { stroke-dashoffset: 0.4952; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    73% { stroke-dashoffset: 0.3114; animation-timing-function: cubic-bezier(0.4, 0, 0.75, 0.75); }
+    28% { stroke-dashoffset: 0.6886; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    49% { stroke-dashoffset: 0.5048; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    71% { stroke-dashoffset: 0.3114; animation-timing-function: cubic-bezier(0.4, 0, 0.75, 0.75); }
     100% { stroke-dashoffset: 0; }
 }
 @keyframes traco-l {
