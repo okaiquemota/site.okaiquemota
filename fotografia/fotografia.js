@@ -1,5 +1,5 @@
 /* Kaique Mota · Fotografia
-   Abas dos pacotes, foto grande, formulário e o aparecer ao rolar.
+   Abas dos pacotes, o filme dos trabalhos, foto grande, formulário e o aparecer ao rolar.
    Sem este arquivo a página continua inteira: os pacotes ficam um embaixo
    do outro e o WhatsApp do rodapé continua lá. */
 (function () {
@@ -59,6 +59,88 @@
         revelaveis.forEach(function (el) { vigia.observe(el); });
     } else {
         revelaveis.forEach(function (el) { el.classList.add('visivel'); });
+    }
+
+    // ---------- Trabalhos: o filme ----------
+    // No computador (tela larga e alta, sem "menos movimento"), o palco fica preso na tela e a faixa
+    // corre de lado enquanto a página desce. Quem anda é o CSS (animation-timeline); aqui só se mede o
+    // percurso. Nos navegadores sem animation-timeline, a faixa anda por aqui mesmo.
+    // No resto, a faixa se arrasta com o dedo e a linha da legenda acompanha.
+    var temLinhaDoTempo = !!(window.CSS && CSS.supports && CSS.supports('animation-timeline: view()'));
+    var telaDeFilme = window.matchMedia('(min-width: 700px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)');
+    var limita = function (v) { return Math.min(1, Math.max(0, v)); };
+    var filmes = Array.prototype.map.call(document.querySelectorAll('.filme'), function (el) {
+        return { el: el, palco: el.querySelector('.filme-palco'), faixa: el.querySelector('.faixa'), barra: el.querySelector('.filme-progresso'), percurso: 0, visto: 0 };
+    });
+    var preso = function (f) { return f.el.classList.contains('preso'); };
+    var topoDoPalco = function (f) { return parseFloat(getComputedStyle(f.palco).top) || 0; };
+
+    function andaFilme(f) {
+        if (preso(f)) {
+            if (temLinhaDoTempo) return;
+            var p = f.percurso ? limita((topoDoPalco(f) - f.el.getBoundingClientRect().top) / f.percurso) : 0;
+            f.faixa.style.transform = 'translateX(' + (-p * f.percurso).toFixed(1) + 'px)';
+            f.barra.style.transform = 'scaleX(' + (f.visto + p * (1 - f.visto)).toFixed(4) + ')';
+        } else {
+            var total = f.faixa.scrollWidth;
+            f.barra.style.transform = 'scaleX(' + (total ? limita((f.faixa.scrollLeft + f.faixa.clientWidth) / total) : 1).toFixed(4) + ')';
+        }
+    }
+    function medeFilme(f) {
+        f.el.classList.toggle('preso', telaDeFilme.matches);
+        f.faixa.style.transform = '';
+        f.barra.style.transform = '';
+        if (preso(f)) {
+            var largura = f.faixa.offsetWidth;
+            f.percurso = Math.max(0, largura - f.palco.clientWidth);
+            f.visto = largura ? limita(f.palco.clientWidth / largura) : 1;
+            f.el.style.setProperty('--percurso', f.percurso + 'px');
+            f.el.style.setProperty('--visto', f.visto.toFixed(4));
+        } else {
+            f.percurso = 0;
+            f.el.style.removeProperty('--percurso');
+            f.el.style.removeProperty('--visto');
+        }
+        andaFilme(f);
+    }
+    // leva a página (ou a faixa) até a foto, se ela não estiver à vista
+    function estaAVista(q) {
+        var r = q.getBoundingClientRect();
+        return r.left >= -2 && r.right <= document.documentElement.clientWidth + 2 && r.bottom > 0 && r.top < window.innerHeight;
+    }
+    function levaAte(q, jeito) {
+        var f = null;
+        filmes.forEach(function (g) { if (g.faixa.contains(q)) f = g; });
+        if (!f || estaAVista(q)) return;
+        if (preso(f)) {
+            var x = Math.min(f.percurso, Math.max(0, q.offsetLeft + q.offsetWidth / 2 - f.palco.clientWidth / 2));
+            var inicio = f.el.getBoundingClientRect().top + window.scrollY - topoDoPalco(f);
+            window.scrollTo({ top: inicio + x, behavior: jeito });
+        } else {
+            q.scrollIntoView({ block: 'nearest', inline: 'center', behavior: jeito });
+        }
+    }
+    if (filmes.length) {
+        var pedidoDoFilme = 0;
+        var aoRolarFilme = function () {
+            if (pedidoDoFilme) return;
+            pedidoDoFilme = requestAnimationFrame(function () { pedidoDoFilme = 0; filmes.forEach(andaFilme); });
+        };
+        filmes.forEach(function (f) {
+            f.faixa.addEventListener('scroll', function () { andaFilme(f); }, { passive: true });
+            // com o teclado (Tab), a página anda até a foto que ganhou o foco
+            f.faixa.addEventListener('focusin', function (ev) {
+                var q = ev.target.closest('.quadro');
+                if (q && preso(f)) levaAte(q, poucoMovimento.matches ? 'instant' : 'smooth');
+            });
+            medeFilme(f);
+            if ('ResizeObserver' in window) new ResizeObserver(function () { medeFilme(f); }).observe(f.palco);
+        });
+        window.addEventListener('scroll', aoRolarFilme, { passive: true });
+        window.addEventListener('resize', function () { filmes.forEach(medeFilme); });
+        var mudouTela = function () { filmes.forEach(medeFilme); };
+        if (telaDeFilme.addEventListener) telaDeFilme.addEventListener('change', mudouTela);
+        else if (telaDeFilme.addListener) telaDeFilme.addListener(mudouTela);
     }
 
     // ---------- Pacotes em abas ----------
@@ -179,6 +261,8 @@
     }
 
     // ---------- Foto grande: setas, teclado e arrastar no celular ----------
+    // Abrindo e fechando, a foto sai da faixa e cresce até a tela cheia (View Transitions).
+    // Sem esse recurso (ou com "menos movimento"), o visor só aparece, como antes.
     var quadros = Array.prototype.slice.call(document.querySelectorAll('.quadro'));
     var visor = document.getElementById('visor');
     if (quadros.length && visor && typeof visor.showModal === 'function') {
@@ -186,32 +270,86 @@
         var conta = document.getElementById('visor-conta');
         var atual = 0;
         var pedido = 0;
-        var quemAbriu = null;
+        var podeMorfar = function () { return typeof document.startViewTransition === 'function' && !poucoMovimento.matches; };
+        var semErro = function () {};
 
-        var mostra = function (k) {
-            atual = (k + quadros.length) % quadros.length;
-            var q = quadros[atual];
-            var miniatura = q.querySelector('img');
-            var este = ++pedido;
-            foto.classList.add('trocando');
+        // a versão grande entra no lugar quando termina de carregar
+        var carregaGrande = function (q, este) {
             var nova = new Image();
             nova.onload = nova.onerror = function () {
                 // passando rápido, uma foto que demorou não entra no lugar da que está no contador
                 if (este !== pedido) return;
                 foto.src = nova.src;
-                foto.alt = miniatura.alt;
                 requestAnimationFrame(function () { foto.classList.remove('trocando'); });
             };
             nova.src = q.dataset.grande;
+        };
+        var mostra = function (k, abrindo) {
+            atual = (k + quadros.length) % quadros.length;
+            var q = quadros[atual];
+            var miniatura = q.querySelector('img');
+            var este = ++pedido;
+            var w = miniatura.getAttribute('width');
+            var h = miniatura.getAttribute('height');
+            if (w && h) foto.style.setProperty('--proporcao', (w / h).toFixed(4));
+            foto.alt = miniatura.alt;
             conta.textContent = (atual + 1) + ' de ' + quadros.length;
+            if (abrindo) {
+                // abrindo, entra na hora a mesma foto que já está na faixa; a grande vem logo depois
+                foto.classList.remove('trocando');
+                foto.src = miniatura.currentSrc || miniatura.src;
+            } else {
+                foto.classList.add('trocando');
+            }
+            carregaGrande(q, este);
             new Image().src = quadros[(atual + 1) % quadros.length].dataset.grande;
         };
 
+        var abre = function (k) {
+            var q = quadros[k];
+            if (!podeMorfar()) { mostra(k, true); visor.showModal(); return; }
+            visor.classList.add('morfando');
+            q.style.viewTransitionName = 'foto-aberta';
+            var t = document.startViewTransition(function () {
+                q.style.viewTransitionName = '';
+                mostra(k, true);
+                foto.style.viewTransitionName = 'foto-aberta';
+                visor.showModal();
+                return foto.decode ? foto.decode().catch(semErro) : null;
+            });
+            t.finished.catch(semErro).then(function () {
+                foto.style.viewTransitionName = '';
+                visor.classList.remove('morfando');
+            });
+        };
+        var fecha = function () {
+            if (!visor.open) return;
+            var q = quadros[atual];
+            // a foto volta para o lugar dela na faixa: se ela não estiver à vista, a página vai até lá antes
+            levaAte(q, 'instant');
+            // (uma foto que ainda não apareceu na faixa abre a cortina depois, sem a volta)
+            if (!podeMorfar() || !estaAVista(q) || !q.classList.contains('visivel')) { visor.close(); return; }
+            foto.style.viewTransitionName = 'foto-aberta';
+            var t = document.startViewTransition(function () {
+                foto.style.viewTransitionName = '';
+                visor.close();
+                q.style.viewTransitionName = 'foto-aberta';
+            });
+            t.finished.catch(semErro).then(function () { q.style.viewTransitionName = ''; });
+        };
+
         quadros.forEach(function (q, k) {
-            q.addEventListener('click', function () { quemAbriu = q; mostra(k); visor.showModal(); });
+            q.addEventListener('click', function () { abre(k); });
         });
-        visor.addEventListener('close', function () { if (quemAbriu) quemAbriu.focus(); });
-        document.getElementById('visor-fechar').addEventListener('click', function () { visor.close(); });
+        // fechando, o foco volta para a foto que estava aberta
+        visor.addEventListener('close', function () { quadros[atual].focus({ preventScroll: true }); });
+        // o Esc também fecha com a foto voltando para o lugar
+        visor.addEventListener('cancel', function (ev) {
+            if (!ev.cancelable) return;
+            ev.preventDefault();
+            fecha();
+        });
+        document.getElementById('visor-fechar').addEventListener('click', fecha);
         document.getElementById('visor-ant').addEventListener('click', function () { mostra(atual - 1); });
         document.getElementById('visor-prox').addEventListener('click', function () { mostra(atual + 1); });
         visor.addEventListener('keydown', function (ev) {
@@ -230,7 +368,7 @@
         });
         // clicar fora da foto fecha
         visor.addEventListener('click', function (ev) {
-            if (!arrastou && ev.target === visor) visor.close();
+            if (!arrastou && ev.target === visor) fecha();
             arrastou = false;
         });
     }

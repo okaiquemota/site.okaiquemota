@@ -140,7 +140,20 @@
         <section class="capa" aria-labelledby="capa-titulo">
             <figure class="capa-quadro">
                 <img src="img/kaique-1080.jpg" srcset="img/kaique-720.jpg 720w, img/kaique-1080.jpg 864w" sizes="(max-width: 640px) 60vw, 360px" alt="Kaique Mota de boné, fotografando com uma câmera Canon, em preto e branco" width="864" height="1080" fetchpriority="high">
-                <span class="assinatura" role="img" aria-label="Assinatura do Kaique Mota"></span>
+                <!-- A assinatura se escreve traço por traço: a máscara segue o caminho da caneta (o passo a passo está no README) -->
+                <svg class="assinatura" viewBox="0 0 1091 1162" role="img" aria-label="Assinatura do Kaique Mota" focusable="false">
+                    <mask id="escrita-capa" maskUnits="userSpaceOnUse" x="0" y="0" width="1091" height="1162">
+                        <g class="tracos">
+                        <path pathLength="1" d="M408 43 L407 48 424 96 431 129 439 156 442 184 446 198 454 281 454 379 452 425 447 495 438 580 433 606 433 619 428 634 425 647 426 649 424 649 423 653 422 670 413 708 408 720 403 746 391 787 384 804 383 812 377 824 367 859 348 910 346 920 347 926 325 977 291 1044 282 1058 268 1090 266 1091"/>
+                        <path pathLength="1" d="M436 622 L447 618 490 572 549 489 556 486 558 487 556 503 518 587 511 607 503 622 502 630 493 639 492 646 484 665 466 701 460 717 442 750 440 757 399 839 395 844 365 909 359 919 349 925"/>
+                        <path pathLength="1" d="M432 793 L441 817 445 822 449 822 458 817 485 790 510 759 534 722 539 717 548 701 549 696 557 691 560 691 562 688 571 665 578 636 583 625 583 620 589 608 589 601 594 590 594 585 596 586 603 582 607 575 637 486 660 377 663 349 659 345 659 337 668 285 666 290 659 344 653 349 630 422 612 509 595 572 594 590 589 601 588 612 585 615 583 625 578 636 568 674 560 691 560 703 538 778 536 795 531 801 520 843 493 923 489 930 475 978 465 1004 463 1016 431 1107 427 1126 428 1134 433 1135 439 1126"/>
+                        <path pathLength="1" d="M557 785 L555 781 568 760 571 749 593 717 606 703 617 702 620 706 622 728 618 767 620 770 625 770 628 769 645 751 687 695 712 670 722 676 726 682 716 681 712 686 710 693 703 701 694 706 690 715 667 745 664 753 674 750 692 737 697 738 697 745 700 750 708 750 712 748 733 732 753 709 767 697 771 696 774 698 774 712 777 713 789 708 804 693 812 692 815 696 819 713 824 717 837 713 845 706 861 697 868 697 881 707 896 705 915 688 924 673"/>
+                        <path pathLength="1" d="M385 665 L381 673 350 695 296 728 253 750 152 793 106 808 63 819 48 821 33 820 40 810 66 794 167 743 222 718 291 690 371 665 386 665 418 650 425 648 439 648 480 638 491 637 493 639 501 632 503 634 508 634 562 622 570 620 579 614 586 614 588 612 590 614 599 614 644 603 711 591 758 580 798 573 810 569 908 550 925 545 1027 526 1046 524 1057 524 1063 526"/>
+                        </g>
+                        <rect class="fecho" width="1091" height="1162" fill="#fff"/>
+                    </mask>
+                    <image href="../assets/img/assinatura.svg" width="1091" height="1162" mask="url(#escrita-capa)"/>
+                </svg>
             </figure>
             <div class="capa-texto">
                 <h1 id="capa-titulo">Kaique Mota</h1>
@@ -162,26 +175,57 @@
                 <p data-revela>Fotografar sempre foi o meu jeito de <em>guardar o que não volta</em>. Antes de virar trabalho, eu já fotografava tudo, só para não deixar os momentos passarem em branco.</p>
                 <p data-revela>Em 2021, nas mídias da igreja, esse olhar virou ofício. De lá para cá, passei a fotografar casais, eventos e retratos, sempre com a mesma vontade do começo: que cada foto devolva, anos depois, o que foi sentido naquele dia.</p>
                 <p data-revela>Hoje a fotografia caminha junto com o design e o desenvolvimento. São jeitos diferentes de fazer a mesma coisa: cuidar de cada detalhe até a história ficar do jeito certo.</p>
-                <span class="assinatura" aria-hidden="true" data-revela></span>
+                <svg class="assinatura" viewBox="0 0 1091 1162" aria-hidden="true" data-revela focusable="false">
+                    <mask id="escrita-sobre" maskUnits="userSpaceOnUse" x="0" y="0" width="1091" height="1162">
+                        <g class="tracos">
+                        <path pathLength="1" d="M408 43 L407 48 424 96 431 129 439 156 442 184 446 198 454 281 454 379 452 425 447 495 438 580 433 606 433 619 428 634 425 647 426 649 424 649 423 653 422 670 413 708 408 720 403 746 391 787 384 804 383 812 377 824 367 859 348 910 346 920 347 926 325 977 291 1044 282 1058 268 1090 266 1091"/>
+                        <path pathLength="1" d="M436 622 L447 618 490 572 549 489 556 486 558 487 556 503 518 587 511 607 503 622 502 630 493 639 492 646 484 665 466 701 460 717 442 750 440 757 399 839 395 844 365 909 359 919 349 925"/>
+                        <path pathLength="1" d="M432 793 L441 817 445 822 449 822 458 817 485 790 510 759 534 722 539 717 548 701 549 696 557 691 560 691 562 688 571 665 578 636 583 625 583 620 589 608 589 601 594 590 594 585 596 586 603 582 607 575 637 486 660 377 663 349 659 345 659 337 668 285 666 290 659 344 653 349 630 422 612 509 595 572 594 590 589 601 588 612 585 615 583 625 578 636 568 674 560 691 560 703 538 778 536 795 531 801 520 843 493 923 489 930 475 978 465 1004 463 1016 431 1107 427 1126 428 1134 433 1135 439 1126"/>
+                        <path pathLength="1" d="M557 785 L555 781 568 760 571 749 593 717 606 703 617 702 620 706 622 728 618 767 620 770 625 770 628 769 645 751 687 695 712 670 722 676 726 682 716 681 712 686 710 693 703 701 694 706 690 715 667 745 664 753 674 750 692 737 697 738 697 745 700 750 708 750 712 748 733 732 753 709 767 697 771 696 774 698 774 712 777 713 789 708 804 693 812 692 815 696 819 713 824 717 837 713 845 706 861 697 868 697 881 707 896 705 915 688 924 673"/>
+                        <path pathLength="1" d="M385 665 L381 673 350 695 296 728 253 750 152 793 106 808 63 819 48 821 33 820 40 810 66 794 167 743 222 718 291 690 371 665 386 665 418 650 425 648 439 648 480 638 491 637 493 639 501 632 503 634 508 634 562 622 570 620 579 614 586 614 588 612 590 614 599 614 644 603 711 591 758 580 798 573 810 569 908 550 925 545 1027 526 1046 524 1057 524 1063 526"/>
+                        </g>
+                        <rect class="fecho" width="1091" height="1162" fill="#fff"/>
+                    </mask>
+                    <image href="../assets/img/assinatura.svg" width="1091" height="1162" mask="url(#escrita-sobre)"/>
+                </svg>
             </div>
         </section>
 
-        <section class="secao wrap" id="trabalhos" aria-labelledby="trabalhos-titulo">
-            <div class="cabeca" data-revela>
+        <!-- Uma pausa entre o texto e os trabalhos: a foto abre de borda a borda e se aproxima enquanto a página desce -->
+        <figure class="pausa">
+            <div class="pausa-quadro" data-revela>
+                <img src="vinicius-e-stefany/fotos/web/ensaio-04.jpg" srcset="vinicius-e-stefany/fotos/mini/ensaio-04.jpg 640w, vinicius-e-stefany/fotos/web/ensaio-04.jpg 1280w" sizes="100vw" alt="Nariz com nariz, os dois se olham sorrindo sob flores cor-de-rosa" width="1280" height="1600" loading="lazy" decoding="async">
+            </div>
+            <figcaption class="pausa-legenda wrap"><span class="rotulo">Vinicius &amp; Stefany · Pré-wedding</span></figcaption>
+        </figure>
+
+        <section class="secao" id="trabalhos" aria-labelledby="trabalhos-titulo">
+            <div class="cabeca wrap" data-revela>
                 <h2 class="titulo" id="trabalhos-titulo">Trabalhos</h2>
                 <p class="sub">Mais no Instagram, <a class="link" href="https://www.instagram.com/okaiquemota" target="_blank" rel="noopener">@okaiquemota<span class="visualmente-escondido"> (abre em nova aba)</span></a></p>
             </div>
-            <article class="trabalho" aria-labelledby="trabalho-1">
-                <div class="faixa">
-                    <button class="quadro" type="button" data-revela data-grande="img/vs-11-1080.jpg" aria-label="Ampliar foto: Casal correndo de mãos dadas na grama"><img src="img/vs-11-1080.jpg" srcset="img/vs-11-720.jpg 720w, img/vs-11-1080.jpg 1080w" sizes="(max-width: 640px) 46vw, 25vw" alt="Casal correndo de mãos dadas na grama" width="1080" height="1350" loading="lazy" decoding="async"></button>
-                    <button class="quadro" type="button" data-revela data-grande="img/vs-03-1080.jpg" aria-label="Ampliar foto: Detalhe de flores cor-de-rosa num galho"><img src="img/vs-03-1080.jpg" srcset="img/vs-03-720.jpg 720w, img/vs-03-1080.jpg 1080w" sizes="(max-width: 640px) 46vw, 25vw" alt="Detalhe de flores cor-de-rosa num galho" width="1080" height="1350" loading="lazy" decoding="async"></button>
-                    <button class="quadro" type="button" data-revela data-grande="img/vs-16-1080.jpg" aria-label="Ampliar foto: Ela encostada no ombro dele, de olhos fechados"><img src="img/vs-16-1080.jpg" srcset="img/vs-16-720.jpg 720w, img/vs-16-1080.jpg 1080w" sizes="(max-width: 640px) 46vw, 25vw" alt="Ela encostada no ombro dele, de olhos fechados" width="1080" height="1350" loading="lazy" decoding="async"></button>
-                    <button class="quadro" type="button" data-revela data-grande="img/vs-08-1080.jpg" aria-label="Ampliar foto: Casal abraçado na luz do fim da tarde, ele beija a testa dela"><img src="img/vs-08-1080.jpg" srcset="img/vs-08-720.jpg 720w, img/vs-08-1080.jpg 1080w" sizes="(max-width: 640px) 46vw, 25vw" alt="Casal abraçado na luz do fim da tarde, ele beija a testa dela" width="1080" height="1350" loading="lazy" decoding="async"></button>
-                </div>
-                <div class="legenda">
-                    <h3 id="trabalho-1">Vinicius &amp; Stefany</h3>
-                    <p class="rotulo">Pré-wedding e casamento</p>
-                    <a class="link legenda-ver" href="vinicius-e-stefany/">Ver a história<span class="visualmente-escondido"> de Vinícius &amp; Stefany</span> <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-dir"></use></svg></a>
+            <!-- Cada trabalho é um filme: no computador as fotos correm de lado enquanto a página desce;
+                 no celular (e sem JavaScript) a faixa se arrasta com o dedo -->
+            <article class="trabalho filme" aria-labelledby="trabalho-1">
+                <div class="filme-palco">
+                    <div class="faixa">
+                        <button class="quadro" type="button" data-revela data-grande="img/vs-11-1080.jpg" aria-label="Ampliar foto: Casal correndo de mãos dadas na grama"><img src="img/vs-11-1080.jpg" srcset="img/vs-11-720.jpg 720w, img/vs-11-1080.jpg 1080w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Casal correndo de mãos dadas na grama" width="1080" height="1350" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="vinicius-e-stefany/fotos/web/ensaio-02.jpg" aria-label="Ampliar foto: Os dois olhando para a câmera, ela com o braço apoiado no ombro dele"><img src="vinicius-e-stefany/fotos/web/ensaio-02.jpg" srcset="vinicius-e-stefany/fotos/mini/ensaio-02.jpg 640w, vinicius-e-stefany/fotos/web/ensaio-02.jpg 1280w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Os dois olhando para a câmera, ela com o braço apoiado no ombro dele" width="1280" height="1600" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="img/vs-03-1080.jpg" aria-label="Ampliar foto: Detalhe de flores cor-de-rosa num galho"><img src="img/vs-03-1080.jpg" srcset="img/vs-03-720.jpg 720w, img/vs-03-1080.jpg 1080w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Detalhe de flores cor-de-rosa num galho" width="1080" height="1350" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="img/vs-16-1080.jpg" aria-label="Ampliar foto: Ela encostada no ombro dele, de olhos fechados"><img src="img/vs-16-1080.jpg" srcset="img/vs-16-720.jpg 720w, img/vs-16-1080.jpg 1080w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Ela encostada no ombro dele, de olhos fechados" width="1080" height="1350" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="vinicius-e-stefany/fotos/web/ensaio-05.jpg" aria-label="Ampliar foto: Frente a frente, ela segura o rosto dele com carinho enquanto ele a abraça pela cintura"><img src="vinicius-e-stefany/fotos/web/ensaio-05.jpg" srcset="vinicius-e-stefany/fotos/mini/ensaio-05.jpg 640w, vinicius-e-stefany/fotos/web/ensaio-05.jpg 1280w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Frente a frente, ela segura o rosto dele com carinho enquanto ele a abraça pela cintura" width="1280" height="1600" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="vinicius-e-stefany/fotos/web/ensaio-03.jpg" aria-label="Ampliar foto: Ele a abraça por trás, diante de uma árvore com flores cor-de-rosa"><img src="vinicius-e-stefany/fotos/web/ensaio-03.jpg" srcset="vinicius-e-stefany/fotos/mini/ensaio-03.jpg 640w, vinicius-e-stefany/fotos/web/ensaio-03.jpg 1280w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Ele a abraça por trás, diante de uma árvore com flores cor-de-rosa" width="1280" height="1600" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="vinicius-e-stefany/fotos/web/ensaio-01.jpg" aria-label="Ampliar foto: Ela de olhos fechados, com o rosto no ombro dele, que olha para ela"><img src="vinicius-e-stefany/fotos/web/ensaio-01.jpg" srcset="vinicius-e-stefany/fotos/mini/ensaio-01.jpg 640w, vinicius-e-stefany/fotos/web/ensaio-01.jpg 1280w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Ela de olhos fechados, com o rosto no ombro dele, que olha para ela" width="1280" height="1600" loading="lazy" decoding="async"></button>
+                        <button class="quadro" type="button" data-revela data-grande="img/vs-08-1080.jpg" aria-label="Ampliar foto: Casal abraçado na luz do fim da tarde, ele beija a testa dela"><img src="img/vs-08-1080.jpg" srcset="img/vs-08-720.jpg 720w, img/vs-08-1080.jpg 1080w" sizes="(max-width: 699px) 76vw, calc(80vh - 180px)" alt="Casal abraçado na luz do fim da tarde, ele beija a testa dela" width="1080" height="1350" loading="lazy" decoding="async"></button>
+                    </div>
+                    <div class="wrap">
+                        <div class="legenda">
+                            <span class="filme-progresso" aria-hidden="true"></span>
+                            <h3 id="trabalho-1">Vinicius &amp; Stefany</h3>
+                            <p class="rotulo">Pré-wedding e casamento</p>
+                            <a class="link legenda-ver" href="vinicius-e-stefany/">Ver a história<span class="visualmente-escondido"> de Vinícius &amp; Stefany</span> <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-dir"></use></svg></a>
+                        </div>
+                    </div>
                 </div>
             </article>
         </section>

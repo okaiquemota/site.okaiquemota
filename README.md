@@ -15,7 +15,7 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
 │   ├── index.html         o site do okaiquemota (textos e pacotes estão aqui)
 │   ├── privacidade.html   a Política de Privacidade (LGPD)
 │   ├── fotografia.css
-│   ├── fotografia.js      abas dos pacotes, visor de fotos, formulário e o aparecer ao rolar
+│   ├── fotografia.js      abas dos pacotes, o filme dos trabalhos, visor de fotos, formulário e o aparecer ao rolar
 │   ├── fontes/            Tinos (woff2, licença SIL OFL 1.1), usada também pela página inicial
 │   ├── entrega/           o motor das páginas de entrega de fotos (veja fotografia/entrega/README.md)
 │   ├── vinicius-e-stefany/  a entrega do casamento de Vinícius & Stefany (evento.json + fotos)
@@ -43,7 +43,17 @@ Substitua `assets/img/kaique.jpg` por outra com o mesmo nome. Se mudar o tamanho
 
 ## Adicionar um trabalho
 
-Cada trabalho é um `<article class="trabalho">` na seção `#trabalhos` do `fotografia/index.html`: uma faixa com 4 fotos e, embaixo, o nome e o tipo. Pra um trabalho novo, copie o bloco logo abaixo do título da seção (o mais novo fica em cima) e troque o nome, o tipo e as fotos: em cada foto, o `src`, o `srcset`, o `data-grande` (a versão grande que abre no visor), o `alt` e o `aria-label`. Cada foto tem duas versões em `fotografia/img/`: `-1080.jpg` (1080×1350) e `-720.jpg` (720×900).
+Cada trabalho é um filme: um `<article class="trabalho filme">` na seção `#trabalhos` do `fotografia/index.html`. No computador, a faixa de fotos fica parada na tela e corre de lado enquanto a página desce; no celular (e pra quem pediu menos movimento no aparelho), ela se arrasta com o dedo. A linha embaixo enche conforme as fotos passam. Clicando numa foto, ela cresce até a tela cheia (o visor) e, ao fechar, volta pro lugar dela.
+
+Pra um trabalho novo, copie o `<article>` inteiro logo abaixo do título da seção (o mais novo fica em cima) e troque o nome, o tipo, o link e as fotos. Cada foto é um `<button class="quadro">` dentro da `.faixa`; nele, troque o `src`, o `srcset`, o `data-grande` (a versão grande que abre no visor), o `alt` e o `aria-label`. De 6 a 10 fotos fica bom; todas em pé, 4:5. As fotos podem estar em `fotografia/img/` (`-1080.jpg` com 1080×1350 e `-720.jpg` com 720×900) ou na pasta da entrega do trabalho (`fotos/web/` e `fotos/mini/`, como as do ensaio de Vinícius & Stefany). O `width` e o `height` de cada `<img>` são os da versão grande. Mais de um trabalho funciona, mas cada um vira um filme: dois ou três seguidos ainda ficam bons.
+
+## A foto de borda a borda
+
+Entre o "Sobre" e os "Trabalhos" fica a `<figure class="pausa">`: uma foto que abre de borda a borda e vem chegando perto enquanto a página desce. Pra trocar, mude o `src`, o `srcset`, o `alt`, o `width`/`height` e a legenda. Funciona melhor com uma foto deitada exportada grande (lado maior 2400px), porque ela ocupa a largura da tela; a de agora é em pé e o corte fica no `object-position` da `.pausa-quadro img` no `fotografia.css` (o segundo número sobe ou desce o enquadramento).
+
+## A assinatura que se escreve
+
+Na capa e no fim do "Sobre", a assinatura se escreve traço por traço. O desenho é o `assets/img/assinatura.svg`; por cima dele vai uma máscara com cinco traços grossos que seguem o caminho da caneta (a haste, o braço, o "l", o "am" e o laço que corta tudo), e cada um se desenha na ordem. Os traços são os `<path>` dentro de `<g class="tracos">` no `fotografia/index.html` (iguais na capa e no "Sobre"); o tempo de cada um fica no `fotografia.css`, em `.assinatura .tracos path:nth-child(…)`. Se a assinatura mudar, esses caminhos precisam ser desenhados de novo por cima dela. Se faltar algum pedacinho, o retângulo `fecho` acende a assinatura inteira no fim.
 
 Antes de publicar, duas coisas:
 
