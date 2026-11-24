@@ -317,10 +317,9 @@
                 visor.showModal();
                 return foto.decode ? foto.decode().catch(semErro) : null;
             });
-            t.finished.catch(semErro).then(function () {
-                foto.style.viewTransitionName = '';
-                visor.classList.remove('morfando');
-            });
+            // o "morfando" (sem o fade de abrir do visor) só sai quando o visor fecha:
+            // tirando antes, o fade recomeçaria e o fundo piscaria
+            t.finished.catch(semErro).then(function () { foto.style.viewTransitionName = ''; });
         };
         var fecha = function () {
             if (!visor.open) return;
@@ -342,7 +341,10 @@
             q.addEventListener('click', function () { abre(k); });
         });
         // fechando, o foco volta para a foto que estava aberta
-        visor.addEventListener('close', function () { quadros[atual].focus({ preventScroll: true }); });
+        visor.addEventListener('close', function () {
+            visor.classList.remove('morfando');
+            quadros[atual].focus({ preventScroll: true });
+        });
         // o Esc também fecha com a foto voltando para o lugar
         visor.addEventListener('cancel', function (ev) {
             if (!ev.cancelable) return;
