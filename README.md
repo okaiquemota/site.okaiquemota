@@ -53,7 +53,7 @@ Entre o "Sobre" e os "Trabalhos" fica a `<figure class="pausa">`: uma foto que a
 
 ## A assinatura que se escreve
 
-Na capa e no fim do "Sobre", a assinatura se escreve traço por traço. O desenho é o `assets/img/assinatura.svg`; por cima dele vai uma máscara com cinco traços grossos que seguem o caminho da caneta (a haste, o braço, o "l", o "am" e o laço que corta tudo), e cada um se desenha na ordem. Os traços são os `<path>` dentro de `<g class="tracos">` no `fotografia/index.html` (iguais na capa e no "Sobre"); o tempo de cada um fica no `fotografia.css`, em `.assinatura .tracos path:nth-child(…)`. Se a assinatura mudar, esses caminhos precisam ser desenhados de novo por cima dela. Se faltar algum pedacinho, o retângulo `fecho` acende a assinatura inteira no fim.
+Na capa e no fim do "Sobre", a assinatura se escreve traço por traço. O desenho é o `assets/img/assinatura.svg`; por cima dele vai uma máscara com três traços grossos que seguem o caminho da caneta, do jeito que ela é escrita (a caneta só levanta duas vezes): 1) o K e o laço, que desce a haste, volta subindo até a ponta do braço, desce até a ponta do laço e corta tudo para a direita; 2) o "l", que sobe, faz a volta e desce até o gancho; 3) o "am". Os traços são os `<path>` dentro de `<g class="tracos">` no `fotografia/index.html` (iguais na capa e no "Sobre"); o tempo de cada um fica no `fotografia.css`, em `.assinatura .tracos path:nth-child(…)`, e as freadas nas curvas, nos `@keyframes traco-k` e `traco-l`. Se a assinatura mudar, esses caminhos precisam ser desenhados de novo por cima dela. Se faltar algum pedacinho, o retângulo `fecho` acende a assinatura inteira no fim.
 
 Antes de publicar, duas coisas:
 
