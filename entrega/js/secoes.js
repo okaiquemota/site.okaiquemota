@@ -17,6 +17,7 @@ export function capa(ev, ctx) {
 
     const foto = f && h('div', { class: 'capa-foto' },
         h('img', {
+            crossorigin: 'anonymous',
             src: f.src,
             srcset: f.mini !== f.src ? f.mini + ' ' + f.larguraMini + 'w, ' + f.src + ' ' + f.larguraWeb + 'w' : null,
             sizes: layout === 'tela-cheia' ? '100vw' : '(max-width: 860px) 100vw, 55vw',

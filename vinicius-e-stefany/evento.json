@@ -25,7 +25,7 @@
     },
 
     "trilha": {
-        "src": "trilha.mp3",
+        "src": "https://fotos.okaiquemota.com.br/vinicius-e-stefany/trilha.mp3",
         "titulo": "There is Romance",
         "autor": "Kevin MacLeod",
         "fonte": "https://incompetech.com",
@@ -46,9 +46,9 @@
     },
 
     "midia": {
-        "web": "fotos/web/",
-        "mini": "fotos/mini/",
-        "original": "fotos/web/",
+        "web": "https://fotos.okaiquemota.com.br/vinicius-e-stefany/web/",
+        "mini": "https://fotos.okaiquemota.com.br/vinicius-e-stefany/mini/",
+        "original": "https://fotos.okaiquemota.com.br/vinicius-e-stefany/web/",
         "ladoMaiorWeb": 1600,
         "ladoMaiorMini": 800
     },

@@ -11,7 +11,7 @@ export function criarVisor(evento, ctx) {
     let pedido = 0;
     let quemAbriu = null;
 
-    const img = h('img', { class: 'visor-img', alt: '', draggable: false });
+    const img = h('img', { crossorigin: 'anonymous', class: 'visor-img', alt: '', draggable: false });
     const capitulo = h('p', { class: 'visor-capitulo' });
     const conta = h('p', { class: 'visor-conta' });
     const vivo = h('p', { class: 'visualmente-escondido', 'aria-live': 'polite' });
@@ -22,7 +22,7 @@ export function criarVisor(evento, ctx) {
 
     const btnFav = ctx.favoritas && h('button', { class: 'visor-acao visor-fav', type: 'button', 'aria-pressed': 'false', 'aria-keyshortcuts': 'F', onclick: () => favoritar() },
         icone('coracao'), h('span', { class: 'visor-acao-texto', text: 'Favoritar' }));
-    const btnBaixar = h('a', { class: 'visor-acao', download: '', 'aria-keyshortcuts': 'B' },
+    const btnBaixar = h('a', { class: 'visor-acao', download: '', 'aria-keyshortcuts': 'B', onclick: baixar },
         icone('baixar'), h('span', { class: 'visor-acao-texto', text: 'Baixar' }));
     const btnStories = h('button', { class: 'visor-acao', type: 'button', 'aria-keyshortcuts': 'S', onclick: () => stories() },
         icone('stories'), h('span', { class: 'visor-acao-texto', text: 'Stories' }));
@@ -35,6 +35,24 @@ export function criarVisor(evento, ctx) {
         vivo);
     document.body.append(dialogo);
 
+    // Baixar: com a foto em outro endereço (o fotos.okaiquemota.com.br), o navegador ignora o
+    // "download" do link e só abre a foto; então ela vem pelo fetch e é salva daqui mesmo.
+    async function baixar(ev) {
+        const url = btnBaixar.href;
+        if (!url || new URL(url).origin === location.origin) return;
+        ev.preventDefault();
+        try {
+            const r = await fetch(url, { mode: 'cors' });
+            if (!r.ok) throw new Error(String(r.status));
+            const arquivo = URL.createObjectURL(await r.blob());
+            const a = h('a', { href: arquivo, download: btnBaixar.getAttribute('download') || '' });
+            document.body.append(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(arquivo), 4000);
+        } catch (erro) {
+            window.open(url, '_blank', 'noopener');
+        }
+    }
+
     function mostra(k, dir) {
         atual = (k + lista.length) % lista.length;
         img.style.setProperty('--dx', (dir || 0) * 36 + 'px');
@@ -43,6 +61,7 @@ export function criarVisor(evento, ctx) {
         img.classList.add('trocando');
         // primeiro a versão leve (já está no cache da página), depois a grande
         const leve = new Image();
+        leve.crossOrigin = 'anonymous';
         leve.src = f.mini;
         const entra = (src) => {
             if (este !== pedido) return;
@@ -55,6 +74,7 @@ export function criarVisor(evento, ctx) {
         (leve.complete ? Promise.resolve() : new Promise((ok) => { leve.onload = leve.onerror = ok; })).then(() => {
             entra(f.mini);
             const grande = new Image();
+            grande.crossOrigin = 'anonymous';
             grande.onload = () => { if (este === pedido) img.src = f.src; };
             grande.src = f.src;
         });
@@ -70,7 +90,11 @@ export function criarVisor(evento, ctx) {
         btnAnt.hidden = btnProx.hidden = sozinha;
         history.replaceState(null, '', '#foto=' + encodeURIComponent(f.id));
         // a próxima e a anterior já vão carregando
-        [1, -1].forEach((d) => { new Image().src = lista[(atual + d + lista.length) % lista.length].src; });
+        [1, -1].forEach((d) => {
+            const prox = new Image();
+            prox.crossOrigin = 'anonymous';
+            prox.src = lista[(atual + d + lista.length) % lista.length].src;
+        });
     }
 
     function ir(d) { if (lista.length > 1) mostra(atual + d, d); }

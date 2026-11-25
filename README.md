@@ -15,10 +15,10 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
 ├── fotografia.css
 ├── fotografia.js          a assinatura que se escreve, o filme dos trabalhos, visor de fotos, formulário e o aparecer ao rolar
 ├── fontes/                Tinos (woff2, licença SIL OFL 1.1), usada também pela /eu e pela 404
-├── img/                   fotos dos trabalhos (NOME-1080.jpg e NOME-720.jpg, 4:5), o retrato da capa, kaique-*.jpg,
+├── img/                   fotos dos trabalhos (NOME-1080.jpg e NOME-720.jpg, ou vs-ensaio-*-1280/640.jpg, 4:5), o retrato da capa, kaique-*.jpg,
 │                          e compartilhar.jpg (a prévia quando o link é mandado no WhatsApp, 1200×630)
 ├── entrega/               o motor das páginas de entrega de fotos (veja entrega/README.md)
-├── vinicius-e-stefany/    a entrega do casamento de Vinícius & Stefany (evento.json + fotos)
+├── vinicius-e-stefany/    a entrega do casamento de Vinícius & Stefany (evento.json; as fotos ficam no R2)
 ├── eu/index.html          a página pessoal
 ├── fotografia/            só os redirecionamentos dos endereços antigos (não apague)
 ├── 404.html               a página de "não encontrado" (o GitHub mostra pra qualquer endereço que não existe)
@@ -38,7 +38,7 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
         └── compartilhar.jpg   a prévia da /eu no WhatsApp e nas redes (1200×630)
 ```
 
-Em `/<trabalho>/` ficam as **páginas de entrega**: a revista de cada casal (ou 15 anos, ou ensaio) com as fotos prontas, capítulos, visor, favoritas para o álbum e stories. Cada trabalho é só uma pasta com um `evento.json` e as fotos; o motor é o mesmo para todos. O passo a passo para criar uma está em [`entrega/README.md`](entrega/README.md). A primeira é https://okaiquemota.com.br/vinicius-e-stefany/, que virou a página de portfólio do casal: está ligada em "Trabalhos" ("Ver a história"), entra no Google e não tem as partes de cliente (seleção para o álbum e pasta para baixar). Uma entrega só para os noivos leva `<meta name="robots" content="noindex, nofollow">` e fica fora do `sitemap.xml`. O nome da pasta não pode ser um dos que o site já usa: `eu`, `img`, `fontes`, `entrega`, `assets`, `fotografia` e `painel`.
+Em `/<trabalho>/` ficam as **páginas de entrega**: a revista de cada casal (ou 15 anos, ou ensaio) com as fotos prontas, capítulos, visor, favoritas para o álbum e stories. Cada trabalho é só uma pasta com um `evento.json` e as fotos; o motor é o mesmo para todos. As fotos das entregas não ficam aqui: ficam no R2 da Cloudflare, em https://fotos.okaiquemota.com.br (o bucket `fotos-okaiquemota`). O passo a passo para criar uma está em [`entrega/README.md`](entrega/README.md). A primeira é https://okaiquemota.com.br/vinicius-e-stefany/, que virou a página de portfólio do casal: está ligada em "Trabalhos" ("Ver a história"), entra no Google e não tem as partes de cliente (seleção para o álbum e pasta para baixar). Uma entrega só para os noivos leva `<meta name="robots" content="noindex, nofollow">` e fica fora do `sitemap.xml`. O nome da pasta não pode ser um dos que o site já usa: `eu`, `img`, `fontes`, `entrega`, `assets`, `fotografia` e `painel`.
 
 O site não tem build nem dependência. Pra rodar no computador: `python3 -m http.server 8000`.
 
@@ -50,7 +50,7 @@ Substitua `assets/img/kaique.jpg` por outra com o mesmo nome. Se mudar o tamanho
 
 Cada trabalho é um filme: um `<article class="trabalho filme">` na seção `#trabalhos` do `index.html`. No computador, a faixa de fotos fica parada na tela e corre de lado enquanto a página desce; no celular (e pra quem pediu menos movimento no aparelho), ela se arrasta com o dedo. A linha embaixo enche conforme as fotos passam. Clicando numa foto, ela cresce até a tela cheia (o visor) e, ao fechar, volta pro lugar dela.
 
-Pra um trabalho novo, copie o `<article>` inteiro logo abaixo do título da seção (o mais novo fica em cima) e troque o nome, o tipo, o link e as fotos. Cada foto é um `<button class="quadro">` dentro da `.faixa`; nele, troque o `src`, o `srcset`, o `data-grande` (a versão grande que abre no visor), o `alt` e o `aria-label`. De 6 a 10 fotos fica bom; todas em pé, 4:5. As fotos podem estar em `img/` (`-1080.jpg` com 1080×1350 e `-720.jpg` com 720×900) ou na pasta da entrega do trabalho (`fotos/web/` e `fotos/mini/`, como as do ensaio de Vinícius & Stefany). O `width` e o `height` de cada `<img>` são os da versão grande. Mais de um trabalho funciona, mas cada um vira um filme: dois ou três seguidos ainda ficam bons.
+Pra um trabalho novo, copie o `<article>` inteiro logo abaixo do título da seção (o mais novo fica em cima) e troque o nome, o tipo, o link e as fotos. Cada foto é um `<button class="quadro">` dentro da `.faixa`; nele, troque o `src`, o `srcset`, o `data-grande` (a versão grande que abre no visor), o `alt` e o `aria-label`. De 6 a 10 fotos fica bom; todas em pé, 4:5. As fotos ficam em `img/`: `-1080.jpg` com 1080×1350 e `-720.jpg` com 720×900 (ou o par `-1280`/`-640`, como as do ensaio de Vinícius & Stefany). Mesmo as que também estão numa entrega ganham uma cópia aqui, porque a página principal só carrega arquivos do próprio site. O `width` e o `height` de cada `<img>` são os da versão grande. Mais de um trabalho funciona, mas cada um vira um filme: dois ou três seguidos ainda ficam bons.
 
 Antes de publicar, duas coisas:
 
