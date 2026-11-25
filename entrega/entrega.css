@@ -116,8 +116,8 @@ main:focus, section:focus { outline: none; }
 /* a assinatura do Kaique: o traço do lápis, pintado com a tinta */
 .assinatura {
     display: block; aspect-ratio: 1091 / 1162; background-color: currentColor;
-    -webkit-mask: url("../../assets/img/assinatura.png") center / contain no-repeat;
-    mask: url("../../assets/img/assinatura.png") center / contain no-repeat;
+    -webkit-mask: url("../assets/img/assinatura.png") center / contain no-repeat;
+    mask: url("../assets/img/assinatura.png") center / contain no-repeat;
 }
 
 /* ---------- Enquanto carrega ---------- */

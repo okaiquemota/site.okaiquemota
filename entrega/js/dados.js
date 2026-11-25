@@ -36,8 +36,8 @@ const PADRAO = {
     fotografo: {
         nome: 'Kaique Mota',
         marca: 'Kaique Mota Fotografia',
-        site: 'https://okaiquemota.com.br/fotografia/',
-        siteRotulo: 'okaiquemota.com.br/fotografia',
+        site: 'https://okaiquemota.com.br/',
+        siteRotulo: 'okaiquemota.com.br',
         whatsapp: '5516982157266',
         instagram: 'okaiquemota'
     },
