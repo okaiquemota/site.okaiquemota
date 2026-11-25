@@ -1,6 +1,6 @@
 # Kaique Mota
 
-O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos" (cada trabalho é um filme), "A entrega" (a página que o cliente recebe), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos) e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
+O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos" (cada trabalho é um filme), "A entrega" (a página que o cliente recebe), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos), "Perguntas frequentes" e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
 
 Em `/eu/` fica a página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade por cima e os links embaixo (o link pra Fotografia e os @), tudo centralizado. Na página principal, ela é o "Kaique Mota" do rodapé.
 
@@ -67,15 +67,19 @@ O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferr
 
 ## A entrega na página principal
 
-A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a imagem dos stories, a capa e um capítulo com as fotos marcadas com o coração) e, ao lado, a lista do que vem junto.
+A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a imagem dos stories, a capa e um capítulo com as fotos) e, ao lado, a lista do que vem junto.
 
 - O celular é o mockup `img/celular-iphone.svg` (iPhone 17 Pro prata, 880 × 1832), que tem a tela vazada: a captura fica por baixo e a moldura por cima (no `fotografia.css`, em `.celular`).
-- As telas são `img/entrega-stories`, `entrega-capa` e `entrega-favoritas`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima. Todas preenchem a tela inteira, sem faixas pretas: o stories foi gerado na altura da tela (o fundo e a moldura vão até embaixo) e as favoritas são um capítulo com os corações marcados e a barra "3 / 40 · Enviar seleção".
-- Pra trocar por outra entrega: capture no modo celular do navegador com a tela inteira em 390 × 844 (no emulador de "iPhone" do Chrome a área visível é menor; ajuste a altura), com a seleção ligada pra aparecer o coração. **Nunca estique a captura pra caber**: se ela tiver outra altura, ponha uma faixa em cima (a barra de status) em vez de esticar, senão as fotos ficam amassadas. Confirme com o casal que as fotos podem aparecer no site.
+- As telas são `img/entrega-stories`, `entrega-capa` e `entrega-capitulo`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima. Todas preenchem a tela inteira, sem faixas pretas: o stories foi gerado na altura da tela (o fundo e a moldura vão até embaixo) e no capítulo o header da entrega continua por trás da ilha, até o topo da tela.
+- Pra trocar por outra entrega: capture no modo celular do navegador com a tela inteira em 390 × 844 (no emulador de "iPhone" do Chrome a área visível é menor; ajuste a altura). **Nunca estique a captura pra caber**: se ela tiver outra altura, ponha uma faixa em cima (a barra de status) em vez de esticar, senão as fotos ficam amassadas. Confirme com o casal que as fotos podem aparecer no site.
 
 ## Os serviços
 
 Cada tipo de foto é uma linha `<li class="servico">` em "Serviços" (`index.html`): o nome, a frase, as horas (do menor ao maior pacote) e o "Consultar data", que já deixa o tipo escolhido no formulário (o `data-tipo` precisa ser igual a uma das opções do "Tipo de foto"). O `id` da linha é o endereço do serviço (`/#casamento`). Os pacotes de cada um, com o que incluem e os valores, não aparecem no site: vão pelo WhatsApp. As regras detalhadas (hora adicional, RAW, remarcação) ficam no contrato.
+
+## Perguntas frequentes
+
+Ficam entre "Como funciona" e "Consultar data" (`id="perguntas"` no `index.html`). Cada pergunta é um `<details class="pergunta">` com a pergunta no `<summary>` e a resposta num `<p>`: abre e fecha ao toque, sem JavaScript. Pra uma nova, copie um `<details>` inteiro. As respostas repetem o que o contrato e os pacotes dizem (sinal, prazos, deslocamento, edição): mudou alguma regra, mude aqui também.
 
 ## Idade no "Sobre"
 
