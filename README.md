@@ -1,6 +1,6 @@
 # Kaique Mota
 
-O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", uma foto de borda a borda, "Trabalhos" (cada trabalho é um filme), os pacotes em abas (sem preços: os valores vão pelo WhatsApp), "Como funciona" e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` já abrem a aba do tipo de foto.
+O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", uma foto de borda a borda, "Trabalhos" (cada trabalho é um filme), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos) e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
 
 Em `/eu/` fica a página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade por cima e os links embaixo (o link pra Fotografia e os @), tudo centralizado. Na página principal, ela é o "Kaique Mota" do rodapé.
 
@@ -10,10 +10,10 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
 
 ```
 .
-├── index.html             a página principal, a fotografia (textos e pacotes estão aqui)
+├── index.html             a página principal, a fotografia (textos e serviços estão aqui)
 ├── privacidade.html       a Política de Privacidade (LGPD)
 ├── fotografia.css
-├── fotografia.js          abas dos pacotes, o filme dos trabalhos, visor de fotos, formulário e o aparecer ao rolar
+├── fotografia.js          a assinatura que se escreve, o filme dos trabalhos, visor de fotos, formulário e o aparecer ao rolar
 ├── fontes/                Tinos (woff2, licença SIL OFL 1.1), usada também pela /eu e pela 404
 ├── img/                   fotos dos trabalhos (NOME-1080.jpg e NOME-720.jpg, 4:5), o retrato da capa, kaique-*.jpg,
 │                          e compartilhar.jpg (a prévia quando o link é mandado no WhatsApp, 1200×630)
@@ -69,13 +69,17 @@ Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo tra�
 
 O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferramentas/assinatura-tempo.py`, que gera o PNG. Mudou a assinatura, a ordem ou a velocidade? Ajuste lá e rode `python3 ferramentas/assinatura-tempo.py` (precisa de `pip install numpy scipy pillow`). Se mudar a duração total, ela também vai no `dur` do `<animate>` (no `index.html`) e no `ESCRITA_MS` (no `fotografia.js`). A pasta `ferramentas/` não vai pro site.
 
+## Os serviços
+
+Cada tipo de foto é uma linha `<li class="servico">` em "Serviços" (`index.html`): o nome, a frase, as horas (do menor ao maior pacote) e o "Consultar data", que já deixa o tipo escolhido no formulário (o `data-tipo` precisa ser igual a uma das opções do "Tipo de foto"). O `id` da linha é o endereço do serviço (`/#casamento`). Os pacotes de cada um, com o que incluem e os valores, não aparecem no site: vão pelo WhatsApp. As regras detalhadas (hora adicional, RAW, remarcação) ficam no contrato.
+
 ## Idade no "Sobre"
 
 A idade em "Sou o Kaique, tenho 22 anos" muda sozinha no aniversário: o `fotografia.js` calcula a partir do `data-nascimento="2003-12-14"` do `<span>` em volta do número. O número escrito no HTML só aparece pra quem está sem JavaScript; dá pra atualizar ele uma vez por ano, mas não é obrigatório.
 
 ## Adicionar um depoimento
 
-Os depoimentos ficam numa seção entre "Trabalhos" e "Pacotes" do `index.html`, que ainda não existe: ela entra com o primeiro depoimento. O desenho já está no `fotografia.css` (até três por fileira no computador, um embaixo do outro no celular). Cole este bloco logo antes de `<section class="secao wrap" id="pacotes"`, com um `<figure>` por depoimento:
+Os depoimentos ficam numa seção entre "Trabalhos" e "Serviços" do `index.html`, que ainda não existe: ela entra com o primeiro depoimento. O desenho já está no `fotografia.css` (até três por fileira no computador, um embaixo do outro no celular). Cole este bloco logo antes de `<section class="secao wrap" id="servicos"`, com um `<figure>` por depoimento:
 
 ```html
 <section class="secao wrap" id="depoimentos" aria-labelledby="depoimentos-titulo">

@@ -1,7 +1,7 @@
 /* Kaique Mota · Fotografia
-   Abas dos pacotes, o filme dos trabalhos, foto grande, formulário e o aparecer ao rolar.
-   Sem este arquivo a página continua inteira: os pacotes ficam um embaixo
-   do outro e o WhatsApp do rodapé continua lá. */
+   A assinatura que se escreve, o filme dos trabalhos, foto grande, formulário e o aparecer ao rolar.
+   Sem este arquivo a página continua inteira: a assinatura aparece pronta, a faixa dos trabalhos
+   se arrasta com o dedo e, no lugar do formulário, fica o link direto do WhatsApp. */
 (function () {
     'use strict';
 
@@ -178,69 +178,6 @@
         else if (telaDeFilme.addListener) telaDeFilme.addListener(mudouTela);
     }
 
-    // ---------- Pacotes em abas ----------
-    var paineis = Array.prototype.slice.call(document.querySelectorAll('.painel'));
-    var lista = document.querySelector('.abas');
-    var abas = [];
-    function escolhe(k, marcaEndereco) {
-        abas.forEach(function (b, j) {
-            var sel = j === k;
-            b.setAttribute('aria-selected', sel ? 'true' : 'false');
-            b.tabIndex = sel ? 0 : -1;
-            paineis[j].hidden = !sel;
-        });
-        var b = abas[k];
-        if (lista.scrollWidth > lista.clientWidth) {
-            lista.scrollTo({ left: b.offsetLeft - lista.offsetLeft - (lista.clientWidth - b.offsetWidth) / 2, behavior: poucoMovimento.matches ? 'auto' : 'smooth' });
-        }
-        if (marcaEndereco) history.replaceState(null, '', '#' + paineis[k].id);
-    }
-    function peloEndereco() {
-        // um endereço quebrado (#%E0, por exemplo) não pode derrubar o resto do script
-        var id;
-        try { id = decodeURIComponent(location.hash.slice(1)); } catch (erro) { return false; }
-        for (var j = 0; j < paineis.length; j++) {
-            if (paineis[j].id === id) {
-                escolhe(j, false);
-                document.getElementById('pacotes').scrollIntoView();
-                return true;
-            }
-        }
-        return false;
-    }
-    if (paineis.length && lista) {
-        paineis.forEach(function (p, k) {
-            var b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'aba';
-            b.id = 'aba-' + p.id;
-            b.textContent = p.dataset.aba;
-            b.setAttribute('role', 'tab');
-            b.setAttribute('aria-controls', p.id);
-            b.addEventListener('click', function () { escolhe(k, true); });
-            b.addEventListener('keydown', function (ev) {
-                var alvo = null;
-                if (ev.key === 'ArrowRight') alvo = (k + 1) % paineis.length;
-                else if (ev.key === 'ArrowLeft') alvo = (k - 1 + paineis.length) % paineis.length;
-                else if (ev.key === 'Home') alvo = 0;
-                else if (ev.key === 'End') alvo = paineis.length - 1;
-                if (alvo === null) return;
-                ev.preventDefault();
-                escolhe(alvo, true);
-                abas[alvo].focus();
-            });
-            lista.appendChild(b);
-            abas.push(b);
-            p.setAttribute('role', 'tabpanel');
-            p.setAttribute('aria-labelledby', b.id);
-            p.tabIndex = 0;
-        });
-        lista.setAttribute('role', 'tablist');
-        lista.hidden = false;
-        if (!peloEndereco()) escolhe(0, false);
-        window.addEventListener('hashchange', peloEndereco);
-    }
-
     // ---------- Formulário: vira uma mensagem pronta no WhatsApp ----------
     var form = document.getElementById('consulta');
     if (form) {
@@ -255,16 +192,15 @@
         var hoje = new Date();
         campo.data.min = [hoje.getFullYear(), String(hoje.getMonth() + 1).padStart(2, '0'), String(hoje.getDate()).padStart(2, '0')].join('-');
 
-        // "Quero este" num pacote já escolhe o tipo e guarda o pacote
-        document.querySelectorAll('[data-pacote]').forEach(function (a) {
+        // "Consultar data" num serviço já deixa o tipo de foto escolhido no formulário
+        document.querySelectorAll('.servico [data-tipo]').forEach(function (a) {
             a.addEventListener('click', function () {
                 campo.tipo.value = a.dataset.tipo;
-                campo.pacote.value = a.dataset.pacote;
-                aviso.textContent = 'Pacote escolhido: ' + a.dataset.pacote + '.';
+                aviso.textContent = 'Tipo de foto escolhido: ' + a.dataset.tipo + '.';
                 setTimeout(function () { campo.nome.focus({ preventScroll: true }); }, 0);
             });
         });
-        campo.tipo.addEventListener('change', function () { campo.pacote.value = ''; aviso.textContent = ''; });
+        campo.tipo.addEventListener('change', function () { aviso.textContent = ''; });
         campo.nome.addEventListener('input', function () {
             if (campo.nome.value.trim()) { campo.nome.removeAttribute('aria-invalid'); erroNome.hidden = true; }
         });
@@ -283,7 +219,7 @@
             var linhas = [
                 'Oi, Kaique! Vim pelo site.', '',
                 'Nome: ' + v('nome'),
-                'Tipo de foto: ' + v('tipo') + (v('pacote') ? ' (' + v('pacote') + ')' : ''),
+                'Tipo de foto: ' + v('tipo'),
                 'Data: ' + (data || 'ainda não sei'),
                 'Local: ' + (v('local') || 'a combinar')
             ];
