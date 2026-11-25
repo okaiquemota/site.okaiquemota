@@ -1,4 +1,5 @@
 # GitHub Pages: a pasta painel/ é o painel de clientes, que roda na Cloudflare (veja painel/README.md).
-# Aqui ela não é publicada.
+# Aqui ela não é publicada, nem a ferramentas/ (scripts que geram arquivos do site).
 exclude:
   - painel
+  - ferramentas

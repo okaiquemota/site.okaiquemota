@@ -65,37 +65,11 @@ main:focus { outline: none; }
     .botao:hover { background: var(--papel); color: var(--tinta); }
 }
 
-/* a assinatura é o vetor (assets/img/assinatura.svg) atrás de uma máscara: três traços grossos
-   que seguem o caminho da caneta, do jeito que ela é escrita. A caneta levanta só duas vezes:
-   1. o laço e o K: começa na ponta direita do corte, vem para a esquerda até a ponta do laço, sobe
-      até a ponta do braço, desce pela perna até embaixo e sobe a haste inteira;
-   2. o "l": sobe, faz a volta lá em cima e desce até o gancho embaixo;
-   3. o "am".
-   Cada traço se desenha com o stroke-dashoffset; no fim, o retângulo "fecho" acende tudo, para
-   nenhum pedacinho ficar de fora. Sem animação (ou sem CSS), ela aparece inteira. */
+/* a assinatura se escreve na ordem em que a caneta passa: cada ponto do assets/img/assinatura-tempo.png
+   guarda no cinza o momento em que a caneta passa por ele, e o filtro SVG do index.html só mostra os
+   que já chegaram (o <animate> vai soltando os momentos). Assim um traço não mostra pedaço do outro
+   onde eles se cruzam. Como gerar de novo: ferramentas/assinatura-tempo.py */
 .assinatura { display: block; aspect-ratio: 1091 / 1162; height: auto; overflow: visible; }
-.assinatura .tracos { fill: none; stroke: #fff; stroke-width: 32; stroke-linecap: round; stroke-linejoin: round; }
-.assinatura .tracos path { stroke-dasharray: 1.01 2; }
-/* duração e começo de cada traço (a caneta levanta um instante entre um e outro) */
-.assinatura .tracos path:nth-child(1) { --anim: traco-k; --dur: 1.35s; --ini: 0s; }
-.assinatura .tracos path:nth-child(2) { --anim: traco-l; --dur: 0.5s; --ini: 1.45s; }
-.assinatura .tracos path:nth-child(3) { --dur: 0.42s; --ini: 1.98s; }
-.assinatura .fecho { --dur: 0.3s; --ini: 2.35s; }
-/* nas curvas fechadas a caneta freia: o traço 1 tem três (na ponta do laço, na ponta do braço e
-   embaixo da haste) e o 2 tem uma (no alto do "l"). Os números são o quanto do caminho ainda falta em
-   cada curva; se os caminhos mudarem no index.html, eles mudam junto. A haste sobe acelerando. */
-@keyframes traco-k {
-    0% { stroke-dashoffset: 1.02; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    28% { stroke-dashoffset: 0.6886; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    49% { stroke-dashoffset: 0.5048; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    71% { stroke-dashoffset: 0.3114; animation-timing-function: cubic-bezier(0.4, 0, 0.75, 0.75); }
-    100% { stroke-dashoffset: 0; }
-}
-@keyframes traco-l {
-    0% { stroke-dashoffset: 1.02; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    45% { stroke-dashoffset: 0.5848; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-    100% { stroke-dashoffset: 0; }
-}
 
 /* ---------- Topo ---------- */
 .topo { position: sticky; top: 0; z-index: 50; height: var(--topo); background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color 0.3s; }
@@ -123,8 +97,6 @@ main:focus { outline: none; }
 /* a foto se revela de baixo pra cima e assenta devagar; depois a assinatura se escreve e o texto sobe, uma linha de cada vez */
 .capa-quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; animation: revela-foto 1.5s var(--suave) both; }
 .capa-quadro .assinatura { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1.55); transform: translate(-50%, -50%) rotate(-4deg); pointer-events: none; }
-.capa-quadro .assinatura .tracos path { animation: var(--anim, traco) var(--dur) cubic-bezier(0.45, 0, 0.4, 1) calc(0.7s + var(--ini)) both; }
-.capa-quadro .assinatura .fecho { animation: aparece var(--dur) ease calc(0.7s + var(--ini)) both; }
 .capa-texto { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .capa-texto > * { animation: sobe 1s var(--suave) both; }
 .capa-texto > :nth-child(1) { animation-delay: 0.45s; }
@@ -142,10 +114,6 @@ main:focus { outline: none; }
 .sobre-abre { font-size: clamp(25px, 2.8vw, 32px); line-height: 1.3; text-wrap: balance; }
 .sobre-texto .assinatura { width: 150px; margin-top: 12px; transform: rotate(-4deg); }
 .js .sobre-texto .assinatura[data-revela] { opacity: 1; transform: rotate(-4deg); }
-.js .sobre-texto .assinatura[data-revela]:not(.visivel) .tracos path { stroke-dashoffset: 1.02; }
-.js .sobre-texto .assinatura[data-revela]:not(.visivel) .fecho { opacity: 0; }
-.js .sobre-texto .assinatura.visivel .tracos path { animation: var(--anim, traco) var(--dur) cubic-bezier(0.45, 0, 0.4, 1) calc(0.2s + var(--ini)) backwards; }
-.js .sobre-texto .assinatura.visivel .fecho { animation: aparece var(--dur) ease calc(0.2s + var(--ini)) backwards; }
 
 /* ---------- Trabalhos: cada trabalho é um filme ----------
    Sem JavaScript, no celular e para quem pediu menos movimento: uma faixa que se arrasta de lado.
@@ -314,7 +282,6 @@ main:focus { outline: none; }
 
 @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sobe { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes traco { from { stroke-dashoffset: 1.02; } to { stroke-dashoffset: 0; } }
 
 /* ---------- Celular ---------- */
 @media (max-width: 640px) {
@@ -388,6 +355,4 @@ main:focus { outline: none; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .js [data-revela], .js [data-revela] img, .js .cabeca[data-revela] .titulo, .capa-quadro img { opacity: 1 !important; transform: none !important; clip-path: none !important; }
     .js [data-revela] img, .quadro img { scale: 1.02 !important; translate: none !important; }
-    .assinatura .tracos path { stroke-dashoffset: 0 !important; }
-    .assinatura .fecho { opacity: 1 !important; }
 }
