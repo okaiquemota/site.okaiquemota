@@ -52,7 +52,7 @@
     // Cada assinatura tem um filtro que só mostra a tinta cujo momento já chegou (veja o README):
     // quanto maior o "intercept" do <feFuncA>, mais tinta aparece (de 0, nada, até 300, tudo).
     // Quem anda com ele é este trecho, a cada quadro: a da capa começa 0,7s depois da foto, junto
-    // com ela; a do "Sobre" quando aparece na tela. O <animate> do HTML fica só pra quem está sem
+    // com ela; uma assinatura com data-revela (mais embaixo na página) começa quando aparece na tela. O <animate> do HTML fica só pra quem está sem
     // JavaScript (ele espera a página carregar inteira). Com "menos movimento", já ficam prontas.
     var TINTA_TODA = 300, ESCRITA_MS = 2448;
     var vaiRevelar = 'IntersectionObserver' in window && !poucoMovimento.matches;
@@ -70,7 +70,7 @@
         var assinatura = fn.closest('.assinatura');
         if (poucoMovimento.matches) { fn.setAttribute('intercept', TINTA_TODA); return; }
         if (assinatura.hasAttribute('data-revela')) {
-            // a do "Sobre": escondida até aparecer na tela (sem o IntersectionObserver, fica pronta)
+            // uma assinatura mais embaixo: escondida até aparecer na tela (sem o IntersectionObserver, fica pronta)
             if (vaiRevelar) { fn.setAttribute('intercept', '0'); assinatura.escrever = function () { escreve(fn, performance.now() + 200); }; }
             else fn.setAttribute('intercept', TINTA_TODA);
             return;
