@@ -1,6 +1,6 @@
 # Kaique Mota
 
-O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos" (cada trabalho é um filme), "A entrega" (a página que o cliente recebe), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos) e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
+O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos" (cada trabalho é um filme), "A entrega" (a página que o cliente recebe), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos), "Perguntas frequentes" e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
 
 Em `/eu/` fica a página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade por cima e os links embaixo (o link pra Fotografia e os @), tudo centralizado. Na página principal, ela é o "Kaique Mota" do rodapé.
 
@@ -76,6 +76,10 @@ A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: tr
 ## Os serviços
 
 Cada tipo de foto é uma linha `<li class="servico">` em "Serviços" (`index.html`): o nome, a frase, as horas (do menor ao maior pacote) e o "Consultar data", que já deixa o tipo escolhido no formulário (o `data-tipo` precisa ser igual a uma das opções do "Tipo de foto"). O `id` da linha é o endereço do serviço (`/#casamento`). Os pacotes de cada um, com o que incluem e os valores, não aparecem no site: vão pelo WhatsApp. As regras detalhadas (hora adicional, RAW, remarcação) ficam no contrato.
+
+## Perguntas frequentes
+
+Ficam entre "Como funciona" e "Consultar data" (`id="perguntas"` no `index.html`). Cada pergunta é um `<details class="pergunta">` com a pergunta no `<summary>` e a resposta num `<p>`: abre e fecha ao toque, sem JavaScript. Pra uma nova, copie um `<details>` inteiro. As respostas repetem o que o contrato e os pacotes dizem (sinal, prazos, deslocamento, edição): mudou alguma regra, mude aqui também.
 
 ## Idade no "Sobre"
 
