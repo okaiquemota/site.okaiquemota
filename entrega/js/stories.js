@@ -90,6 +90,7 @@ export async function gerarStories(foto, evento) {
 function carregar(src) {
     return new Promise((ok, erro) => {
         const i = new Image();
+        i.crossOrigin = 'anonymous';   // a foto vem do fotos.okaiquemota.com.br: sem isso, o canvas não deixa salvar
         i.decoding = 'async';
         i.onload = () => ok(i);
         i.onerror = () => erro(new Error('Não deu para carregar a foto'));

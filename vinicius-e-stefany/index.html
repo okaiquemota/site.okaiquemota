@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <!-- Só o que vem do próprio site. Se as fotos forem para outro endereço (R2, Supabase), libere em img-src e connect-src -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'">
+    <!-- Só o que vem do próprio site e as fotos e a música, que ficam no R2 da Cloudflare (fotos.okaiquemota.com.br) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://fotos.okaiquemota.com.br; font-src 'self'; connect-src 'self' https://fotos.okaiquemota.com.br; media-src 'self' https://fotos.okaiquemota.com.br; base-uri 'none'; form-action 'none'">
     <link rel="canonical" href="https://okaiquemota.com.br/vinicius-e-stefany/">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Vinícius &amp; Stefany · Kaique Mota Fotografia</title>
@@ -24,7 +24,7 @@
     <link rel="preload" href="evento.json" as="fetch" type="application/json" crossorigin="anonymous">
     <link rel="preload" href="../entrega/fontes/cormorant-garamond-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="../entrega/fontes/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="../img/vs-08-1080.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="../img/vs-08-1080.jpg" as="image" fetchpriority="high" crossorigin="anonymous">
     <link rel="stylesheet" href="../entrega/entrega.css">
     <script type="module" src="../entrega/js/principal.js"></script>
 </head>

@@ -6,7 +6,7 @@ O primeiro é o de Vinícius & Stefany: https://okaiquemota.com.br/vinicius-e-st
 
 ## Como é montada
 
-O motor (esta pasta) é igual para todos os trabalhos. O que muda de um para outro é **só a pasta do trabalho**:
+O motor (esta pasta) é igual para todos os trabalhos. O que muda de um para outro é **só a pasta do trabalho**, aqui no site, e **a pasta das fotos**, no R2 da Cloudflare:
 
 ```
 . (a raiz do site)
@@ -25,33 +25,39 @@ O motor (esta pasta) é igual para todos os trabalhos. O que muda de um para out
 │       └── dom.js           peças pequenas (montar elementos, ícones, avisos)
 └── vinicius-e-stefany/      um trabalho
     ├── index.html           a página do casal (só os metadados da prévia no WhatsApp)
-    ├── evento.json          TUDO o que aparece: textos, capítulos, fotos, créditos
-    ├── trilha.mp3           a música ("There is Romance", Kevin MacLeod, CC BY 4.0)
-    └── fotos/
-        ├── web/             a versão da tela (lado maior 2048px; os exemplos de agora têm 1600)
-        └── mini/            a versão leve da página (lado maior 800px)
+    └── evento.json          TUDO o que aparece: textos, capítulos, fotos, créditos
+
+fotos.okaiquemota.com.br     (o bucket "fotos-okaiquemota" no R2 da Cloudflare)
+└── vinicius-e-stefany/
+    ├── web/                 a versão da tela (lado maior 2048px; os exemplos de agora têm 1600)
+    ├── mini/                a versão leve da página (lado maior 800px)
+    └── trilha.mp3           a música ("There is Romance", Kevin MacLeod, CC BY 4.0)
 ```
+
+**Por que as fotos ficam no R2 e não aqui:** o GitHub Pages aguenta 1 GB no site inteiro, e o que entra no Git fica no histórico pra sempre (apagar a pasta depois não tira as fotos de lá). No R2 a Cloudflare dá 10 GB de graça, sem cobrar o tráfego, e dá pra apagar uma entrega de verdade quando ela vence. O bucket é só das fotos das entregas: os arquivos do painel (contratos, documentos) ficam em outro, que não é público. O bucket só deixa o próprio site (okaiquemota.com.br, e http://localhost:8000 pra testar no computador) usar as fotos no stories e no "Baixar"; se mudar o endereço do site, mude também o CORS do bucket (R2 → fotos-okaiquemota → Settings → CORS Policy).
 
 Sem build e sem dependência, como o resto do site: é só publicar. Para ver no computador: `python3 -m http.server 8000` na raiz e abrir http://localhost:8000/vinicius-e-stefany/.
 
 ## Um trabalho novo, passo a passo
 
-1. **Copie a pasta** `vinicius-e-stefany` com o nome do novo trabalho (ex.: `helena-15-anos`). Apague o que estiver em `fotos/`.
-2. **Exporte as fotos do Lightroom** duas vezes, com o mesmo nome de arquivo:
-   - `fotos/web/`: lado maior 2048px, qualidade 80–85, sRGB;
-   - `fotos/mini/`: lado maior 800px, qualidade 75.
+1. **Copie a pasta** `vinicius-e-stefany` com o nome do novo trabalho (ex.: `helena-15-anos`). Ela só tem a `index.html` e o `evento.json`.
+2. **Exporte a seleção do Lightroom** duas vezes, com o mesmo nome de arquivo (na página entra a seleção; o álbum completo vai pelo link com senha, em `downloads.completo`):
+   - `web/`: lado maior 2048px, qualidade 80–85, sRGB;
+   - `mini/`: lado maior 800px, qualidade 75.
    - Metadados: "Somente direitos autorais" (tira o GPS). O nome do arquivo é o que chega na seleção do casal, então mantenha o mesmo nome que está no seu catálogo.
-3. **Edite o `evento.json`**: confira `midia.ladoMaiorWeb` (2048 se exportou assim), textos, data, capítulos e a lista de fotos (veja os campos abaixo). Para cada foto basta `id`, `arquivo`, `largura`, `altura` e `alt`.
-4. **Edite a `index.html`**: título, `og:description` e `og:image` (a foto da prévia no WhatsApp, com endereço completo `https://…`) e o `preload` da foto da capa. É o único lugar fora do JSON, porque o WhatsApp não roda JavaScript.
-5. **Teste** no computador e no celular. Abra uma foto, marque um coração, gere um stories.
-6. **Publique** e mande o link.
+3. **Suba as fotos pro R2**: no painel da Cloudflare, R2 → `fotos-okaiquemota` → crie a pasta com o mesmo nome do trabalho (`helena-15-anos`), dentro dela `web` e `mini`, e arraste as fotos de cada uma (o "Upload" aceita várias de uma vez). A música, se tiver, vai na pasta do trabalho. Confira abrindo uma foto no navegador: `https://fotos.okaiquemota.com.br/helena-15-anos/web/NOME.jpg`.
+4. **Edite o `evento.json`**: em `midia`, troque `vinicius-e-stefany` pelo nome do trabalho nos três endereços (`web`, `mini` e `original`); confira `midia.ladoMaiorWeb` (2048 se exportou assim), textos, data, capítulos e a lista de fotos (veja os campos abaixo). Para cada foto basta `id`, `arquivo`, `largura`, `altura` e `alt`.
+5. **Edite a `index.html`**: título, `og:description` e `og:image` (a foto da prévia no WhatsApp, com endereço completo `https://…`) e o `preload` da foto da capa (com o `crossorigin="anonymous"`, senão ela carrega duas vezes). É o único lugar fora do JSON, porque o WhatsApp não roda JavaScript. A linha da Content-Security-Policy já libera o `fotos.okaiquemota.com.br`: deixe como está.
+6. **Teste** no computador e no celular (`python3 -m http.server 8000` na raiz; na porta 8000, que é a que o R2 libera). Abra uma foto, baixe, marque um coração, gere um stories.
+7. **Publique** e mande o link.
+8. **Quando a entrega vencer** (`downloads.validade`), apague a pasta do trabalho aqui e a pasta das fotos no R2.
 
 **Entrega só para os noivos ou página de portfólio?** O motor é o mesmo; muda o `evento.json` e a `index.html`:
 
-- **Só para os noivos:** `"selecao": { "ativa": true, "limite": 40 }`, `downloads.completo.url` com a pasta do Drive e `downloads.validade`. Na `index.html`, `<meta name="robots" content="noindex, nofollow">`, e a página fica fora do `sitemap.xml`.
+- **Só para os noivos:** `"selecao": { "ativa": true, "limite": 40 }`, `downloads.completo.url` com a pasta do Drive e `downloads.validade`. Na `index.html`, `<meta name="robots" content="noindex, nofollow">`, e a página fica fora do `sitemap.xml`. Atenção: este repositório é público, então a `index.html` e o `evento.json` (nomes, carta, votos) ficam visíveis no GitHub, mesmo com o `noindex`. As fotos não, porque estão no R2.
 - **Portfólio (aberta no site):** `"selecao": { "ativa": false }` e `"downloads": {}`. Assim somem os corações, a barra, o "Leve com vocês" e o aviso de validade. Na `index.html`, sem `noindex` e com `canonical`; a página entra no `sitemap.xml` e ganha o link "Ver a história" em Trabalhos (`index.html` da raiz). Antes, confirme com o casal o que pode ficar público (carta, votos, making of). Vinícius & Stefany está assim.
 
-Para trocar a música: coloque o `.mp3` na pasta (comprimido em 128 kbps) e mude `trilha.src`. A de Vinícius & Stefany é "There is Romance", de Kevin MacLeod (incompetech.com, CC BY 4.0, com crédito no rodapé). Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
+Para trocar a música: suba o `.mp3` (comprimido em 128 kbps) na pasta do trabalho no R2 e mude `trilha.src` para o endereço dele (`https://fotos.okaiquemota.com.br/<trabalho>/trilha.mp3`). A de Vinícius & Stefany é "There is Romance", de Kevin MacLeod (incompetech.com, CC BY 4.0, com crédito no rodapé). Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
 
 ## O evento.json
 

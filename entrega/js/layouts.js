@@ -5,7 +5,9 @@ import { h, icone } from './dom.js';
 
 /* Uma foto: o botão que abre o visor + o coração (só para o casal) */
 export function figuraFoto(foto, ctx, opcoes = {}) {
+    // crossorigin primeiro: as fotos vêm do fotos.okaiquemota.com.br, e o stories precisa desenhar no canvas
     const img = h('img', {
+        crossorigin: 'anonymous',
         src: foto.mini,
         srcset: foto.mini !== foto.src ? foto.mini + ' ' + foto.larguraMini + 'w, ' + foto.src + ' ' + foto.larguraWeb + 'w' : null,
         sizes: opcoes.sizes || '(max-width: 720px) 100vw, 60vw',
