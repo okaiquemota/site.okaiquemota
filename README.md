@@ -69,6 +69,14 @@ Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo tra�
 
 O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferramentas/assinatura-tempo.py`, que gera o PNG. Mudou a assinatura, a ordem ou a velocidade? Ajuste lá e rode `python3 ferramentas/assinatura-tempo.py` (precisa de `pip install numpy scipy pillow`). Se mudar a duração total, ela também vai no `dur` do `<animate>` (no `index.html`) e no `ESCRITA_MS` (no `fotografia.js`). A pasta `ferramentas/` não vai pro site.
 
+## A entrega na página principal
+
+A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a foto aberta com o coração, a capa e a imagem dos stories) e, ao lado, a lista do que vem junto, com o link pra entrega.
+
+- O celular é o mockup `img/celular-iphone.svg` (iPhone 17 Pro prata, 880 × 1832), que tem a tela vazada: a captura fica por baixo e a moldura por cima (no `fotografia.css`, em `.celular`).
+- As telas são `img/entrega-visor`, `entrega-capa` e `entrega-stories`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima.
+- Pra trocar por outra entrega: capture no modo celular do navegador com a tela inteira em 390 × 844 (no emulador de "iPhone" do Chrome a área visível é menor; ajuste a altura), com a seleção ligada pra aparecer o coração. **Nunca estique a captura pra caber**: se ela tiver outra altura, ponha uma faixa em cima (a barra de status) em vez de esticar, senão as fotos ficam amassadas. Confirme com o casal que as fotos podem aparecer no site.
+
 ## Os serviços
 
 Cada tipo de foto é uma linha `<li class="servico">` em "Serviços" (`index.html`): o nome, a frase, as horas (do menor ao maior pacote) e o "Consultar data", que já deixa o tipo escolhido no formulário (o `data-tipo` precisa ser igual a uma das opções do "Tipo de foto"). O `id` da linha é o endereço do serviço (`/#casamento`). Os pacotes de cada um, com o que incluem e os valores, não aparecem no site: vão pelo WhatsApp. As regras detalhadas (hora adicional, RAW, remarcação) ficam no contrato.
