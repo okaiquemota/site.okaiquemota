@@ -5,9 +5,9 @@
    A assinatura vem do traço do lápis (assets/img/assinatura.png); o vetor
    fica em assets/img/assinatura.svg para outros usos.
 ------------------------------------------------------------------------- */
-/* Tinos servida pelo próprio site (a mesma da /fotografia): sem Google Fonts,
+/* Tinos servida pelo próprio site (a mesma da fotografia, na página principal): sem Google Fonts,
    o IP de quem visita não vai pra ninguém. Só baixa onde não tem Times. */
-@font-face { font-family: "Tinos"; src: url("../../fotografia/fontes/tinos-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tinos"; src: url("../../fontes/tinos-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 
 :root {
     --papel: #ffffff;
@@ -58,7 +58,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .palco {
     /* a foto se ajusta à largura e à altura da tela (sobrando lugar pros links);
        a assinatura passa das bordas dela */
-    /* os 268px são o nome, as duas linhas de links (/fotografia e os @) e o rodapé */
+    /* os 268px são o nome, as duas linhas de links (Fotografia e os @) e o rodapé */
     --w: min(max(230px, 34vw), 480px, calc((var(--alto) - 268px) * 0.63));
     /* até 90vw: girada, a assinatura ainda cabe na largura da tela sem vazar pros lados */
     --assin: min(var(--w) * 1.55, 90vw);
@@ -102,7 +102,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .links a { display: inline-flex; align-items: center; min-height: 40px; }
 /* Instagram, GitHub e Behance vão como logo */
 .links .redes { gap: 0 6px; }
-/* o /fotografia vai numa linha só dele, em cima dos @ */
+/* o link da Fotografia vai numa linha só dele, em cima dos @ */
 .links .site { flex-basis: 100%; }
 .redes a { justify-content: center; min-width: 28px; }
 .logo { display: block; width: 17px; height: 17px; fill: currentColor; }

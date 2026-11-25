@@ -24,7 +24,7 @@
 @media (max-width: 640px) { :root { --topo: 56px; } }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { background: var(--papel); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: var(--topo); }
+html { background: var(--papel); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: var(--topo); scrollbar-gutter: stable; }
 html:has(dialog[open]) { overflow: hidden; }
 body { margin: 0; background: var(--papel); color: var(--tinta); font-family: var(--f); font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 img { display: block; max-width: 100%; height: auto; }
@@ -65,13 +65,36 @@ main:focus { outline: none; }
     .botao:hover { background: var(--papel); color: var(--tinta); }
 }
 
-/* a assinatura é um recorte do PNG pintado com a tinta */
-.assinatura {
-    display: block;
-    aspect-ratio: 1091 / 1162;
-    background-color: currentColor;
-    -webkit-mask: url("../assets/img/assinatura.png") center / contain no-repeat;
-    mask: url("../assets/img/assinatura.png") center / contain no-repeat;
+/* a assinatura é o vetor (assets/img/assinatura.svg) atrás de uma máscara: três traços grossos
+   que seguem o caminho da caneta, do jeito que ela é escrita. A caneta levanta só duas vezes:
+   1. o laço e o K: começa na ponta direita do corte, vem para a esquerda até a ponta do laço, sobe
+      até a ponta do braço, desce pela perna até embaixo e sobe a haste inteira;
+   2. o "l": sobe, faz a volta lá em cima e desce até o gancho embaixo;
+   3. o "am".
+   Cada traço se desenha com o stroke-dashoffset; no fim, o retângulo "fecho" acende tudo, para
+   nenhum pedacinho ficar de fora. Sem animação (ou sem CSS), ela aparece inteira. */
+.assinatura { display: block; aspect-ratio: 1091 / 1162; height: auto; overflow: visible; }
+.assinatura .tracos { fill: none; stroke: #fff; stroke-width: 32; stroke-linecap: round; stroke-linejoin: round; }
+.assinatura .tracos path { stroke-dasharray: 1.01 2; }
+/* duração e começo de cada traço (a caneta levanta um instante entre um e outro) */
+.assinatura .tracos path:nth-child(1) { --anim: traco-k; --dur: 1.35s; --ini: 0s; }
+.assinatura .tracos path:nth-child(2) { --anim: traco-l; --dur: 0.5s; --ini: 1.45s; }
+.assinatura .tracos path:nth-child(3) { --dur: 0.42s; --ini: 1.98s; }
+.assinatura .fecho { --dur: 0.3s; --ini: 2.35s; }
+/* nas curvas fechadas a caneta freia: o traço 1 tem três (na ponta do laço, na ponta do braço e
+   embaixo da haste) e o 2 tem uma (no alto do "l"). Os números são o quanto do caminho ainda falta em
+   cada curva; se os caminhos mudarem no index.html, eles mudam junto. A haste sobe acelerando. */
+@keyframes traco-k {
+    0% { stroke-dashoffset: 1.02; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    28% { stroke-dashoffset: 0.6886; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    49% { stroke-dashoffset: 0.5048; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    71% { stroke-dashoffset: 0.3114; animation-timing-function: cubic-bezier(0.4, 0, 0.75, 0.75); }
+    100% { stroke-dashoffset: 0; }
+}
+@keyframes traco-l {
+    0% { stroke-dashoffset: 1.02; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    45% { stroke-dashoffset: 0.5848; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    100% { stroke-dashoffset: 0; }
 }
 
 /* ---------- Topo ---------- */
@@ -99,7 +122,9 @@ main:focus { outline: none; }
 .capa-quadro { position: relative; width: var(--w); margin: calc(var(--w) * 0.125 + 4px) 0 calc(var(--w) * 0.2 + 22px); }
 /* a foto se revela de baixo pra cima e assenta devagar; depois a assinatura se escreve e o texto sobe, uma linha de cada vez */
 .capa-quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; animation: revela-foto 1.5s var(--suave) both; }
-.capa-quadro .assinatura { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1.55); transform: translate(-50%, -50%) rotate(-4deg); pointer-events: none; animation: escreve 1.6s ease-in-out 0.7s both; }
+.capa-quadro .assinatura { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1.55); transform: translate(-50%, -50%) rotate(-4deg); pointer-events: none; }
+.capa-quadro .assinatura .tracos path { animation: var(--anim, traco) var(--dur) cubic-bezier(0.45, 0, 0.4, 1) calc(0.7s + var(--ini)) both; }
+.capa-quadro .assinatura .fecho { animation: aparece var(--dur) ease calc(0.7s + var(--ini)) both; }
 .capa-texto { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .capa-texto > * { animation: sobe 1s var(--suave) both; }
 .capa-texto > :nth-child(1) { animation-delay: 0.45s; }
@@ -116,25 +141,72 @@ main:focus { outline: none; }
 .sobre-texto { display: flex; flex-direction: column; align-items: center; gap: 22px; max-width: 660px; margin-inline: auto; font-size: clamp(18px, 1.7vw, 21px); line-height: 1.65; text-align: center; text-wrap: pretty; }
 .sobre-abre { font-size: clamp(25px, 2.8vw, 32px); line-height: 1.3; text-wrap: balance; }
 .sobre-texto .assinatura { width: 150px; margin-top: 12px; transform: rotate(-4deg); }
-.js .sobre-texto .assinatura[data-revela] { opacity: 1; transform: rotate(-4deg); clip-path: inset(0 100% 0 0); transition: clip-path 1.6s ease-in-out 0.2s; }
-.js .sobre-texto .assinatura[data-revela].visivel { clip-path: inset(0 0 0 0); }
+.js .sobre-texto .assinatura[data-revela] { opacity: 1; transform: rotate(-4deg); }
+.js .sobre-texto .assinatura[data-revela]:not(.visivel) .tracos path { stroke-dashoffset: 1.02; }
+.js .sobre-texto .assinatura[data-revela]:not(.visivel) .fecho { opacity: 0; }
+.js .sobre-texto .assinatura.visivel .tracos path { animation: var(--anim, traco) var(--dur) cubic-bezier(0.45, 0, 0.4, 1) calc(0.2s + var(--ini)) backwards; }
+.js .sobre-texto .assinatura.visivel .fecho { animation: aparece var(--dur) ease calc(0.2s + var(--ini)) backwards; }
 
-/* ---------- Trabalhos ---------- */
-.trabalho + .trabalho { margin-top: clamp(56px, 8vw, 96px); }
-.faixa { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+/* ---------- Trabalhos: cada trabalho é um filme ----------
+   Sem JavaScript, no celular e para quem pediu menos movimento: uma faixa que se arrasta de lado.
+   No computador, o fotografia.js liga o "preso": o palco fica parado na tela e as fotos correm
+   de lado enquanto a página desce (o --percurso é o quanto a faixa passa da largura da tela). */
+.filme + .filme { margin-top: clamp(56px, 8vw, 96px); }
+.faixa { display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--margem); padding: 0 var(--margem) 14px; scrollbar-width: thin; scrollbar-color: var(--linha) transparent; }
 /* as fotos da faixa aparecem uma depois da outra */
 .faixa > :nth-child(2) { --atraso: 80ms; }
 .faixa > :nth-child(3) { --atraso: 160ms; }
 .faixa > :nth-child(4) { --atraso: 240ms; }
-.quadro { display: block; width: 100%; padding: 0; border: 0; background: none; overflow: hidden; cursor: zoom-in; }
-.quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 1s var(--suave), opacity 0.4s; }
-@media (hover: hover) and (pointer: fine) { .quadro:hover img { transform: scale(1.03); } }
-.legenda { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 20px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--linha); }
+.quadro { display: block; flex: none; width: clamp(240px, 28vw, 400px); padding: 0; border: 0; background: none; overflow: hidden; cursor: zoom-in; scroll-snap-align: start; }
+.quadro img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; scale: 1.08; transition: scale 1s var(--suave), opacity 0.4s; }
+@media (hover: hover) and (pointer: fine) { .quadro:hover img { scale: 1.12; } }
+/* a linha da legenda enche conforme as fotos passam (começa no tanto que já se vê) */
+.legenda { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 20px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--linha); }
+.filme-progresso { position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--tinta); transform: scaleX(var(--visto, 0)); transform-origin: left; }
+
+/* preso: o palco ocupa a tela (embaixo do topo) e a faixa anda dentro dele */
+.filme.preso { --h: min(calc(var(--alto) - var(--topo) - 190px), 780px); height: calc(var(--alto) - var(--topo) + var(--percurso, 0px)); view-timeline: --filme block; view-timeline-inset: var(--topo) 0px; }
+.preso .filme-palco { position: sticky; top: var(--topo); display: flex; flex-direction: column; justify-content: center; height: calc(var(--alto) - var(--topo)); overflow: clip; container-type: inline-size; }
+.preso .faixa { width: max-content; gap: 14px; overflow: visible; scroll-snap-type: none; padding-bottom: 0; will-change: transform; }
+.preso .quadro { width: auto; height: var(--h); aspect-ratio: 4 / 5; }
+.preso .legenda { margin-top: 22px; }
+@supports (animation-timeline: view()) {
+    /* a faixa anda até a última foto encostar na borda direita; a foto desliza um pouco dentro da moldura */
+    .preso .faixa { animation: corre linear both; animation-timeline: --filme; animation-range: contain 0% contain 100%; }
+    .preso .filme-progresso { animation: enche linear both; animation-timeline: --filme; animation-range: contain 0% contain 100%; }
+    .preso .quadro img { animation: deriva linear both; animation-timeline: --filme; animation-range: contain 0% contain 100%; }
+    /* na faixa de arrastar, a foto desliza dentro da moldura enquanto passa */
+    .filme:not(.preso) .quadro img { animation: deriva linear both; animation-timeline: view(inline); }
+}
+@keyframes corre { to { transform: translateX(calc(-100% + 100cqw)); } }
+@keyframes enche { from { transform: scaleX(var(--visto, 0)); } to { transform: scaleX(1); } }
+@keyframes deriva { from { translate: -3.5% 0; } to { translate: 3.5% 0; } }
+
 .legenda h3 { font-size: 22px; line-height: 1.2; }
 /* "Ver a história": o nome à esquerda, o tipo e o link à direita */
 .legenda h3 { margin-right: auto; }
 .legenda-ver { font-size: 15px; }
 @media (hover: hover) and (pointer: fine) { .trabalho:hover .legenda-ver { background-size: 100% 1px, 100% 1px; } }
+
+/* ---------- A pausa: uma foto de borda a borda entre o Sobre e os Trabalhos ---------- */
+.pausa { margin-top: clamp(104px, 13vw, 176px); }
+.pausa-quadro { height: min(calc(var(--alto) * 0.88), 64vw); overflow: hidden; background: #f1f0ee; }
+.pausa-quadro img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 36%; }
+.pausa-legenda { display: flex; justify-content: flex-end; margin-top: 14px; }
+.js .pausa-quadro[data-revela] { opacity: 1; transform: none; }
+@supports (animation-timeline: view()) {
+    /* abre como o diafragma da câmera até a borda e a foto vem chegando perto */
+    .pausa-quadro { animation: abre-pausa linear both; animation-timeline: view(); animation-range: entry 0% cover 50%; }
+    .pausa-quadro img { animation: aproxima linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+}
+@supports not (animation-timeline: view()) {
+    .js .pausa-quadro[data-revela] { clip-path: inset(10% 16%); transition: clip-path 1.6s var(--suave); }
+    .js .pausa-quadro[data-revela].visivel { clip-path: inset(0 0); }
+    .js .pausa-quadro[data-revela] img { scale: 1.14; transition: scale 2.4s var(--suave); }
+    .js .pausa-quadro[data-revela].visivel img { scale: 1; }
+}
+@keyframes abre-pausa { from { clip-path: inset(10% 16%); } to { clip-path: inset(0 0); } }
+@keyframes aproxima { from { scale: 1.2; } to { scale: 1; } }
 
 /* ---------- Pacotes ---------- */
 .abas { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 26px; margin: -8px auto 36px; }
@@ -219,7 +291,13 @@ main:focus { outline: none; }
 .visor { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(255, 255, 255, 0.98); color: var(--tinta); overflow: hidden; }
 .visor[open] { display: grid; place-items: center; animation: aparece 0.3s ease both; }
 .visor::backdrop { background: rgba(255, 255, 255, 0.6); }
-.visor-foto { width: auto; height: auto; max-width: min(88vw, 1080px); max-height: calc(var(--alto) - 140px); object-fit: contain; user-select: none; -webkit-user-drag: none; transition: opacity 0.25s ease; }
+/* o tamanho vem da proporção da foto (--proporcao, posta pelo fotografia.js), não do arquivo: assim a versão leve e a grande ocupam o mesmo lugar */
+.visor-foto { width: min(88vw, 1080px, (var(--alto) - 140px) * var(--proporcao, 0.8)); height: auto; aspect-ratio: var(--proporcao, 0.8); object-fit: contain; user-select: none; -webkit-user-drag: none; transition: opacity 0.25s ease; }
+.visor.morfando[open] { animation: none; }
+/* a foto sai da faixa e cresce até a tela cheia (e volta para o lugar ao fechar) */
+::view-transition-group(foto-aberta) { animation-duration: 0.6s; animation-timing-function: var(--suave); }
+::view-transition-old(foto-aberta), ::view-transition-new(foto-aberta) { animation-duration: 0.35s; height: 100%; object-fit: cover; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.45s; }
 .visor-foto.trocando { opacity: 0; }
 .visor-btn { position: absolute; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; background: none; color: var(--tinta); }
 .visor-btn .ic { width: 24px; height: 24px; }
@@ -236,7 +314,7 @@ main:focus { outline: none; }
 
 @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sobe { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes escreve { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes traco { from { stroke-dashoffset: 1.02; } to { stroke-dashoffset: 0; } }
 
 /* ---------- Celular ---------- */
 @media (max-width: 640px) {
@@ -245,13 +323,16 @@ main:focus { outline: none; }
     .menu-extra { display: none !important; }
     .capa h1 { font-size: 42px; }
     .capa-frase { font-size: 18px; }
-    .faixa { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .faixa { gap: 8px; }
+    .quadro { width: 76vw; }
+    /* em pé, a pausa mostra a foto inteira (4:5) em vez de uma faixa fina */
+    .pausa-quadro { height: min(calc(var(--alto) * 0.8), 125vw); }
     .abas { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--margem)); padding-inline: var(--margem); gap: 0 22px; }
     .abas::-webkit-scrollbar { display: none; }
     .pacote { padding: 18px 16px; }
     .itens { columns: 1; }
     .condicoes, .formulario { grid-template-columns: minmax(0, 1fr); }
-    .visor-foto { max-width: 100vw; max-height: calc(var(--alto) - 160px); }
+    .visor-foto { width: min(100vw, (var(--alto) - 160px) * var(--proporcao, 0.8)); }
     .visor-ant, .visor-prox { top: auto; bottom: max(12px, env(safe-area-inset-bottom, 0px)); transform: none; }
     .visor-ant { left: auto; right: 64px; }
     .visor-prox { right: 8px; }
@@ -270,12 +351,12 @@ main:focus { outline: none; }
 .capa-quadro img { transition: opacity 0.6s ease; }
 .js .quadro[data-revela] { opacity: 1; transform: none; clip-path: inset(100% 0 0 0); transition: clip-path 1.25s var(--suave) var(--atraso, 0ms); }
 .js .quadro[data-revela].visivel { clip-path: inset(0 0 0 0); }
-.js .quadro[data-revela] img { transform: scale(1.12); transition: transform 1.8s var(--suave), opacity 0.6s ease; }
-.js .quadro[data-revela].visivel img { transform: none; }
+.js .quadro[data-revela] img { scale: 1.18; transition: scale 1.8s var(--suave), opacity 0.6s ease; }
+.js .quadro[data-revela].visivel img { scale: 1.08; }
 .js .quadro img.carregando, .js .capa-quadro img.carregando { opacity: 0; }
 @media (hover: hover) and (pointer: fine) {
-    .quadro img { transition: transform 1.2s var(--suave), opacity 0.6s ease; }
-    .js .quadro[data-revela].visivel:hover img { transform: scale(1.035); transition-duration: 1.2s, 0.6s; }
+    .quadro img { transition: scale 1.2s var(--suave), opacity 0.6s ease; }
+    .js .quadro[data-revela].visivel:hover img { scale: 1.12; transition-duration: 1.2s, 0.6s; }
     .pacote:hover .link .ic { transform: translateX(3px); }
 }
 
@@ -306,4 +387,7 @@ main:focus { outline: none; }
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .js [data-revela], .js [data-revela] img, .js .cabeca[data-revela] .titulo, .capa-quadro img { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+    .js [data-revela] img, .quadro img { scale: 1.02 !important; translate: none !important; }
+    .assinatura .tracos path { stroke-dashoffset: 0 !important; }
+    .assinatura .fecho { opacity: 1 !important; }
 }

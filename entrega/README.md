@@ -2,14 +2,14 @@
 
 A página que o casal (ou a debutante, ou a família) recebe com as fotos prontas. Uma revista por trabalho: capa, carta, capítulos com layouts variados, visor em tela cheia, favoritas para o álbum, imagem pronta para os stories e a assinatura no fim.
 
-O primeiro é o de Vinícius & Stefany: https://okaiquemota.com.br/fotografia/vinicius-e-stefany/.
+O primeiro é o de Vinícius & Stefany: https://okaiquemota.com.br/vinicius-e-stefany/. Cada trabalho fica numa pasta na raiz do site, e o endereço é o nome dela (o nome não pode ser `eu`, `img`, `fontes`, `entrega`, `assets`, `fotografia` nem `painel`, que o site já usa).
 
 ## Como é montada
 
 O motor (esta pasta) é igual para todos os trabalhos. O que muda de um para outro é **só a pasta do trabalho**:
 
 ```
-fotografia/
+. (a raiz do site)
 ├── entrega/                 o motor (não mexe por trabalho)
 │   ├── entrega.css          visual: tokens de cor, tipografia, layouts
 │   ├── fontes/              Cormorant Garamond e Inter (woff2, licença SIL OFL 1.1)
@@ -32,7 +32,7 @@ fotografia/
         └── mini/            a versão leve da página (lado maior 800px)
 ```
 
-Sem build e sem dependência, como o resto do site: é só publicar. Para ver no computador: `python3 -m http.server 8000` na raiz e abrir http://localhost:8000/fotografia/vinicius-e-stefany/.
+Sem build e sem dependência, como o resto do site: é só publicar. Para ver no computador: `python3 -m http.server 8000` na raiz e abrir http://localhost:8000/vinicius-e-stefany/.
 
 ## Um trabalho novo, passo a passo
 
@@ -49,7 +49,7 @@ Sem build e sem dependência, como o resto do site: é só publicar. Para ver no
 **Entrega só para os noivos ou página de portfólio?** O motor é o mesmo; muda o `evento.json` e a `index.html`:
 
 - **Só para os noivos:** `"selecao": { "ativa": true, "limite": 40 }`, `downloads.completo.url` com a pasta do Drive e `downloads.validade`. Na `index.html`, `<meta name="robots" content="noindex, nofollow">`, e a página fica fora do `sitemap.xml`.
-- **Portfólio (aberta no site):** `"selecao": { "ativa": false }` e `"downloads": {}`. Assim somem os corações, a barra, o "Leve com vocês" e o aviso de validade. Na `index.html`, sem `noindex` e com `canonical`; a página entra no `sitemap.xml` e ganha o link "Ver a história" em Trabalhos (`fotografia/index.html`). Antes, confirme com o casal o que pode ficar público (carta, votos, making of). Vinícius & Stefany está assim.
+- **Portfólio (aberta no site):** `"selecao": { "ativa": false }` e `"downloads": {}`. Assim somem os corações, a barra, o "Leve com vocês" e o aviso de validade. Na `index.html`, sem `noindex` e com `canonical`; a página entra no `sitemap.xml` e ganha o link "Ver a história" em Trabalhos (`index.html` da raiz). Antes, confirme com o casal o que pode ficar público (carta, votos, making of). Vinícius & Stefany está assim.
 
 Para trocar a música: coloque o `.mp3` na pasta (comprimido em 128 kbps) e mude `trilha.src`. A de Vinícius & Stefany é "There is Romance", de Kevin MacLeod (incompetech.com, CC BY 4.0, com crédito no rodapé). Sem música, apague o bloco `trilha` e o botão some sozinho. Use só música com licença para isso (bibliotecas como a do YouTube Audio Library ou Artlist).
 
@@ -105,7 +105,7 @@ Para trocar a música: coloque o `.mp3` na pasta (comprimido em 128 kbps) e mude
 { "id": "sim-03", "arquivo": "VS_0412.jpg", "largura": 2048, "altura": 1365, "alt": "Vinícius emocionado ao ver Stefany entrar" }
 ```
 
-`largura` e `altura` só precisam ter a proporção certa (reservam o espaço e evitam a página pular). O `alt` é o que o leitor de tela lê: descreva quem e o que está acontecendo. Também dá para usar endereços diretos (`src`, `mini`, `original`) em vez de `arquivo`, como as fotos do pré-wedding, que vêm de `fotografia/img/`.
+`largura` e `altura` só precisam ter a proporção certa (reservam o espaço e evitam a página pular). O `alt` é o que o leitor de tela lê: descreva quem e o que está acontecendo. Também dá para usar endereços diretos (`src`, `mini`, `original`) em vez de `arquivo`, como as fotos do pré-wedding, que vêm de `img/` (na raiz).
 
 ## O que a página faz
 
