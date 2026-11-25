@@ -191,7 +191,7 @@ main:focus { outline: none; }
    No computador: o nome, a frase, as horas e o "Consultar data" lado a lado; no celular, um embaixo
    do outro. A linha inteira leva pro formulário com o tipo já escolhido. */
 .ancora { position: absolute; }
-.servicos { max-width: 1020px; margin-inline: auto; border-bottom: 1px solid var(--linha); }
+.servicos { max-width: 1020px; margin-inline: auto; border-bottom: 1px solid var(--linha); transition: border-color 0.4s var(--suave); }
 .servico {
     position: relative;
     display: grid;
@@ -214,9 +214,13 @@ main:focus { outline: none; }
 /* a linha toda é o link */
 .servico-quero::after { content: ""; position: absolute; inset: 0; }
 /* vindo de um link (#casamento, #ensaios…), a linha do serviço ganha a tinta */
-.servico:target { border-top-color: var(--tinta); }
+/* a linha de cima de cada serviço é dele; a de baixo é a de cima do próximo (ou a da lista, no último).
+   Pra marcar um serviço, acendem as duas: a dele e a do próximo */
+.servico:target, .servico:target + .servico { border-top-color: var(--tinta); }
+.servicos:has(> .servico:last-child:target) { border-bottom-color: var(--tinta); }
 @media (hover: hover) and (pointer: fine) {
-    .servico:hover { border-top-color: var(--tinta); }
+    .servico:hover, .servico:hover + .servico { border-top-color: var(--tinta); }
+    .servicos:has(> .servico:last-child:hover) { border-bottom-color: var(--tinta); }
     .servico:hover .servico-quero { background-size: 100% 1px, 100% 1px; }
     .servico:hover .servico-quero .ic { transform: translateX(3px); }
 }
