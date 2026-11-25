@@ -127,8 +127,6 @@ Qualquer mudança de DNS se faz na Cloudflare, não no Registro.br.
 
 Em **Settings → Pages**, branch `main` e pasta `/ (root)`. O site fica em https://okaiquemota.com.br (o arquivo `CNAME` diz isso pro GitHub).
 
-O repositório é privado: só o código fica fechado, o site publicado continua aberto pra todo mundo. O GitHub Pages de um repositório privado precisa do **GitHub Pro** na sua conta. Se o Pro for cancelado, o GitHub tira o site do ar até o repositório voltar a ser público ou o Pro voltar.
-
 DNS no Registro.br (zona do okaiquemota.com.br):
 
 | Tipo  | Nome  | Valor                   |
