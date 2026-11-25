@@ -69,6 +69,10 @@ Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo tra�
 
 O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferramentas/assinatura-tempo.py`, que gera o PNG. Mudou a assinatura, a ordem ou a velocidade? Ajuste lá e rode `python3 ferramentas/assinatura-tempo.py` (precisa de `pip install numpy scipy pillow`). Se mudar a duração total, ela também vai no `dur` do `<animate>` (no `index.html`) e no `ESCRITA_MS` (no `fotografia.js`). A pasta `ferramentas/` não vai pro site.
 
+## A entrega na página principal
+
+A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três telas de celular da entrega de Vinícius & Stefany (a foto aberta com o coração, a capa e a imagem dos stories) e a lista do que vem junto, com o link pra entrega. As telas são `img/entrega-visor`, `entrega-capa` e `entrega-stories`, cada uma em `-600.jpg` e `-360.jpg` (proporção de celular, 390 × 844). Pra trocar por outra entrega, tire os prints no celular (ou no modo celular do navegador) com a seleção ligada, pra aparecer o coração, salve com os mesmos nomes e tamanhos e confirme com o casal que as fotos podem aparecer no site.
+
 ## Os serviços
 
 Cada tipo de foto é uma linha `<li class="servico">` em "Serviços" (`index.html`): o nome, a frase, as horas (do menor ao maior pacote) e o "Consultar data", que já deixa o tipo escolhido no formulário (o `data-tipo` precisa ser igual a uma das opções do "Tipo de foto"). O `id` da linha é o endereço do serviço (`/#casamento`). Os pacotes de cada um, com o que incluem e os valores, não aparecem no site: vão pelo WhatsApp. As regras detalhadas (hora adicional, RAW, remarcação) ficam no contrato.
