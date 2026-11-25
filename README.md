@@ -1,6 +1,6 @@
 # Kaique Mota
 
-O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", uma foto de borda a borda, "Trabalhos" (cada trabalho é um filme), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos) e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
+O okaiquemota.com.br é o site de fotografia (o do [@okaiquemota](https://www.instagram.com/okaiquemota/)), no mesmo visual do orçamento: fundo branco, tinta preta, cinza nos detalhes, Tinos (o desenho da Times) e linhas finas. Tem a capa (a foto com a assinatura que se escreve por cima, que sempre cabe na altura da tela), "Sobre", "Trabalhos" (cada trabalho é um filme), "A entrega" (a página que o cliente recebe), "Serviços" (um por tipo de foto, com as horas e sem preço: os pacotes e os valores vão pelo WhatsApp), "Como funciona" (quatro passos) e "Consultar data", um formulário que monta a mensagem pronta no WhatsApp. Tem também a Política de Privacidade (LGPD) em `/privacidade.html`, linkada no rodapé e embaixo do formulário. Os endereços `/#casamento`, `#pre-wedding`, `#festas`, `#aniversarios`, `#making-of`, `#ensaios` e `#marcas` levam direto ao serviço (e `#pacotes`, o nome antigo da seção, leva pra "Serviços").
 
 Em `/eu/` fica a página pessoal: o nome no topo, uma foto no meio com a assinatura de verdade por cima e os links embaixo (o link pra Fotografia e os @), tudo centralizado. Na página principal, ela é o "Kaique Mota" do rodapé.
 
@@ -33,7 +33,7 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
         ├── kaique.jpg         a foto do meio da /eu (em pé, 4:5)
         ├── assinatura.png     a assinatura, tirada do traço do lápis (preta, fundo transparente)
         ├── assinatura.svg     a mesma assinatura em vetor (também é o ícone da aba)
-        ├── assinatura-tempo.png   a assinatura que se escreve na capa e no Sobre (veja abaixo)
+        ├── assinatura-tempo.png   a assinatura que se escreve na capa (veja abaixo)
         ├── icone-180.png      o ícone quando alguém salva o site na tela inicial do iPhone
         └── compartilhar.jpg   a prévia da /eu no WhatsApp e nas redes (1200×630)
 ```
@@ -57,21 +57,17 @@ Antes de publicar, duas coisas:
 - **Autorização de quem aparece na foto** (de um dos pais ou do responsável, se for criança ou adolescente). A Política de Privacidade garante isso (item 5), e quem pedir tem a foto tirada do ar.
 - **Exporte sem metadados** (EXIF). Fotos direto da câmera ou do celular podem levar a localização (GPS), a data e o número de série da câmera. No Lightroom: em Exportar → Metadados, escolha "Somente direitos autorais" (isso já tira a localização).
 
-## A foto de borda a borda
-
-Entre o "Sobre" e os "Trabalhos" fica a `<figure class="pausa">`: uma foto que abre de borda a borda e vem chegando perto enquanto a página desce. Pra trocar, mude o `src`, o `srcset`, o `alt`, o `width`/`height` e a legenda. Funciona melhor com uma foto deitada exportada grande (lado maior 2400px), porque ela ocupa a largura da tela; a de agora é em pé e o corte fica no `object-position` da `.pausa-quadro img` no `fotografia.css` (o segundo número sobe ou desce o enquadramento).
-
 ## A assinatura que se escreve
 
-Na capa e no fim do "Sobre", a assinatura se escreve do jeito que é escrita à mão: três traços (a caneta só levanta duas vezes). 1) O laço e o K: começa na ponta direita do corte, vem até a ponta do laço, sobe até a ponta do braço, desce pela perna e sobe a haste inteira. 2) O "l": sobe, faz a volta e desce até o gancho. 3) O "am".
+Na capa, a assinatura se escreve do jeito que é escrita à mão: três traços (a caneta só levanta duas vezes). 1) O laço e o K: começa na ponta direita do corte, vem até a ponta do laço, sobe até a ponta do braço, desce pela perna e sobe a haste inteira. 2) O "l": sobe, faz a volta e desce até o gancho. 3) O "am".
 
-Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo traço do `assinatura.png`) em que cada ponto de tinta guarda, no tom de cinza, o momento em que a caneta passa por ele: quanto mais escuro, mais cedo. No `index.html`, um filtro SVG só mostra os pontos cujo momento já chegou, e o `fotografia.js` vai soltando o tempo (a da capa começa 0,7s depois da foto; a do "Sobre", quando ela aparece na tela). Por isso um traço não mostra pedaço do outro onde eles se cruzam. Sem JavaScript, o `<animate>` do filtro faz o mesmo depois que a página carrega; com "menos movimento", ela já aparece inteira.
+Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo traço do `assinatura.png`) em que cada ponto de tinta guarda, no tom de cinza, o momento em que a caneta passa por ele: quanto mais escuro, mais cedo. No `index.html`, um filtro SVG só mostra os pontos cujo momento já chegou, e o `fotografia.js` vai soltando o tempo (começa 0,7s depois da foto da capa; uma assinatura com `data-revela` mais embaixo na página começaria quando aparecesse na tela). Por isso um traço não mostra pedaço do outro onde eles se cruzam. Sem JavaScript, o `<animate>` do filtro faz o mesmo depois que a página carrega; com "menos movimento", ela já aparece inteira.
 
 O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferramentas/assinatura-tempo.py`, que gera o PNG. Mudou a assinatura, a ordem ou a velocidade? Ajuste lá e rode `python3 ferramentas/assinatura-tempo.py` (precisa de `pip install numpy scipy pillow`). Se mudar a duração total, ela também vai no `dur` do `<animate>` (no `index.html`) e no `ESCRITA_MS` (no `fotografia.js`). A pasta `ferramentas/` não vai pro site.
 
 ## A entrega na página principal
 
-A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a foto aberta com o coração, a capa e a imagem dos stories) e, ao lado, a lista do que vem junto, com o link pra entrega.
+A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a foto aberta com o coração, a capa e a imagem dos stories) e, ao lado, a lista do que vem junto.
 
 - O celular é o mockup `img/celular-iphone.svg` (iPhone 17 Pro prata, 880 × 1832), que tem a tela vazada: a captura fica por baixo e a moldura por cima (no `fotografia.css`, em `.celular`).
 - As telas são `img/entrega-visor`, `entrega-capa` e `entrega-stories`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima.

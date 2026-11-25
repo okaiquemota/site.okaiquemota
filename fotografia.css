@@ -112,8 +112,6 @@ main:focus { outline: none; }
 /* ---------- Sobre ---------- */
 .sobre-texto { display: flex; flex-direction: column; align-items: center; gap: 22px; max-width: 660px; margin-inline: auto; font-size: clamp(18px, 1.7vw, 21px); line-height: 1.65; text-align: center; text-wrap: pretty; }
 .sobre-abre { font-size: clamp(25px, 2.8vw, 32px); line-height: 1.3; text-wrap: balance; }
-.sobre-texto .assinatura { width: 150px; margin-top: 12px; transform: rotate(-4deg); }
-.js .sobre-texto .assinatura[data-revela] { opacity: 1; transform: rotate(-4deg); }
 
 /* ---------- Trabalhos: cada trabalho é um filme ----------
    Sem JavaScript, no celular e para quem pediu menos movimento: uma faixa que se arrasta de lado.
@@ -156,26 +154,6 @@ main:focus { outline: none; }
 .legenda-ver { font-size: 15px; }
 @media (hover: hover) and (pointer: fine) { .trabalho:hover .legenda-ver { background-size: 100% 1px, 100% 1px; } }
 
-/* ---------- A pausa: uma foto de borda a borda entre o Sobre e os Trabalhos ---------- */
-.pausa { margin-top: clamp(104px, 13vw, 176px); }
-.pausa-quadro { height: min(calc(var(--alto) * 0.88), 64vw); overflow: hidden; background: #f1f0ee; }
-.pausa-quadro img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 36%; }
-.pausa-legenda { display: flex; justify-content: flex-end; margin-top: 14px; }
-.js .pausa-quadro[data-revela] { opacity: 1; transform: none; }
-@supports (animation-timeline: view()) {
-    /* abre como o diafragma da câmera até a borda e a foto vem chegando perto */
-    .pausa-quadro { animation: abre-pausa linear both; animation-timeline: view(); animation-range: entry 0% cover 50%; }
-    .pausa-quadro img { animation: aproxima linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
-}
-@supports not (animation-timeline: view()) {
-    .js .pausa-quadro[data-revela] { clip-path: inset(10% 16%); transition: clip-path 1.6s var(--suave); }
-    .js .pausa-quadro[data-revela].visivel { clip-path: inset(0 0); }
-    .js .pausa-quadro[data-revela] img { scale: 1.14; transition: scale 2.4s var(--suave); }
-    .js .pausa-quadro[data-revela].visivel img { scale: 1; }
-}
-@keyframes abre-pausa { from { clip-path: inset(10% 16%); } to { clip-path: inset(0 0); } }
-@keyframes aproxima { from { scale: 1.2; } to { scale: 1; } }
-
 /* ---------- A entrega: o diferencial ----------
    Três telas da entrega em leque (a capa na frente, a foto aberta e o stories atrás) e, ao lado,
    o que vem junto. As telas de lado sobem um pouco mais devagar que a página. */
@@ -203,7 +181,6 @@ main:focus { outline: none; }
 .entrega-itens > div:nth-child(4) { --atraso: 180ms; }
 .entrega-itens dt { font-size: 19px; line-height: 1.2; }
 .entrega-itens dd { margin: 4px 0 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
-.entrega-ver { margin-top: 26px; font-size: 15px; }
 @media (max-width: 760px) {
     .entrega { grid-template-columns: minmax(0, 1fr); gap: 36px; }
     .vitrine { --cel: min(42vw, 210px); }
@@ -334,8 +311,6 @@ main:focus { outline: none; }
     .capa-frase { font-size: 18px; }
     .faixa { gap: 8px; }
     .quadro { width: 76vw; }
-    /* em pé, a pausa mostra a foto inteira (4:5) em vez de uma faixa fina */
-    .pausa-quadro { height: min(calc(var(--alto) * 0.8), 125vw); }
     .condicoes, .formulario { grid-template-columns: minmax(0, 1fr); }
     .visor-foto { width: min(100vw, (var(--alto) - 160px) * var(--proporcao, 0.8)); }
     .visor-ant, .visor-prox { top: auto; bottom: max(12px, env(safe-area-inset-bottom, 0px)); transform: none; }
