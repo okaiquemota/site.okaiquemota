@@ -166,14 +166,13 @@ main:focus { outline: none; }
 .celular img { position: absolute; left: 4%; top: 2.1%; width: 92%; height: 95.8%; object-fit: cover; border-radius: 15% / 7.2%; background: #f1f0ee; }
 .celular-meio { z-index: 2; translate: -50% -50%; }
 .celular-esq, .celular-dir { width: calc(var(--cel) * 0.85); }
-.celular-esq { translate: -118% -46%; rotate: -5deg; --atraso: 120ms; }
-.celular-dir { translate: 18% -54%; rotate: 5deg; --atraso: 240ms; }
+/* --sobe: o quanto cada tela de lado sobe e desce com a rolagem (menos no celular, onde elas são menores) */
+.celular-esq { translate: -118% -46%; rotate: -5deg; --atraso: 120ms; --sobe: 36px; }
+.celular-dir { translate: 18% -54%; rotate: 5deg; --atraso: 240ms; --sobe: 56px; }
 @supports (animation-timeline: view()) {
     .celular-esq, .celular-dir { animation: flutua linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
-    .celular-dir { animation-name: flutua-dir; }
 }
-@keyframes flutua { from { transform: translateY(36px); } to { transform: translateY(-36px); } }
-@keyframes flutua-dir { from { transform: translateY(56px); } to { transform: translateY(-56px); } }
+@keyframes flutua { from { transform: translateY(var(--sobe)); } to { transform: translateY(calc(-1 * var(--sobe))); } }
 .entrega-itens > div { padding: 18px 0; border-top: 1px solid var(--linha); }
 .entrega-itens > div:last-child { border-bottom: 1px solid var(--linha); }
 .entrega-itens > div:nth-child(2) { --atraso: 60ms; }
@@ -184,6 +183,8 @@ main:focus { outline: none; }
 @media (max-width: 760px) {
     .entrega { grid-template-columns: minmax(0, 1fr); gap: 36px; }
     .vitrine { --cel: min(42vw, 210px); }
+    .celular-esq { --sobe: 12px; }
+    .celular-dir { --sobe: 18px; }
 }
 
 /* ---------- Serviços: uma lista, um por linha ----------

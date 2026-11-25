@@ -67,10 +67,10 @@ O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferr
 
 ## A entrega na página principal
 
-A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a foto aberta com o coração, a capa e a imagem dos stories) e, ao lado, a lista do que vem junto.
+A seção "A entrega" (entre "Trabalhos" e "Serviços") mostra o diferencial: três iPhones em leque com telas da entrega de Vinícius & Stefany (a imagem dos stories, a capa e um capítulo com as fotos marcadas com o coração) e, ao lado, a lista do que vem junto.
 
 - O celular é o mockup `img/celular-iphone.svg` (iPhone 17 Pro prata, 880 × 1832), que tem a tela vazada: a captura fica por baixo e a moldura por cima (no `fotografia.css`, em `.celular`).
-- As telas são `img/entrega-visor`, `entrega-capa` e `entrega-stories`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima.
+- As telas são `img/entrega-stories`, `entrega-capa` e `entrega-favoritas`, cada uma em `-600.jpg` e `-360.jpg`, sempre na proporção da tela do iPhone (390 × 844, ou 780 × 1688 em 2x), já com a barra de status (9:41, sinal e bateria) em cima. Todas preenchem a tela inteira, sem faixas pretas: o stories foi gerado na altura da tela (o fundo e a moldura vão até embaixo) e as favoritas são um capítulo com os corações marcados e a barra "3 / 40 · Enviar seleção".
 - Pra trocar por outra entrega: capture no modo celular do navegador com a tela inteira em 390 × 844 (no emulador de "iPhone" do Chrome a área visível é menor; ajuste a altura), com a seleção ligada pra aparecer o coração. **Nunca estique a captura pra caber**: se ela tiver outra altura, ponha uma faixa em cima (a barra de status) em vez de esticar, senão as fotos ficam amassadas. Confirme com o casal que as fotos podem aparecer no site.
 
 ## Os serviços
