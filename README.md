@@ -24,6 +24,7 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
 ├── 404.html               a página de "não encontrado" (o GitHub mostra pra qualquer endereço que não existe)
 ├── robots.txt e sitemap.xml   pro Google achar as páginas
 ├── painel/                o painel de clientes (Cloudflare, veja painel/README.md)
+├── ferramentas/           scripts que geram arquivos do site (não vão pro site)
 └── assets/                o que a /eu, a 404 e a assinatura usam
     ├── css/site.css       o visual da /eu e da 404
     ├── js/site.js         ano do rodapé e altura da /eu
@@ -31,7 +32,8 @@ Em `painel/` fica o painel de clientes da fotografia (cadastro, trabalhos, pagam
     └── img/
         ├── kaique.jpg         a foto do meio da /eu (em pé, 4:5)
         ├── assinatura.png     a assinatura, tirada do traço do lápis (preta, fundo transparente)
-        ├── assinatura.svg     a mesma assinatura em vetor (a que se escreve na capa; também é o ícone da aba)
+        ├── assinatura.svg     a mesma assinatura em vetor (também é o ícone da aba)
+        ├── assinatura-tempo.png   a assinatura que se escreve na capa e no Sobre (veja abaixo)
         ├── icone-180.png      o ícone quando alguém salva o site na tela inicial do iPhone
         └── compartilhar.jpg   a prévia da /eu no WhatsApp e nas redes (1200×630)
 ```
@@ -61,7 +63,11 @@ Entre o "Sobre" e os "Trabalhos" fica a `<figure class="pausa">`: uma foto que a
 
 ## A assinatura que se escreve
 
-Na capa e no fim do "Sobre", a assinatura se escreve traço por traço. O desenho é o `assets/img/assinatura.svg`; por cima dele vai uma máscara com três traços grossos que seguem o caminho da caneta, do jeito que ela é escrita (a caneta só levanta duas vezes): 1) o laço e o K, que começa na ponta direita do corte, vem até a ponta do laço, sobe até a ponta do braço, desce pela perna e sobe a haste inteira; 2) o "l", que sobe, faz a volta e desce até o gancho; 3) o "am". Os traços são os `<path>` dentro de `<g class="tracos">` no `index.html` (iguais na capa e no "Sobre"); o tempo de cada um fica no `fotografia.css`, em `.assinatura .tracos path:nth-child(…)`, e as freadas nas curvas, nos `@keyframes traco-k` e `traco-l`. Se a assinatura mudar, esses caminhos precisam ser desenhados de novo por cima dela. Se faltar algum pedacinho, o retângulo `fecho` acende a assinatura inteira no fim.
+Na capa e no fim do "Sobre", a assinatura se escreve do jeito que é escrita à mão: três traços (a caneta só levanta duas vezes). 1) O laço e o K: começa na ponta direita do corte, vem até a ponta do laço, sobe até a ponta do braço, desce pela perna e sobe a haste inteira. 2) O "l": sobe, faz a volta e desce até o gancho. 3) O "am".
+
+Como funciona: o `assets/img/assinatura-tempo.png` é a assinatura (o mesmo traço do `assinatura.png`) em que cada ponto de tinta guarda, no tom de cinza, o momento em que a caneta passa por ele: quanto mais escuro, mais cedo. No `index.html`, um filtro SVG só mostra os pontos cujo momento já chegou, e o `fotografia.js` vai soltando o tempo (a da capa começa 0,7s depois da foto; a do "Sobre", quando ela aparece na tela). Por isso um traço não mostra pedaço do outro onde eles se cruzam. Sem JavaScript, o `<animate>` do filtro faz o mesmo depois que a página carrega; com "menos movimento", ela já aparece inteira.
+
+O caminho da caneta, a ordem e o ritmo (onde ela acelera e freia) ficam em `ferramentas/assinatura-tempo.py`, que gera o PNG. Mudou a assinatura, a ordem ou a velocidade? Ajuste lá e rode `python3 ferramentas/assinatura-tempo.py` (precisa de `pip install numpy scipy pillow`). Se mudar a duração total, ela também vai no `dur` do `<animate>` (no `index.html`) e no `ESCRITA_MS` (no `fotografia.js`). A pasta `ferramentas/` não vai pro site.
 
 ## Idade no "Sobre"
 

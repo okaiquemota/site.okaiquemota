@@ -48,12 +48,47 @@
         img.addEventListener('error', pronto, { once: true });
     });
 
+    // ---------- A assinatura que se escreve ----------
+    // Cada assinatura tem um filtro que só mostra a tinta cujo momento já chegou (veja o README):
+    // quanto maior o "intercept" do <feFuncA>, mais tinta aparece (de 0, nada, até 300, tudo).
+    // Quem anda com ele é este trecho, a cada quadro: a da capa começa 0,7s depois da foto, junto
+    // com ela; a do "Sobre" quando aparece na tela. O <animate> do HTML fica só pra quem está sem
+    // JavaScript (ele espera a página carregar inteira). Com "menos movimento", já ficam prontas.
+    var TINTA_TODA = 300, ESCRITA_MS = 2448;
+    var vaiRevelar = 'IntersectionObserver' in window && !poucoMovimento.matches;
+    function escreve(fn, inicio) {
+        function quadro(agora) {
+            var p = Math.max(0, Math.min(1, (agora - inicio) / ESCRITA_MS));
+            fn.setAttribute('intercept', (p * TINTA_TODA).toFixed(2));
+            if (p < 1) requestAnimationFrame(quadro);
+        }
+        requestAnimationFrame(quadro);
+    }
+    document.querySelectorAll('.assinatura feFuncA').forEach(function (fn) {
+        var anim = fn.querySelector('animate');
+        if (anim) anim.parentNode.removeChild(anim);
+        var assinatura = fn.closest('.assinatura');
+        if (poucoMovimento.matches) { fn.setAttribute('intercept', TINTA_TODA); return; }
+        if (assinatura.hasAttribute('data-revela')) {
+            // a do "Sobre": escondida até aparecer na tela (sem o IntersectionObserver, fica pronta)
+            if (vaiRevelar) { fn.setAttribute('intercept', '0'); assinatura.escrever = function () { escreve(fn, performance.now() + 200); }; }
+            else fn.setAttribute('intercept', TINTA_TODA);
+            return;
+        }
+        // a da capa: no mesmo relógio da foto, que se revela pela animação "revela-foto" do CSS
+        fn.setAttribute('intercept', '0');
+        var foto = document.querySelector('.capa-quadro img');
+        var revela = foto && foto.getAnimations ? foto.getAnimations().filter(function (a) { return a.animationName === 'revela-foto'; })[0] : null;
+        if (revela && revela.ready) revela.ready.then(function () { escreve(fn, (revela.startTime || performance.now()) + 700); });
+        else escreve(fn, performance.now() + 700);
+    });
+
     // ---------- Aparecer ao rolar ----------
     var revelaveis = document.querySelectorAll('[data-revela]');
-    if ('IntersectionObserver' in window && !poucoMovimento.matches) {
+    if (vaiRevelar) {
         var vigia = new IntersectionObserver(function (entradas) {
             entradas.forEach(function (en) {
-                if (en.isIntersecting) { en.target.classList.add('visivel'); vigia.unobserve(en.target); }
+                if (en.isIntersecting) { en.target.classList.add('visivel'); if (en.target.escrever) en.target.escrever(); vigia.unobserve(en.target); }
             });
         }, { rootMargin: '0px 0px -6% 0px', threshold: 0 });
         revelaveis.forEach(function (el) { vigia.observe(el); });
