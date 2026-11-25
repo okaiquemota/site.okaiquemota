@@ -180,13 +180,16 @@ main:focus { outline: none; }
    Três telas da entrega em leque (a capa na frente, a foto aberta e o stories atrás) e, ao lado,
    o que vem junto. As telas de lado sobem um pouco mais devagar que a página. */
 .entrega { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: center; gap: clamp(40px, 6vw, 88px); max-width: 1020px; margin-inline: auto; }
-.vitrine { --cel: clamp(170px, 21vw, 250px); position: relative; height: calc(var(--cel) * 2.164 + 48px); }
-.celular { position: absolute; top: 50%; left: 50%; width: var(--cel); aspect-ratio: 390 / 844; margin: 0; padding: calc(var(--cel) * 0.028); border-radius: calc(var(--cel) * 0.14); background: var(--tinta); box-shadow: 0 40px 60px -40px rgba(0, 0, 0, 0.45); }
-.celular img { width: 100%; height: 100%; object-fit: cover; border-radius: calc(var(--cel) * 0.115); background: #f1f0ee; }
+.vitrine { --cel: clamp(170px, 21vw, 250px); position: relative; height: calc(var(--cel) * 2.082 + 48px); }
+/* o celular é o mockup do iPhone (img/celular-iphone.svg, 880 × 1832), que tem a tela vazada:
+   a tela da entrega fica por baixo, um pouquinho maior que o vão, e a moldura por cima */
+.celular { position: absolute; top: 50%; left: 50%; width: var(--cel); aspect-ratio: 880 / 1832; margin: 0; filter: drop-shadow(0 28px 30px rgba(0, 0, 0, 0.22)); }
+.celular::after { content: ""; position: absolute; inset: 0; background: url("img/celular-iphone.svg") center / 100% 100% no-repeat; pointer-events: none; }
+.celular img { position: absolute; left: 4%; top: 2.1%; width: 92%; height: 95.8%; object-fit: cover; border-radius: 15% / 7.2%; background: #f1f0ee; }
 .celular-meio { z-index: 2; translate: -50% -50%; }
 .celular-esq, .celular-dir { width: calc(var(--cel) * 0.85); }
-.celular-esq { translate: -118% -46%; rotate: -6deg; --atraso: 120ms; }
-.celular-dir { translate: 18% -54%; rotate: 6deg; --atraso: 240ms; }
+.celular-esq { translate: -118% -46%; rotate: -5deg; --atraso: 120ms; }
+.celular-dir { translate: 18% -54%; rotate: 5deg; --atraso: 240ms; }
 @supports (animation-timeline: view()) {
     .celular-esq, .celular-dir { animation: flutua linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
     .celular-dir { animation-name: flutua-dir; }
