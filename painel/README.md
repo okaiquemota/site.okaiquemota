@@ -61,7 +61,7 @@ Abra http://localhost:8787. O banco e os arquivos ficam simulados na pasta `.wra
 - Depois de 5 senhas erradas em 15 minutos, aquele endereço fica travado por 15 minutos.
 - Pedidos que mudam alguma coisa só valem vindos do próprio painel. A página não carrega nada de fora (CSP) e não pode ser aberta dentro de outro site.
 - Os arquivos só abrem com a sessão aberta. O tipo de cada um é definido pelo painel, e HTML, SVG e scripts não são aceitos.
-- O seu CPF ou CNPJ e o seu endereço (pro contrato) ficam só no banco do painel, nunca no código, que é público no GitHub.
+- O seu CPF ou CNPJ e o seu endereço (pro contrato) ficam só no banco do painel, nunca no código (o repositório é privado, mas dado pessoal não vai pro Git: o que entra fica no histórico pra sempre).
 - A Cloudflare entrou na Política de Privacidade (`fotografia/privacidade.html`, item 6.1) como quem armazena os dados e os documentos dos clientes.
 
 ## Arquivos
